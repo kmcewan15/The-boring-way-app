@@ -1,0 +1,1760 @@
+@import './tokens.css';
+
+/* ==========================================================================
+   Reset
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--pink-bg);
+  color: var(--terracotta-deep);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+#root {
+  height: 100%;
+}
+
+:focus-visible {
+  outline: 3px solid var(--terracotta);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   Desktop shell: persistent left rail + a single stage for the active screen
+   ========================================================================== */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--side-w) 1fr;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.main {
+  position: relative;
+  overflow: hidden;
+  background: var(--pink-bg);
+  isolation: isolate;
+}
+
+/* ------------------------------------------------------------- sidebar ---- */
+
+.side {
+  display: flex;
+  flex-direction: column;
+  padding: 34px 20px 26px;
+  background: var(--pink-cream);
+  border-right: 1px solid rgba(156, 82, 54, 0.1);
+}
+
+.side__brand {
+  padding: 0 14px;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  color: var(--terracotta-deep);
+}
+
+.side__brand span {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--rock-mid);
+}
+
+.side__nav {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navitem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: var(--r-pill);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--rock-mid);
+  text-align: left;
+  transition:
+    background var(--dur-fast) var(--ease-calm),
+    color var(--dur-fast) var(--ease-calm);
+}
+
+.navitem svg {
+  flex: none;
+}
+
+.navitem:hover {
+  background: rgba(156, 82, 54, 0.07);
+  color: var(--terracotta-deep);
+}
+
+.navitem--active {
+  background: var(--terracotta);
+  color: #fff;
+  font-weight: 700;
+}
+
+.navitem--active:hover {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.side__foot {
+  margin-top: auto;
+  padding: 18px 16px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+}
+
+.side__foot dt {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--rock-mid);
+}
+
+.side__foot dd {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--terracotta-deep);
+}
+
+.side__foot hr {
+  height: 1px;
+  margin: 14px 0;
+  border: 0;
+  background: rgba(156, 82, 54, 0.16);
+}
+
+/* ==========================================================================
+   Screens
+   ========================================================================== */
+
+.screen {
+  position: absolute;
+  inset: 0;
+}
+
+.screen--scroll {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 82, 54, 0.28) transparent;
+}
+
+.screen--scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.screen--scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--r-pill);
+  background-clip: content-box;
+  background-color: rgba(156, 82, 54, 0.28);
+}
+
+.fade-in {
+  animation: fade-in var(--dur-mid) var(--ease-calm) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Centred measure for the text-heavy screens */
+.wrap {
+  max-width: var(--read-w);
+  margin: 0 auto;
+  padding: 56px 48px 72px;
+}
+
+/* My Path has only four tiles, so centre them in the window rather than leaving
+   a tall band of empty pink underneath. */
+.wrap--center {
+  min-height: 100%;
+  display: grid;
+  align-content: center;
+}
+
+/* ==========================================================================
+   Pills
+   ========================================================================== */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 24px;
+  border-radius: var(--r-pill);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--terracotta-deep);
+  background: rgba(253, 237, 232, 0.76);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: var(--shadow-pill);
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    background var(--dur-fast) var(--ease-calm);
+}
+
+.pill:hover {
+  background: rgba(253, 237, 232, 0.94);
+}
+
+.pill:active {
+  transform: scale(0.97);
+}
+
+.pill--solid {
+  background: var(--pink-cream);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ==========================================================================
+   Learn screen — the trail
+   ========================================================================== */
+
+.trail {
+  position: absolute;
+  inset: 0;
+}
+
+.trail__art {
+  position: absolute;
+  inset: -4%;
+  z-index: 0;
+  /* No transition: the transform is driven continuously from the scroll
+     position, so easing it here would only make it lag the trail. */
+  will-change: transform;
+}
+
+.trail__top {
+  position: absolute;
+  inset: 30px 0 auto 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.trail__top > * {
+  pointer-events: auto;
+}
+
+/* Invisible scroll surface: one snap page per step */
+.trail__rail {
+  position: absolute;
+  inset: 0 0 var(--sheet-h) 0;
+  z-index: 20;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  /* Proximity rather than mandatory: mandatory snapping yanks a whole step per
+     wheel tick, which turns the world-to-world colour morph into a jump. This
+     lets the scroll run freely and only settles when you stop near a step. */
+  scroll-snap-type: y proximity;
+  scrollbar-width: none;
+}
+
+.trail__rail::-webkit-scrollbar {
+  display: none;
+}
+
+.trail__page {
+  height: 100%;
+  scroll-snap-align: start;
+}
+
+/* Cards are placed along the trail, not in the scroll flow */
+.trail__cards {
+  position: absolute;
+  inset: 0 0 var(--sheet-h) 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+/* The next world, rising at the trail vanishing point as you approach the end
+   of a topic. Sits above the landscape but behind the step cards, and is driven
+   entirely by scroll position in LearnScreen. */
+.trail__world {
+  position: absolute;
+  z-index: 10;
+  width: 30%;
+  aspect-ratio: 400 / 420;
+  pointer-events: none;
+  filter: drop-shadow(0 24px 40px rgba(60, 25, 15, 0.22));
+}
+
+.trailcard {
+  position: absolute;
+  left: 50%;
+  width: var(--card-w);
+  transition:
+    transform var(--dur-slow) var(--ease-calm),
+    opacity var(--dur-slow) var(--ease-calm);
+  will-change: transform, opacity;
+}
+
+/* Only the controls take pointer events. The card body stays transparent to
+   wheel/touch so gestures reach the scroll rail underneath — otherwise the card
+   would block scrolling the trail. */
+.trailcard--active .card__cta,
+.trailcard--active .card__action {
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   Step card
+   ========================================================================== */
+
+.card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  /* background is set inline from the owning step's world palette, so a card
+     belongs to its own world rather than being terracotta everywhere. */
+  color: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.card__body {
+  padding: 18px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card__duration {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.card__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.card__action {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  opacity: 0.92;
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    opacity var(--dur-fast) var(--ease-calm);
+}
+
+.card__action:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.card__action--on {
+  color: var(--lime);
+  opacity: 1;
+}
+
+.card__badge {
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--lime);
+  color: #2c4a16;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.card__index {
+  margin-top: 26px;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.card__title {
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.4px;
+}
+
+.card__cta {
+  margin-top: 18px;
+  height: 54px;
+  width: 100%;
+  border-radius: var(--r-pill);
+  /* Fill and ink also come from the world palette (inline), so hover has to be a
+     filter rather than a background swap. */
+  font-size: 21px;
+  font-weight: 700;
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    filter var(--dur-fast) var(--ease-calm);
+}
+
+.card__cta:hover {
+  filter: brightness(1.05);
+}
+
+.card__cta:active {
+  transform: scale(0.98);
+}
+
+/* Upcoming steps further up the trail. Type is NOT reduced here — the whole
+   card is transform-scaled by the trail tier, which shrinks the type with it. */
+.card--mini {
+  box-shadow: 0 8px 20px rgba(123, 58, 34, 0.16);
+}
+
+/* ==========================================================================
+   Bottom sheet (topic / path caption on the Learn screen)
+   ========================================================================== */
+
+.sheet {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 35;
+  height: var(--sheet-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(250, 222, 216, 0.9) 0%,
+    rgba(251, 229, 225, 0.98) 46%,
+    var(--pink-bg) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-sheet);
+  /* background and color are set inline from the current world palette, so the
+     banner stays part of the landscape instead of a pink strip under a green
+     world. Hover therefore has to be a filter, not a background swap. */
+  transition: filter var(--dur-fast) var(--ease-calm);
+}
+
+.sheet:hover {
+  filter: brightness(1.035);
+}
+
+.sheet__line {
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.sheet__line b {
+  font-weight: 700;
+}
+
+.sheet__trail {
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.sheet__hint {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  /* Inherits the palette-derived ink rather than a fixed terracotta. */
+  color: currentColor;
+  opacity: 0.62;
+}
+
+/* ==========================================================================
+   Explore levels — the green world
+   ========================================================================== */
+
+.explore {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  background: var(--green-deep);
+  animation: fade-in var(--dur-mid) var(--ease-calm) both;
+}
+
+.explore__rail {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.explore__rail::-webkit-scrollbar {
+  display: none;
+}
+
+.explore__page {
+  position: relative;
+  height: 100%;
+  scroll-snap-align: start;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.explore__head {
+  position: absolute;
+  inset: 28px 34px auto 34px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.explore__close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.explore__close:hover {
+  transform: rotate(90deg);
+}
+
+.explore__counter {
+  position: absolute;
+  top: 92px;
+  left: 36px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.explore__counter b {
+  font-weight: 700;
+}
+
+.explore__island {
+  position: relative;
+  align-self: center;
+  justify-self: center;
+  width: min(620px, 58vh);
+  aspect-ratio: 400 / 420;
+}
+
+/* The island art sits low and inset within its own viewBox, so zoom it and lift
+   it to optically centre the landmass. Step pins stay in the unscaled
+   coordinate space and their positions are tuned to match this framing. */
+.explore__island > svg {
+  transform: scale(1.24) translateY(-9%);
+  transform-origin: 50% 50%;
+}
+
+.explore__pins {
+  position: absolute;
+  inset: 0;
+}
+
+.steppin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  height: 40px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-pill);
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+  animation: pin-in var(--dur-slow) var(--ease-calm) both;
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.steppin:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+/* A completed step gets a tick prefix on its pin. */
+.steppin--done::before {
+  content: '✓';
+  margin-right: 7px;
+  font-weight: 700;
+}
+
+@keyframes pin-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -30%);
+  }
+}
+
+.explore__foot {
+  position: relative;
+  z-index: 5;
+  padding: 0 40px 40px;
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  text-align: center;
+}
+
+.explore__currentbtn {
+  position: relative;
+  z-index: 6;
+  margin: 0 auto;
+  display: flex;
+  transform: translateY(-50%);
+}
+
+.explore__trailno {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 4px 0 12px;
+}
+
+.explore__trailno b {
+  font-weight: 700;
+}
+
+.explore__blurb {
+  margin: 0 auto;
+  max-width: 620px;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   My Path
+   ========================================================================== */
+
+.myway {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.myway__rule {
+  grid-column: 1 / -1;
+  height: 1px;
+  margin: 8px 0;
+  background: rgba(156, 82, 54, 0.16);
+  border: 0;
+}
+
+.myway__wide {
+  grid-column: 1 / -1;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  width: 100%;
+  border-radius: var(--r-card);
+  text-align: left;
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    box-shadow var(--dur-fast) var(--ease-calm);
+}
+
+.tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(123, 58, 34, 0.18);
+}
+
+.tile__label {
+  position: relative;
+  z-index: 2;
+  font-size: 25px;
+  font-weight: 700;
+  padding: 20px 24px;
+}
+
+.tile--tall {
+  min-height: 208px;
+}
+
+.tile--pink {
+  background: var(--pink-soft);
+  color: var(--terracotta-deep);
+}
+
+.tile--brown {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.tile__art {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tile__art--timebox {
+  right: 26px;
+  bottom: 22px;
+  color: var(--terracotta);
+  opacity: 0.26;
+}
+
+.tile__art--progress {
+  right: 10px;
+  bottom: 6px;
+  width: 44%;
+}
+
+.tile--row {
+  min-height: 92px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tile--row .tile__label {
+  padding: 0 0 0 24px;
+}
+
+.tile__icon {
+  margin-right: 24px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+
+/* ==========================================================================
+   Detail sheet (My progress, Completed steps, My notes, Timebox)
+   ========================================================================== */
+
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  background: var(--pink-bg);
+  animation: modal-up var(--dur-mid) var(--ease-calm) both;
+  overflow: hidden;
+}
+
+@keyframes modal-up {
+  from {
+    transform: translateY(2%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal__cap {
+  position: relative;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 34px;
+  background: var(--terracotta);
+  color: #fff;
+  border-radius: 0 0 var(--r-sheet) var(--r-sheet);
+}
+
+.modal__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px 10px 10px;
+  border-radius: var(--r-pill);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.modal__back:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.modal__title {
+  font-size: 21px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.modal__scroll {
+  height: calc(100% - 88px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  color: var(--terracotta-deep);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 82, 54, 0.28) transparent;
+}
+
+.modal__scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal__scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--r-pill);
+  background-clip: content-box;
+  background-color: rgba(156, 82, 54, 0.28);
+}
+
+/* ==========================================================================
+   Progress detail
+   ========================================================================== */
+
+.prog__level {
+  font-size: 38px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.6px;
+}
+
+.prog__trail {
+  font-size: 23px;
+  font-weight: 500;
+  margin: 2px 0 0;
+}
+
+/* Overall completion across every topic */
+.prog__bar {
+  height: 10px;
+  margin-top: 24px;
+  border-radius: var(--r-pill);
+  background: var(--pink-soft);
+  overflow: hidden;
+}
+
+.prog__bar > i {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--terracotta);
+  transition: width var(--dur-slow) var(--ease-calm);
+}
+
+.prog__barlabel {
+  margin: 10px 0 0;
+  font-size: 19px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.prog__strip {
+  display: flex;
+  gap: 14px;
+  margin-top: 26px;
+  padding-bottom: 10px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 82, 54, 0.28) transparent;
+}
+
+.prog__strip::-webkit-scrollbar {
+  height: 8px;
+}
+
+.prog__strip::-webkit-scrollbar-thumb {
+  border-radius: var(--r-pill);
+  background-color: rgba(156, 82, 54, 0.24);
+}
+
+.prog__orb {
+  flex: none;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--pink-soft);
+  opacity: 0.42;
+  transition:
+    opacity var(--dur-mid) var(--ease-calm),
+    transform var(--dur-fast) var(--ease-calm);
+}
+
+.prog__orb--on {
+  opacity: 1;
+}
+
+.prog__orb:hover {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+/* The island's landmass sits low and inset in its viewBox, so zoom past the
+   margins and lift it to centre the land inside the circular crop. */
+.prog__orb > svg,
+.panel__orbs > span > svg {
+  transform: scale(1.9) translateY(-11%);
+  transform-origin: 50% 50%;
+}
+
+.prog__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 34px;
+  margin-top: 34px;
+}
+
+.prog__h {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.prog__sub {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 2px 0 0;
+}
+
+.dots {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--pink-soft);
+}
+
+.dot--on {
+  background: var(--terracotta);
+}
+
+.panel {
+  margin-top: 26px;
+  padding: 22px 24px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+}
+
+.panel__h {
+  font-size: 25px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.panel__p {
+  font-size: 21px;
+  font-weight: 500;
+  margin: 6px 0 0;
+}
+
+.panel--tap {
+  display: block;
+  width: 100%;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    box-shadow var(--dur-fast) var(--ease-calm);
+}
+
+.panel--tap:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(123, 58, 34, 0.16);
+}
+
+/* Keep the copy clear of the island cluster in the bottom-right corner. */
+.panel--tap .panel__p {
+  max-width: 54%;
+}
+
+.panel__orbs {
+  position: absolute;
+  right: 18px;
+  bottom: 22px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.panel__orbs > span {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: block;
+}
+
+/* ==========================================================================
+   Step view — the brief, the checklist and the verification for one step
+   ========================================================================== */
+
+.step {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  background: var(--terracotta);
+  color: #fff;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  animation: fade-in var(--dur-mid) var(--ease-calm) both;
+  overflow: hidden;
+}
+
+.step__art {
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  filter: saturate(0.5) blur(4px);
+}
+
+/* Scrim over the art so the brief and checklist stay clearly legible. */
+.step::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(123, 58, 34, 0.5) 0%,
+    rgba(138, 69, 39, 0.32) 40%,
+    rgba(123, 58, 34, 0.6) 100%
+  );
+}
+
+.step__top {
+  position: relative;
+  z-index: 2;
+  padding: 24px 34px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.step__eyebrow {
+  font-size: 19px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.step__scroll {
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.32) transparent;
+}
+
+.step__scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.step__scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--r-pill);
+  background-clip: content-box;
+  background-color: rgba(255, 255, 255, 0.32);
+}
+
+.step__inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 8px 40px 40px;
+}
+
+.step__kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.step__mins {
+  padding-left: 12px;
+  margin-left: 4px;
+  border-left: 1px solid rgba(255, 255, 255, 0.32);
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.step__title {
+  font-size: 40px;
+  font-weight: 700;
+  margin: 18px 0 0;
+  line-height: 1.14;
+  letter-spacing: -0.6px;
+}
+
+.step__brief {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.45;
+  margin: 14px 0 0;
+  opacity: 0.94;
+}
+
+.step__h {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin: 38px 0 14px;
+  opacity: 0.78;
+}
+
+.tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.task {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 15px 18px;
+  border-radius: var(--r-card);
+  background: rgba(255, 255, 255, 0.1);
+  text-align: left;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.task:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.task svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.task--done {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.task--done > span {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.verify {
+  margin-top: 26px;
+  padding: 20px 22px;
+  border-radius: var(--r-card);
+  background: rgba(20, 69, 59, 0.36);
+  box-shadow: inset 0 0 0 1px rgba(220, 239, 156, 0.3);
+}
+
+.verify__h {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.verify__p {
+  margin: 8px 0 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Inline code inside step prose, tasks and verification text. */
+.code {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.26);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.verify .code {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.verify__hint {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.step__foot {
+  position: relative;
+  z-index: 2;
+  padding: 20px 40px calc(20px + var(--safe-bottom, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: rgba(123, 58, 34, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.step__progress {
+  font-size: 18px;
+  font-weight: 600;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.step__done {
+  height: 54px;
+  padding: 0 34px;
+  border-radius: var(--r-pill);
+  background: var(--pink-cream);
+  color: var(--terracotta-deep);
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(60, 25, 15, 0.28);
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    background var(--dur-fast) var(--ease-calm);
+}
+
+.step__done:hover {
+  background: #fff;
+}
+
+.step__done:active {
+  transform: scale(0.98);
+}
+
+/* ------------------------------------------------- inline timebox (header) */
+
+.timebox {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px 6px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.timebox__btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pink-cream);
+  color: var(--terracotta-deep);
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.timebox__btn:hover {
+  transform: scale(1.08);
+}
+
+.timebox__meter {
+  width: 92px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+}
+
+.timebox__meter > i {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--lime);
+  transition: width 1s linear;
+}
+
+.timebox__time {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 46px;
+  text-align: right;
+}
+
+/* ------------------------------------------- standalone timebox (My Path) */
+
+.dial {
+  margin-top: 40px;
+  display: grid;
+  justify-items: center;
+}
+
+.dial__ring {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    circle,
+    rgba(156, 82, 54, 0.16) 0%,
+    rgba(156, 82, 54, 0.05) 60%,
+    transparent 72%
+  );
+  box-shadow: inset 0 0 0 2px rgba(156, 82, 54, 0.32);
+  color: var(--terracotta-deep);
+}
+
+/* The ring pulses only while the clock is running, as a peripheral cue. */
+.dial__ring:not(.dial__ring--paused) {
+  animation: pulse 2.4s var(--ease-calm) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 2px rgba(156, 82, 54, 0.32);
+  }
+  50% {
+    box-shadow: inset 0 0 0 5px rgba(156, 82, 54, 0.22);
+  }
+}
+
+.dial__time {
+  font-size: 46px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dial__play {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--terracotta);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(60, 25, 15, 0.24);
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.dial__play:hover {
+  transform: scale(1.05);
+}
+
+.dial__play:active {
+  transform: scale(0.96);
+}
+
+.dial__btn {
+  margin-top: 34px;
+}
+
+/* ==========================================================================
+   Resources
+   ========================================================================== */
+
+.res__h {
+  font-size: 38px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  letter-spacing: -0.6px;
+}
+
+.res__group {
+  font-size: 23px;
+  font-weight: 700;
+  margin: 34px 0 14px;
+}
+
+.res__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.res__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  text-align: left;
+  color: var(--terracotta-deep);
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    box-shadow var(--dur-fast) var(--ease-calm);
+}
+
+.res__item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(123, 58, 34, 0.14);
+}
+
+.res__item svg {
+  flex: none;
+}
+
+.res__item h4 {
+  font-size: 21px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.res__item p {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 2px 0 0;
+  opacity: 0.78;
+}
+
+.res__dur {
+  margin-left: auto;
+  font-size: 18px;
+  font-weight: 700;
+  opacity: 0.7;
+  flex: none;
+}
+
+/* ==========================================================================
+   Misc
+   ========================================================================== */
+
+.empty {
+  padding: 48px 0;
+  font-size: 21px;
+  font-weight: 500;
+  opacity: 0.72;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  background: var(--pink-soft);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--terracotta-deep);
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.chip:hover:not(:disabled) {
+  background: var(--rock-light);
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.chip--solid {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.chip--solid:hover:not(:disabled) {
+  background: var(--terracotta-deep);
+}
+
+.chiprow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 26px 0 0;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.list-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: var(--r-card);
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.list-card__t {
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.list-card__s {
+  font-size: 17px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.list-card__check {
+  margin-left: auto;
+  flex: none;
+}
+
+/* Notes stack their meta above a block of prose rather than sitting in a row. */
+.list-card--stack {
+  display: block;
+}
+
+.list-card__body {
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.field {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  resize: vertical;
+  font: inherit;
+  font-size: 21px;
+  font-weight: 500;
+  color: inherit;
+  outline: none;
+}
+
+.field--onDark {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+  font-size: 19px;
+}
+
+.field--onDark::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   End-of-world quiz
+   ========================================================================== */
+
+/* The quiz card inverts the step cards — pale fill, dark ink, set inline from the
+   world palette — so it reads as a checkpoint rather than another step. */
+.card--quiz .card__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.card__note {
+  margin: 10px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  opacity: 0.78;
+}
+
+/* A flat wash of the world ink under the quiz content, so pale option chips and
+   white type stay legible over the landscape behind. */
+.step__wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.quiz__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 8px 0 10px;
+}
+
+.quiz__count {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--rock-mid);
+}
+
+.quiz__count--onDark {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.quiz__meter {
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--pink-soft);
+  overflow: hidden;
+}
+
+.quiz__meter--onDark {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.quiz__meter > i {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--terracotta);
+  transition: width var(--dur-mid) var(--ease-calm);
+}
+
+.quiz__q {
+  font-size: 31px;
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.4px;
+  margin: 28px 0 22px;
+}
+
+.quiz__q--onDark {
+  color: #fff;
+}
+
+.quiz__opts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+/* Option chips on the dark quiz stage. The picked state is filled from the world
+   palette inline, and the icon changes too, so it never relies on colour alone. */
+.qopt {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 17px 20px;
+  border-radius: var(--r-card);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  text-align: left;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.qopt svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.qopt:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.qopt--picked:hover {
+  filter: brightness(1.04);
+}
+
+.quiz__nav {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.step__done--ghost {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  box-shadow: none;
+}
+
+.step__done--ghost:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.step__done:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.qreview__given {
+  margin: 8px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  opacity: 0.72;
+  text-decoration: line-through;
+}

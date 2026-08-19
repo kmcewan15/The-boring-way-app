@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Design tokens — palette and type derived from THE WAY reference screenshots,
+   scale retuned for a desktop window rather than a phone.
+   ========================================================================== */
+
+:root {
+  /* --- Pinks: the resting state of the app ------------------------------- */
+  --pink-bg: #fbe5e1; /* page background */
+  --pink-soft: #f7d8d1; /* pills, secondary cards */
+  --pink-cream: #fdede8; /* primary button fill, sidebar */
+  --pink-dim: #e6b8ae; /* inactive nav labels */
+
+  /* --- Terracotta: the primary brand colour ----------------------------- */
+  --terracotta: #9c5236; /* filled cards, active nav */
+  --terracotta-deep: #8a4527; /* headings on pink */
+  --terracotta-ink: #7b3a22; /* strongest text */
+  --rock-mid: #b4705a;
+  --rock-light: #d4a091;
+  --sand: #f6e7da;
+  --path-cream: #fbf4ea;
+
+  /* --- Greens: the "explore levels" world ------------------------------- */
+  --green-deep: #14453b;
+  --green-panel: #1c5044;
+  --teal-plant: #0f6d55;
+  --teal-light: #1b8a6b;
+  --lime: #dcef9c;
+
+  /* --- Type ------------------------------------------------------------- */
+  --font: 'Quicksand', ui-rounded, 'Segoe UI', system-ui, -apple-system,
+    sans-serif;
+
+  /* --- Radii: everything in this app is very round ---------------------- */
+  --r-pill: 999px;
+  --r-card: 18px;
+  --r-sheet: 30px;
+
+  /* --- Elevation -------------------------------------------------------- */
+  --shadow-card: 0 14px 40px rgba(123, 58, 34, 0.22);
+  --shadow-pill: 0 4px 14px rgba(123, 58, 34, 0.1);
+  --shadow-sheet: 0 -8px 30px rgba(123, 58, 34, 0.1);
+
+  /* --- Layout ----------------------------------------------------------- */
+  --side-w: 264px;
+  --card-w: 420px;
+  --read-w: 920px; /* max line length for text-heavy screens */
+  --sheet-h: 132px;
+
+  /* --- Motion: slow and calm, never snappy ------------------------------ */
+  --ease-calm: cubic-bezier(0.33, 0.02, 0.24, 1);
+  --dur-slow: 620ms;
+  --dur-mid: 380ms;
+  --dur-fast: 200ms;
+}
