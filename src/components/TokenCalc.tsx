@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 /* Price per million input tokens, from the cheapest current model to the most
    capable one. These two numbers are the only thing to change when Anthropic
@@ -28,16 +28,18 @@ function range(tokens: number) {
     is the point of the whole topic: the same question costs far more once the
     desk is full, because Claude re-reads the desk on every turn. */
 export default function TokenCalc() {
+  /* Unique even if a step ever carries two estimators. */
+  const id = `${useId()}-in`;
   const [text, setText] = useState('');
   const tokens = Math.ceil(text.trim().length / CHARS_PER_TOKEN);
 
   return (
     <div className="calc">
-      <label className="calc__label" htmlFor="calc-in">
+      <label className="calc__label" htmlFor={id}>
         Try it — type or paste anything
       </label>
       <textarea
-        id="calc-in"
+        id={id}
         className="calc__in"
         rows={3}
         value={text}

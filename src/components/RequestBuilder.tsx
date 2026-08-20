@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { IconCircleCheck, IconTerminal } from './Icons';
 
 /* The four parts, in the order they belong in a request. `prefix` is what the
@@ -39,6 +39,8 @@ type Key = (typeof PARTS)[number]['key'];
 /** Fill in the four parts, get a request back. Writing it out is the lesson —
     the empty box for "Done" is the one people notice they cannot fill. */
 export default function RequestBuilder() {
+  /* Ids must be unique even if a step ever carries two builders. */
+  const uid = useId();
   const [vals, setVals] = useState<Record<Key, string>>({
     result: '',
     done: '',
@@ -53,22 +55,36 @@ export default function RequestBuilder() {
   const request = lines.join('\n');
   const missing = PARTS.filter((p) => !vals[p.key].trim());
 
+  /* Clipboard is absent on an insecure origin, so hide the button rather than
+     offer one that cannot work. */
+  const canCopy = typeof navigator !== 'undefined' && !!navigator.clipboard;
+
+  /* Owned by an effect, so the label resets once and the timer is cleared if
+     the step closes first. */
+  useEffect(() => {
+    if (!copied) return;
+    const id = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(id);
+  }, [copied]);
+
+  /* Only say "Copied" once the write has actually resolved. */
   const copy = () => {
-    void navigator.clipboard.writeText(request);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(request).then(
+      () => setCopied(true),
+      () => setCopied(false),
+    );
   };
 
   return (
     <div className="rb">
       {PARTS.map((p) => (
         <div className="rb__field" key={p.key}>
-          <label className="rb__label" htmlFor={`rb-${p.key}`}>
+          <label className="rb__label" htmlFor={`${uid}-${p.key}`}>
             {p.label}
             <span className="rb__hint">{p.hint}</span>
           </label>
           <input
-            id={`rb-${p.key}`}
+            id={`${uid}-${p.key}`}
             className="rb__in"
             type="text"
             value={vals[p.key]}
@@ -91,10 +107,12 @@ export default function RequestBuilder() {
                 ? 'All four parts in. This one is hard to get wrong.'
                 : `Still missing: ${missing.map((p) => p.label).join(', ')}.`}
             </p>
-            <button type="button" className="rb__copy" onClick={copy}>
-              {copied ? <IconCircleCheck size={20} /> : null}
-              {copied ? 'Copied' : 'Copy'}
-            </button>
+            {canCopy && (
+              <button type="button" className="rb__copy" onClick={copy}>
+                {copied ? <IconCircleCheck size={20} /> : null}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -92,9 +92,17 @@ export default function StepBody({ blocks }: { blocks: Block[] }) {
               </div>
             );
 
+          /* The wrapper is focusable and named because below 1180px it scrolls
+             sideways, and a keyboard-only reader has to reach the last column. */
           case 'table':
             return (
-              <div className="tbl" key={i}>
+              <div
+                className="tbl"
+                key={i}
+                tabIndex={0}
+                role="region"
+                aria-label="Do and do not, by dimension. Scrolls sideways."
+              >
                 <table className="tbl__grid">
                   <thead>
                     <tr>

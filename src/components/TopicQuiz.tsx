@@ -199,7 +199,9 @@ export default function TopicQuiz({
                   <span className="finale__badge" aria-hidden="true">
                     <IconSparkles size={44} />
                   </span>
-                  <h2 className="finale__h">Congratulations</h2>
+                  {/* Not a heading: the score below is this view's h1, and a
+                      heading here would put an h2 above it. */}
+                  <p className="finale__h">Congratulations</p>
                   <p className="finale__p">You are AI ready.</p>
                 </div>
               )}

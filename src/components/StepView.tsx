@@ -186,9 +186,13 @@ export default function StepView({
       </div>
 
       <footer className="step__foot">
-        <span className="step__progress">
-          {step.tasks.length > 0 && `${ticked.filter(Boolean).length} of ${step.tasks.length} done`}
-        </span>
+        {/* Omitted entirely, not left empty: an empty flex item still takes the
+            footer gap and pushes the button off centre. */}
+        {step.tasks.length > 0 && (
+          <span className="step__progress">
+            {ticked.filter(Boolean).length} of {step.tasks.length} done
+          </span>
+        )}
         <button
           type="button"
           className="step__done"
