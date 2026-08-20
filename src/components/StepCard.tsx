@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Landscape } from '../art/landscapes';
 import { withAlpha } from '../art/landscapes';
 import type { Step } from '../data/curriculum';
@@ -24,7 +25,7 @@ interface Props {
   onStart?: () => void;
 }
 
-export default function StepCard({
+function StepCard({
   step,
   index,
   total,
@@ -84,3 +85,7 @@ export default function StepCard({
     </article>
   );
 }
+
+/* Nine cards are mounted at once and all of them re-render whenever the trail
+   moves. Only the few whose tier actually changed need to. */
+export default memo(StepCard);

@@ -292,10 +292,10 @@ button {
   z-index: 20;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  /* Proximity rather than mandatory: mandatory snapping yanks a whole step per
-     wheel tick, which turns the world-to-world colour morph into a jump. This
-     lets the scroll run freely and only settles when you stop near a step. */
-  scroll-snap-type: y proximity;
+  /* No CSS snapping. LearnScreen takes the wheel off this element and snaps to a
+     neighbouring step itself, always exactly one page, so snapping has nothing
+     left to correct. */
+  scroll-snap-type: none;
   scrollbar-width: none;
 }
 
@@ -305,7 +305,6 @@ button {
 
 .trail__page {
   height: 100%;
-  scroll-snap-align: start;
 }
 
 /* Cards are placed along the trail, not in the scroll flow */

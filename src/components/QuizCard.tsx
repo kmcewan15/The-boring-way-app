@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Landscape } from '../art/landscapes';
 import type { Topic } from '../data/curriculum';
 import { quizForTopic } from '../data/quiz';
@@ -7,7 +8,7 @@ import { IconCheckCircle, IconVerify } from './Icons';
 /* The checkpoint that closes out a world. Deliberately inverted against the step
    cards — pale fill, dark ink — so it reads as a different kind of thing on the
    trail rather than just another step. */
-export default function QuizCard({
+function QuizCard({
   topic,
   palette,
   mini = false,
@@ -72,3 +73,6 @@ export default function QuizCard({
     </article>
   );
 }
+
+/* Same reasoning as StepCard: stable props, so skip the scroll-driven renders. */
+export default memo(QuizCard);

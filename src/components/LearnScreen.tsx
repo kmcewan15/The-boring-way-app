@@ -51,6 +51,33 @@ const BLEND_TO = -0.4;
 /** Cards rendered either side of the focused one. Anything further is invisible. */
 const WINDOW = 4;
 
+/* One scroll, one step. The rail's native wheel scrolling is turned off entirely;
+   we read only the direction and snap to the neighbouring step.
+
+   The unit is the *gesture*, not the event and not the distance. A scroll is not
+   one wheel event: a flick fires a burst, and on a trackpad the momentum tail
+   keeps firing for up to a second after your fingers have left. So a gesture
+   yields exactly one step no matter how many events it contains or how far they
+   add up to, and the next step needs a new gesture.
+
+   A gesture ends when the wheel goes quiet for IDLE_MS. The exception is
+   NEW_PUSH_DELTA: momentum decays, so a late event that is still large is not
+   momentum, it is you pushing again -- without that, spinning a mouse wheel
+   quickly would be read as one long gesture and stall on a single step. */
+const IDLE_MS = 180;
+const NEW_PUSH_DELTA = 90;
+
+/* Ignore the wheel entirely for this long after a step. Long enough to outlast the
+   loud part of a flick, so a hard one still counts as a single scroll; it also caps
+   how fast a spun mouse wheel can walk, at roughly four steps a second. */
+const SNAP_PAUSE_MS = 220;
+
+/* How long the rail must be untouched before its position is believed over our
+   own record of where we are heading. Only there to recover if something outside
+   this component ever scrolls the rail; during a run of quick steps the rail lags
+   behind on purpose, and reading it then walked the trail backwards. */
+const RESYNC_IDLE_MS = 900;
+
 const LAST = JOURNEY.length - 1;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
@@ -65,7 +92,24 @@ export default function LearnScreen({
   const { cursor } = useApp();
   const cursorIndex = globalIndexOf(cursor.topic, cursor.step);
 
+  /* The whole stage, not just the rail: the caption banner and the focused card's
+     button sit above the rail and would otherwise swallow the wheel, so scrolling
+     with the pointer over them did nothing. */
+  const stageRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
+  /** Pending scroll read, so several events in one frame collapse into one. */
+  const frame = useRef<number | null>(null);
+  /* The step we are settled on, or snapping toward. Targets are worked out from
+     here, so the most we ever ask for is this ± 1 and a skip is impossible. */
+  const parked = useRef(cursorIndex);
+  /** No step before this moment. See SNAP_PAUSE_MS. */
+  const pausedUntil = useRef(0);
+  /** When the last wheel event arrived, to tell one gesture from the next. */
+  const lastWheelAt = useRef(0);
+  /** Whether the current gesture may still produce a step. One each. */
+  const armed = useRef(true);
+  /** When we last moved, so a lagging rail is not mistaken for a real position. */
+  const lastStepAt = useRef(0);
   /* Fractional scroll position in steps. Drives the palette blend and the
      parallax, so both move continuously rather than snapping per step. */
   const [scrollT, setScrollT] = useState(cursorIndex);
@@ -74,21 +118,112 @@ export default function LearnScreen({
   useEffect(() => {
     const rail = railRef.current;
     if (!rail) return;
+    /* Drop any queued read: it belongs to where we were, not where we are going. */
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current);
+      frame.current = null;
+    }
+    parked.current = cursorIndex;
     rail.scrollTo({ top: cursorIndex * rail.clientHeight, behavior: 'auto' });
     setScrollT(cursorIndex);
   }, [cursorIndex]);
 
+  /* Scroll fires far faster than the screen repaints, so coalesce to one read per
+     frame. Note this *reschedules* rather than bailing out while a read is
+     pending: bailing out dropped the final events of a snap, and since no further
+     event was coming, `scrollT` stayed stuck on a half-way value for good -- the
+     rail was in the right place but the cards, palette and parallax were frozen.
+     The last event must always win. */
   const onScroll = useCallback(() => {
-    const rail = railRef.current;
-    if (!rail || rail.clientHeight === 0) return;
-    setScrollT(rail.scrollTop / rail.clientHeight);
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
+      frame.current = null;
+      const rail = railRef.current;
+      if (!rail || rail.clientHeight === 0) return;
+      const live = rail.scrollTop / rail.clientHeight;
+      setScrollT(live);
+
+      /* Keep `parked` honest, but only once the rail has been left alone long
+         enough to have actually finished moving. Mid-run it trails our target by
+         design, and believing it then walked the trail backwards. */
+      if (performance.now() - lastStepAt.current > RESYNC_IDLE_MS) {
+        const rounded = Math.round(live);
+        if (Math.abs(live - rounded) < 0.02) parked.current = clamp(rounded, 0, LAST);
+      }
+    });
   }, []);
 
-  const scrollToStep = useCallback((i: number) => {
+  useEffect(
+    () => () => {
+      if (frame.current !== null) {
+        cancelAnimationFrame(frame.current);
+        /* Must be nulled, not just cancelled. StrictMode mounts, cleans up, then
+           mounts again; a stale handle left here made the read above think one was
+           already pending and skip every scroll from then on. */
+        frame.current = null;
+      }
+    },
+    [],
+  );
+
+  /* Snaps the rail to a step. Native smooth scrolling does the animation: it
+     still emits scroll events the whole way, which is what keeps the palette
+     morph continuous, and there is no tween of ours left to stall. */
+  const goTo = useCallback((i: number) => {
     const rail = railRef.current;
-    if (!rail) return;
-    rail.scrollTo({ top: clamp(i, 0, LAST) * rail.clientHeight, behavior: 'smooth' });
+    if (!rail || rail.clientHeight === 0) return;
+    const next = clamp(i, 0, LAST);
+    parked.current = next;
+    lastStepAt.current = performance.now();
+    rail.scrollTo({ top: next * rail.clientHeight, behavior: 'smooth' });
   }, []);
+
+  /* Take the wheel off the rail and drive it ourselves, one step at a time. */
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) return; // pinch-to-zoom is the browser's business
+      e.preventDefault();
+
+      /* Ignore jitter and sideways swipes: the trail only runs up and down. */
+      if (Math.abs(e.deltaY) < 1 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+      /* Firefox reports lines and some setups report pages, so normalise before
+         comparing against a pixel threshold. */
+      const rail = railRef.current;
+      const px =
+        e.deltaMode === 1
+          ? e.deltaY * 16
+          : e.deltaMode === 2
+            ? e.deltaY * (rail ? rail.clientHeight : 800)
+            : e.deltaY;
+
+      const now = performance.now();
+      const quiet = now - lastWheelAt.current >= IDLE_MS;
+      lastWheelAt.current = now;
+
+      /* Settling from the last step. This must come BEFORE re-arming, or the big
+         events still arriving from the burst that just stepped would re-arm the
+         gesture that already spent itself -- which made one hard flick step twice. */
+      if (now < pausedUntil.current) return;
+
+      /* A new gesture: either the wheel went quiet, or this event is too big to be
+         a decaying tail, which means you pushed again. */
+      if (quiet || Math.abs(px) >= NEW_PUSH_DELTA) armed.current = true;
+
+      /* This gesture has had its step. The rest of it moves nothing. */
+      if (!armed.current) return;
+
+      armed.current = false;
+      pausedUntil.current = now + SNAP_PAUSE_MS;
+      goTo(parked.current + (px > 0 ? 1 : -1));
+    };
+
+    stage.addEventListener('wheel', onWheel, { passive: false });
+    return () => stage.removeEventListener('wheel', onWheel);
+  }, [goTo]);
 
   const focus = clamp(Math.round(scrollT), 0, LAST);
 
@@ -99,11 +234,11 @@ export default function LearnScreen({
       const target = e.target as HTMLElement | null;
       if (target && /^(INPUT|TEXTAREA)$/.test(target.tagName)) return;
       e.preventDefault();
-      scrollToStep(e.key === 'ArrowDown' ? focus + 1 : focus - 1);
+      goTo(parked.current + (e.key === 'ArrowDown' ? 1 : -1));
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [focus, scrollToStep]);
+  }, [goTo]);
 
   /* The world boundary you are heading toward. Both the palette morph and the
      horizon island are driven off how far away it is, so they move together.
@@ -161,12 +296,32 @@ export default function LearnScreen({
   const focusTopic = focusEntry.topic;
   const focusPath = pathForTopic(focusTopic.number);
 
+  /* `memo` on the cards only holds if their props are referentially stable, and
+     an inline `() => onOpenEntry(i)` would be a fresh function on every render,
+     which would defeat it entirely. So: one cached callback per entry, reading
+     `onOpenEntry` through a ref so a new one never invalidates the cache. Bounded
+     by JOURNEY.length. */
+  const openRef = useRef(onOpenEntry);
+  useEffect(() => {
+    openRef.current = onOpenEntry;
+  }, [onOpenEntry]);
+
+  const starters = useRef(new Map<number, () => void>());
+  const starterFor = (i: number) => {
+    let fn = starters.current.get(i);
+    if (!fn) {
+      fn = () => openRef.current(i);
+      starters.current.set(i, fn);
+    }
+    return fn;
+  };
+
   const from = Math.max(0, focus - WINDOW);
   const to = Math.min(LAST, focus + WINDOW);
   const visible = JOURNEY.slice(from, to + 1);
 
   return (
-    <section className="trail">
+    <section className="trail" ref={stageRef}>
       {/* Landscape drifts as you move up the trail. Driven by the fractional
           position so it tracks the scroll rather than jumping per step. */}
       <div
@@ -197,7 +352,7 @@ export default function LearnScreen({
           <button
             type="button"
             className="pill fade-in"
-            onClick={() => scrollToStep(cursorIndex)}
+            onClick={() => goTo(cursorIndex)}
           >
             <IconChevronDown size={22} />
             Current step
@@ -239,7 +394,7 @@ export default function LearnScreen({
                   palette={LANDSCAPES[j.topic.biome]}
                   mini={!isFocused}
                   showCta={isFocused}
-                  onStart={() => onOpenEntry(j.globalIndex)}
+                  onStart={starterFor(j.globalIndex)}
                 />
               ) : (
                 <QuizCard
@@ -247,7 +402,7 @@ export default function LearnScreen({
                   palette={LANDSCAPES[j.topic.biome]}
                   mini={!isFocused}
                   showCta={isFocused}
-                  onStart={() => onOpenEntry(j.globalIndex)}
+                  onStart={starterFor(j.globalIndex)}
                 />
               )}
             </div>

@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { memo, useId } from 'react';
 
 /* ------------------------------------------------------------------ *
  * Hand-painted, gouache-style isometric floating island.
@@ -1123,7 +1123,7 @@ function SurfaceDecor({ biome, pal }: { biome: IslandBiome; pal: IslandPalette }
  * Main component
  * ------------------------------------------------------------------ */
 
-export default function FloatingIsland({
+function FloatingIsland({
   biome,
   className,
 }: {
@@ -1422,3 +1422,7 @@ export default function FloatingIsland({
     </svg>
   );
 }
+
+/* Props are a biome string and nothing else, so the island only rebuilds when
+   it actually changes world -- not on every frame of an approach. */
+export default memo(FloatingIsland);
