@@ -97,7 +97,10 @@ export default function App() {
               }
               /* Only move the cursor if they finished the step they were on. */
               if (openIndex === globalIndexOf(cursor.topic, cursor.step)) advance();
-              setOpenIndex(null);
+              /* Then open the next thing on the trail, so a run of steps costs
+                 one click each. At the very end there is nothing left to open. */
+              const next = (openIndex ?? 0) + 1;
+              setOpenIndex(next < JOURNEY.length ? next : null);
             }}
           />
         )}
@@ -112,6 +115,13 @@ export default function App() {
                  world, which is what makes the trail carry on. */
               if (openIndex === globalIndexOf(cursor.topic, cursor.step)) advance();
             }}
+            /* The quiz closes a topic, so the next entry is the first step of the
+               next one. Go straight there rather than back out to the trail. */
+            onNext={
+              openIndex !== null && openIndex + 1 < JOURNEY.length
+                ? () => setOpenIndex(openIndex + 1)
+                : undefined
+            }
           />
         )}
       </main>

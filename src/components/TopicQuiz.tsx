@@ -13,11 +13,15 @@ export default function TopicQuiz({
   topic,
   onClose,
   onFinish,
+  onNext,
 }: {
   topic: Topic;
   onClose: () => void;
   /** Called once with the result when the learner finishes. */
   onFinish: (r: { score: number; total: number; passed: boolean }) => void;
+  /** Opens the first step of the next topic. Absent on the last topic, where
+      there is nowhere further to go. */
+  onNext?: () => void;
 }) {
   const { topicQuizzes } = useApp();
   const previous = topicQuizzes[topic.number];
@@ -214,9 +218,9 @@ export default function TopicQuiz({
                   type="button"
                   className="step__done"
                   style={{ background: palette.sky, color: palette.foreDeep }}
-                  onClick={onClose}
+                  onClick={onNext ?? onClose}
                 >
-                  Back to the trail
+                  {onNext ? 'Start the next topic' : 'Back to the trail'}
                 </button>
               </div>
             </>

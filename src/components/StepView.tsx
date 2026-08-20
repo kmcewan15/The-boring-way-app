@@ -5,6 +5,8 @@ import { LANDSCAPES } from '../art/landscapes';
 import type { Step } from '../data/curriculum';
 import { useApp } from '../state/useApp';
 import { StepKindIcon } from './StepCard';
+import Rich from './Rich';
+import StepBody from './StepBody';
 import { IconCircle, IconCircleCheck, IconClose, IconPause, IconPlay } from './Icons';
 
 const KIND_LABEL: Record<Step['kind'], string> = {
@@ -13,25 +15,6 @@ const KIND_LABEL: Record<Step['kind'], string> = {
   verify: 'Verify',
   note: 'Write it down',
 };
-
-/** Renders `backticked` spans as inline code. The curriculum is full of commands
-    and filenames, so they need to look like commands rather than prose. */
-function Rich({ text }: { text: string }) {
-  const parts = text.split(/(`[^`]+`)/g);
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.length > 2 && part.startsWith('`') && part.endsWith('`') ? (
-          <code className="code" key={i}>
-            {part.slice(1, -1)}
-          </code>
-        ) : (
-          part
-        ),
-      )}
-    </>
-  );
-}
 
 function clock(total: number) {
   const m = Math.floor(Math.max(0, total) / 60);
@@ -149,6 +132,8 @@ export default function StepView({
             <Rich text={step.brief} />
           </p>
 
+          {step.body && step.body.length > 0 && <StepBody blocks={step.body} />}
+
           <h2 className="step__h">What you'll do</h2>
           <ul className="tasks">
             {step.tasks.map((t, i) => (
@@ -204,7 +189,7 @@ export default function StepView({
           className="step__done"
           onClick={() => onComplete(note.trim() || undefined)}
         >
-          {done ? 'Done — close' : 'Mark step complete'}
+          {done ? 'Next step' : 'Mark complete and continue'}
         </button>
       </footer>
     </div>

@@ -70,7 +70,11 @@ interface AppState {
   advance: () => void;
 }
 
-const STORAGE_KEY = 'boring-way:v2';
+/* Step ids come from position, so inserting a step re-points every id after it.
+   Bump this whenever the step sequence changes, to drop stale progress rather
+   than show someone a step they never did as complete.
+   v3: topic 6 gained a step on where a skill lives. */
+const STORAGE_KEY = 'boring-way:v3';
 
 interface Persisted {
   cursor: Cursor;

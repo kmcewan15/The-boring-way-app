@@ -6,6 +6,36 @@ import type { IslandBiome } from '../art/FloatingIsland';
 
 export type StepKind = 'read' | 'exercise' | 'verify' | 'note';
 
+/* The teaching content of a step, as a short scrollable document. The reader is
+   not a developer, so every block renders as a visually distinct thing rather
+   than as another paragraph in a wall of prose.
+
+   Backticked spans render as inline code in the prose fields — `p.text`,
+   `why.text`, `term.means`, `see.text` and `warn.text`, as well as in a step's
+   own `brief`, `tasks` and `verify`. They do not in `do.label`, `term.word` or
+   `video.title`, which are labels: write those as plain text or the backticks
+   appear on screen. */
+export type Block =
+  /** Plain prose. Keep it to two or three short sentences. */
+  | { t: 'p'; text: string }
+  /** Why this matters to the reader. Use sparingly — once per step at most. */
+  | { t: 'why'; text: string }
+  /** A word the reader may not know, defined in one line. */
+  | { t: 'term'; word: string; means: string }
+  /** Something to type, verbatim. `cmd` may be a command or a prompt. */
+  | { t: 'do'; label: string; cmd: string }
+  /** What appears on screen after the `do` above it. */
+  | { t: 'see'; text: string }
+  /** A mistake the reader is likely to make. */
+  | { t: 'warn'; text: string }
+  /** A do-and-don't comparison, one row per dimension. */
+  | {
+      t: 'table';
+      rows: Array<{ dimension: string; doThis: string; notThis: string }>;
+    }
+  /** A video slot. Renders as a labelled placeholder until `src` is filled in. */
+  | { t: 'video'; title: string; src?: string };
+
 export interface Step {
   id: string;
   title: string;
@@ -13,6 +43,8 @@ export interface Step {
   minutes: number;
   /** One or two sentences framing why the step matters. */
   brief: string;
+  /** The teaching content, shown between the brief and the task list. */
+  body?: Block[];
   /** What the learner actually does, in order. */
   tasks: string[];
   /** How they know it worked. Omitted for reading and note steps. */
@@ -253,39 +285,271 @@ const STEPS: RawStep[][] = [
   /* 6 — Teach Claude a Skill ---------------------------------------------- */
   [
     {
-      title: 'When a prompt should become a skill',
+      title: 'What a skill is',
       kind: 'read',
+      minutes: 4,
+      brief:
+        'A skill is a set of instructions you write down once and then call by name. It turns a prompt you keep retyping into something you run.',
+      body: [
+        {
+          t: 'p',
+          text: 'You have probably typed almost the same request to Claude more than once. Maybe you ask it to tidy the same report every Monday. Maybe you ask it for the same kind of summary every week.',
+        },
+        {
+          t: 'p',
+          text: 'Each time, you type the instructions again from memory. You leave out a detail. The answer comes back slightly different from last time.',
+        },
+        {
+          t: 'term',
+          word: 'Skill',
+          means: 'A set of instructions you write down once, then call by name.',
+        },
+        {
+          t: 'p',
+          text: 'Think of a recipe card. You write the recipe out one time. After that you only say the name of the dish.',
+        },
+        {
+          t: 'p',
+          text: 'A skill is a folder with one plain text file inside it. There is no code in it. You write it in ordinary English, and Claude reads it and follows the steps.',
+        },
+        {
+          t: 'p',
+          text: 'You can apply a skill globally, so it works in every project you open. Or you can apply it to one project, when the task only comes up in the project you are working on. Either way, you can share the skill with your colleagues, so the whole team does the same task the same way.',
+        },
+        {
+          t: 'p',
+          text: 'A skill pays off when three things are true. You repeat the task. The task has a clear finish. You can write the steps down in plain words.',
+        },
+        {
+          t: 'why',
+          text: 'Those three conditions are what make a skill effective. The instructions sit in a file instead of in your head, so the result comes back the same every time, you stop retyping it, and a colleague can run the same thing without asking you how.',
+        },
+        {
+          t: 'warn',
+          text: 'A skill is the wrong tool for a one-off job, and for anything that needs a judgement you cannot write down. Writing the file costs you ten minutes, so it only pays back on work you repeat.',
+        },
+        {
+          t: 'p',
+          text: 'The rule is simple. If you have typed roughly the same request three times, stop retyping it and write a skill.',
+        },
+        { t: 'video', title: 'What a skill is, in two minutes' },
+      ],
+      tasks: ['Find something boring that needs a clear, defined finish'],
+    },
+    {
+      title: 'Spot your boring task',
+      kind: 'exercise',
+      minutes: 7,
+      brief:
+        'Find the task you already do every day or every week, and that you could hand to a competent colleague with written instructions.',
+      body: [
+        {
+          t: 'p',
+          text: 'Do not pick your hardest task. Pick the one you are tired of. Your first skill should be small, dull, and something you do on a schedule.',
+        },
+        {
+          t: 'p',
+          text: 'A good candidate passes three tests. You do it at least weekly. You already know what a good result looks like. You could explain the whole task to a new colleague in under a minute.',
+        },
+        {
+          t: 'why',
+          text: 'You can judge the result of a boring task in seconds, because you have seen it a hundred times. That is what makes the first skill quick to get right — and it is why people who start with something ambitious give up.',
+        },
+        {
+          t: 'p',
+          text: 'Here are the kinds of tasks that work. Turning your rough notes into the same weekly update. Turning a meeting transcript into a list of actions. Checking a spreadsheet for the same five mistakes. Renaming and filing a batch of files the same way every time.',
+        },
+        {
+          t: 'p',
+          text: 'Start from evidence, not memory. Go back and read what you actually asked Claude for last week.',
+        },
+        { t: 'do', label: 'Reopen a past session', cmd: 'claude --resume' },
+        {
+          t: 'see',
+          text: 'A list of your recent sessions appears. Pick one, then scroll up and read your own requests. Look for the ones you typed more than twice, and the ones where you corrected Claude the same way each time.',
+        },
+        {
+          t: 'warn',
+          text: 'Leave out anything that needs a judgement call you cannot write down. A skill follows written instructions. It does not read your mind.',
+        },
+      ],
+      tasks: [
+        'Find something boring that you repeat every week',
+        'Check that it has a clear, defined finish',
+        "Write down what 'done' looks like, in one sentence",
+      ],
+    },
+    {
+      title: 'Write a good skill',
+      kind: 'exercise',
+      minutes: 12,
+      brief: "Write the instructions you'd give a competent colleague who has never done it before.",
+      body: [
+        {
+          t: 'p',
+          text: 'Write for a capable new colleague. They can do the work. They just do not know your habits, or what you call finished.',
+        },
+        {
+          t: 'p',
+          text: 'A skill is one file, called `SKILL.md`, in a folder named after the skill. Name it in lowercase words joined by hyphens, like `weekly-summary`.',
+        },
+        {
+          t: 'do',
+          label: 'A complete SKILL.md',
+          cmd: '---\ndescription: Turn my rough weekly notes into a status update.\n---\n\n1. Read the notes file I point you at.\n2. Group the notes by project.\n3. Write three bullets for each project.\n4. Keep the whole thing under 200 words.',
+        },
+        {
+          t: 'term',
+          word: 'Description',
+          means: 'The one line Claude reads to decide when your skill applies.',
+        },
+        {
+          t: 'p',
+          text: 'Write that line as a trigger, not a title. It decides whether your skill ever gets used.',
+        },
+        {
+          t: 'p',
+          text: 'You do not have to write the file yourself. Ask Claude, then read what it wrote.',
+        },
+        {
+          t: 'do',
+          label: 'Ask Claude to set it up',
+          cmd: 'Create a skill called weekly-summary.\nUse it when I ask for my weekly update.\nSteps: read my notes, group them by project,\nthree bullets each, under 200 words.',
+        },
+        {
+          t: 'warn',
+          text: 'Never write "make it good". Write what good means: the length, the order, the format.',
+        },
+        {
+          t: 'p',
+          text: 'Four things separate a skill people use from one that sits there.',
+        },
+        {
+          t: 'table',
+          rows: [
+            {
+              dimension: 'The description line',
+              doThis:
+                'List the words a real person would say when they need this, including the ones that never mention the obvious keyword.',
+              notThis:
+                'Write it like a filename, such as "PDF handling". A skill nobody triggers is a skill nobody has.',
+            },
+            {
+              dimension: 'What goes inside',
+              doThis:
+                'Only what Claude cannot guess: your exact format, the order of the steps, and one worked example.',
+              notThis:
+                'Repeat the task back at it. "Write clear professional copy" is the request, not the recipe.',
+            },
+            {
+              dimension: 'How long it is',
+              doThis:
+                'Keep the file to the path everyone takes. Put the rare exceptions in a separate file beside it.',
+              notThis:
+                'Pack everything in, so the once-a-year exception loads every time and buries what matters.',
+            },
+            {
+              dimension: 'Who keeps it true',
+              doThis:
+                'Give the skill the same owner as the task it describes, and update it when the task changes.',
+              notThis:
+                "Leave it unowned. A skill that teaches last year's steps is confidently wrong, in your name.",
+            },
+          ],
+        },
+        { t: 'video', title: 'Writing a skill file from scratch' },
+      ],
+      tasks: [
+        'Define your skill: the steps in order, and the answer you want back',
+        'Create it as `SKILL.md`, named in lowercase with hyphens',
+        'Write the description as a trigger, not a title',
+      ],
+    },
+    {
+      title: "Yours everywhere, or the team's",
+      kind: 'exercise',
       minutes: 6,
       brief:
-        "If you've written roughly the same prompt three times, it should be a skill: a named, reusable set of instructions.",
-      tasks: ['Read what a skill is and where it lives'],
-    },
-    {
-      title: 'Spot your repeated task',
-      kind: 'exercise',
-      minutes: 8,
-      brief: 'The best first skill is boring and frequent.',
-      tasks: [
-        'Look back over your recent prompts',
-        "Pick the one you've repeated most",
-        "Write down what 'done' looks like for it",
+        'A skill can live with you, with one project, or in the Claude app you use. Where you put it decides who gets it.',
+      body: [
+        {
+          t: 'p',
+          text: 'Where a skill lives decides who can use it. There are three homes, so choose on purpose.',
+        },
+        {
+          t: 'do',
+          label: 'Yours, in every project',
+          cmd: '~/.claude/skills/weekly-summary/SKILL.md',
+        },
+        {
+          t: 'p',
+          text: 'This one follows you. It works in every project on your machine, and nobody else gets it. Use it for skills about the way you work.',
+        },
+        {
+          t: 'do',
+          label: "The team's, in one project",
+          cmd: '.claude/skills/release-notes/SKILL.md',
+        },
+        {
+          t: 'p',
+          text: 'This one lives inside the project and goes into git with the code. Everyone on that project gets it, and it follows you nowhere else.',
+        },
+        {
+          t: 'p',
+          text: 'One question decides between those two. Is this skill about how you work, or about how this project works?',
+        },
+        {
+          t: 'p',
+          text: 'Both of those folders are for Claude Code. If you use Claude in the browser or in the desktop app, there are no folders at all. You upload the skill instead.',
+        },
+        {
+          t: 'p',
+          text: 'In the browser, open Customize, then Skills, then Upload a skill. In the desktop app, open Settings, then Skills. Both take the skill folder as a .zip file.',
+        },
+        {
+          t: 'why',
+          text: 'The same `SKILL.md` works in all three homes. Better still, an owner can upload a skill once under Organization settings, and everyone in the company gets it. That is the fastest way to make a whole team do a task the same way.',
+        },
+        {
+          t: 'warn',
+          text: 'Two traps. In the apps, someone has to switch on code execution and file creation for your organisation first, or an uploaded skill will not run. In Claude Code, if the same name sits in both folders, your personal one wins and the team version is ignored.',
+        },
       ],
-    },
-    {
-      title: 'Write the skill',
-      kind: 'exercise',
-      minutes: 15,
-      brief: "Write the instructions you'd give a competent colleague who has never done it before.",
       tasks: [
-        'Create the skill with a clear name and description',
-        'Spell out the steps and the output format',
+        'Decide whether the skill is about you, or about this project',
+        'Put it in the folder you chose, or upload it in the app you use',
+        'Share it so the team gets it',
       ],
+      verify: 'The skill runs in the place you chose, and its name is not used in the other folder.',
     },
     {
       title: 'Run it and fix the gaps',
       kind: 'verify',
-      minutes: 12,
+      minutes: 9,
       brief: 'The first run always reveals what you left in your head instead of in the file.',
+      body: [
+        {
+          t: 'p',
+          text: 'Now call the skill by name. Type a slash and the name you gave it.',
+        },
+        { t: 'do', label: 'Run your skill', cmd: '/weekly-summary' },
+        {
+          t: 'see',
+          text: 'Claude works through your file. Watch for the moment it guesses, or asks you a question that the file should have answered.',
+        },
+        {
+          t: 'p',
+          text: 'Read every question and every wrong turn as a gap in your writing. A question means a missing sentence. A wrong turn means a vague one. Go back to the file and fix it.',
+        },
+        {
+          t: 'p',
+          text: 'Then run it again. Keep going until two runs in a row need no extra help from you.',
+        },
+        {
+          t: 'why',
+          text: 'A skill you fixed twice is worth more than one you wrote perfectly once. The second clean run proves the instructions are complete — not just that you remembered the missing bits in the moment.',
+        },
+      ],
       tasks: [
         'Invoke the skill by name',
         'Note anything it got wrong',
