@@ -134,26 +134,31 @@ export default function StepView({
 
           {step.body && step.body.length > 0 && <StepBody blocks={step.body} />}
 
-          <h2 className="step__h">What you'll do</h2>
-          <ul className="tasks">
-            {step.tasks.map((t, i) => (
-              <li key={t}>
-                <button
-                  type="button"
-                  className={`task${ticked[i] ? ' task--done' : ''}`}
-                  aria-pressed={ticked[i]}
-                  onClick={() =>
-                    setTicked((prev) => prev.map((v, j) => (j === i ? !v : v)))
-                  }
-                >
-                  {ticked[i] ? <IconCircleCheck size={24} /> : <IconCircle size={24} />}
-                  <span>
-                    <Rich text={t} />
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {/* A step can be pure reading, with nothing to tick off. */}
+          {step.tasks.length > 0 && (
+            <>
+              <h2 className="step__h">What you'll do</h2>
+              <ul className="tasks">
+                {step.tasks.map((t, i) => (
+                  <li key={t}>
+                    <button
+                      type="button"
+                      className={`task${ticked[i] ? ' task--done' : ''}`}
+                      aria-pressed={ticked[i]}
+                      onClick={() =>
+                        setTicked((prev) => prev.map((v, j) => (j === i ? !v : v)))
+                      }
+                    >
+                      {ticked[i] ? <IconCircleCheck size={24} /> : <IconCircle size={24} />}
+                      <span>
+                        <Rich text={t} />
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           {step.verify && (
             <div className="verify">
@@ -182,7 +187,7 @@ export default function StepView({
 
       <footer className="step__foot">
         <span className="step__progress">
-          {ticked.filter(Boolean).length} of {step.tasks.length} done
+          {step.tasks.length > 0 && `${ticked.filter(Boolean).length} of ${step.tasks.length} done`}
         </span>
         <button
           type="button"

@@ -33,6 +33,10 @@ export type Block =
       t: 'table';
       rows: Array<{ dimension: string; doThis: string; notThis: string }>;
     }
+  /** The interactive token and cost estimator. Takes no content of its own. */
+  | { t: 'calc' }
+  /** The interactive four-part request builder. Takes no content of its own. */
+  | { t: 'builder' }
   /** A video slot. Renders as a labelled placeholder until `src` is filled in. */
   | { t: 'video'; title: string; src?: string };
 
@@ -565,31 +569,158 @@ const STEPS: RawStep[][] = [
     {
       title: 'Tokens, context, cost',
       kind: 'read',
-      minutes: 8,
-      brief:
-        'Everything Claude reads and writes costs tokens, and the context window is finite. Both cost and quality follow from what you put in it.',
-      tasks: ['Read the explanation of tokens and the context window'],
+      minutes: 3,
+      brief: 'A long chat gets worse, not better. Once you know why, the fix is free.',
+      body: [
+        {
+          t: 'p',
+          text: 'Talk to Claude long enough and it starts losing the plot. It forgets what you agreed. It repeats itself. It makes silly mistakes it was not making an hour ago.',
+        },
+        { t: 'p', text: 'Claude is not tired. The desk is full.' },
+        {
+          t: 'p',
+          text: 'Claude works at a desk. Everything you say, every file it opens, and every answer it writes goes on as another sheet of paper. The desk has a size. When it fills, the oldest sheets slide off the edge, and the one you needed may be the one that fell.',
+        },
+        {
+          t: 'term',
+          word: 'Context window',
+          means: "The size of Claude's desk.",
+        },
+        {
+          t: 'term',
+          word: 'Token',
+          means: 'How desk space is counted. A million tokens is about half a million words.',
+        },
+        {
+          t: 'term',
+          word: 'Cost',
+          means: 'The price of the paper. Writing costs about five times more than reading.',
+        },
+        {
+          t: 'p',
+          text: 'More is on that desk than you put there: every file Claude opens, every command it runs, your `CLAUDE.md`, and every skill and connector you have switched on. Your questions are the smallest sheets on it.',
+        },
+        {
+          t: 'term',
+          word: 'MCP server',
+          means:
+            'A connector. It is the medium between Claude and another system, like a ticket tracker or your calendar.',
+        },
+        {
+          t: 'p',
+          text: 'A connector reaches things Claude cannot, which is exactly why it takes room. One you switched on months ago and forgot has been paying rent on your desk ever since.',
+        },
+        {
+          t: 'why',
+          text: 'Anthropic says it plainly: as the desk fills, Claude starts forgetting instructions and making more mistakes. A clear desk is the cheapest upgrade you will ever get.',
+        },
+        {
+          t: 'p',
+          text: 'Someone pays for the paper, too. Claude re-reads the whole desk every time you press enter, so the bill follows the length of the chat, not the difficulty of the question.',
+        },
+        {
+          t: 'p',
+          text: 'Two habits fall out of that. Name the file you mean, or Claude goes hunting and stacks the desk high on the way. And write your project a map once, so every session starts knowing where things live instead of asking you again.',
+        },
+        { t: 'do', label: 'If you use Claude Code', cmd: '/context' },
+        {
+          t: 'see',
+          text: 'A coloured grid: what is on the desk, and how much room is left.',
+        },
+        {
+          t: 'warn',
+          text: 'When the desk is nearly full, Claude Code tidies it and swaps your history for a summary. A summary is not the original. The costly habit is not asking too much. It is never starting fresh.',
+        },
+      ],
+      tasks: [],
     },
     {
       title: 'Watch the context fill',
       kind: 'exercise',
-      minutes: 10,
+      minutes: 14,
       brief: 'See it happen in a real session rather than taking it on faith.',
-      tasks: [
-        'Start a session and do some real work',
-        'Notice what happens as the context fills up',
-        'Note what filled it fastest',
+      body: [
+        {
+          t: 'p',
+          text: 'You have read the theory. Now watch the desk fill up in one of your own sessions.',
+        },
+        { t: 'do', label: 'Before you ask anything', cmd: '/context' },
+        {
+          t: 'see',
+          text: 'A mostly empty grid. Note how much is already used before you have said a word. That part is your skills, your connectors and your `CLAUDE.md`.',
+        },
+        {
+          t: 'p',
+          text: 'Now do ten minutes of real work. Ask Claude to read some files. Let it run a few commands. Do not tidy up as you go.',
+        },
+        { t: 'do', label: 'After the work', cmd: '/context' },
+        {
+          t: 'see',
+          text: 'The same grid, much fuller, and now you can see which sheets took the room. It is almost never your questions.',
+        },
+        {
+          t: 'p',
+          text: 'Now put a number on it. Type the last thing you asked Claude into the box below, and compare the two bottom rows.',
+        },
+        { t: 'calc' },
+        {
+          t: 'why',
+          text: 'Reading that a full desk costs more is easy to nod along to. Watching your own session go from nearly empty to nearly full in ten minutes is the thing that actually changes how you work.',
+        },
+        {
+          t: 'warn',
+          text: 'No terminal? You can still do this. Work in one long chat until Claude forgets something you told it near the start, and note how far in that happened. That moment is the desk overflowing.',
+        },
+        { t: 'video', title: 'Watching the context fill in one session' },
       ],
-      verify: 'You can name the single biggest consumer of context in your session.',
+      tasks: [
+        'Run `/context` before you start, and note how full the desk already is',
+        'Do ten minutes of real work without tidying up',
+        'Run `/context` again and name what took the most room',
+      ],
     },
     {
       title: 'Three cheaper habits',
-      kind: 'note',
+      kind: 'read',
       minutes: 6,
       brief: 'Small habits beat clever optimisations.',
-      tasks: [
-        "Write down three things you'll do differently — e.g. name the files, start a fresh session per task",
+      body: [
+        {
+          t: 'p',
+          text: 'None of this needs a clever trick. Here are six small habits. Pick the three you will actually do.',
+        },
+        { t: 'do', label: 'Between two unrelated jobs', cmd: '/clear' },
+        {
+          t: 'p',
+          text: 'A clear desk. Your project map and your instructions stay. The conversation goes, and you can always go back to it later.',
+        },
+        { t: 'do', label: 'When you need the thread but not the clutter', cmd: '/compact' },
+        {
+          t: 'p',
+          text: 'Claude replaces the history with a summary and carries on. Use it inside one long job. Use `/clear` between two different ones.',
+        },
+        {
+          t: 'p',
+          text: 'Name the file or the folder you mean. A vague question makes Claude search, and searching is what fills the desk.',
+        },
+        {
+          t: 'p',
+          text: 'Index the project you are working in. Point Claude at the folder, and write the map of it once: what lives where, and how the thing is put together. Every session you open in that folder then starts knowing the layout, so you get better answers without repeating yourself.',
+        },
+        {
+          t: 'p',
+          text: 'Match the model to the job. A cheaper model is plenty for routine work, and you keep the expensive one for the work that needs it.',
+        },
+        {
+          t: 'p',
+          text: "Switch off the connectors you're not using this week. They sit on the desk every turn whether you use them or not, and a cluttered desk makes the model reach for the wrong thing.",
+        },
+        {
+          t: 'why',
+          text: 'Every one of these is free and takes seconds. Together they beat any clever prompt, because they change what Claude is looking at rather than how you ask.',
+        },
       ],
+      tasks: [],
     },
   ],
 
@@ -598,10 +729,57 @@ const STEPS: RawStep[][] = [
     {
       title: 'Result, done, tools, limits',
       kind: 'read',
-      minutes: 7,
+      minutes: 5,
       brief:
         'Four things make a request work: the result you want, how you will know it is done, what Claude may use, and what it must not touch.',
-      tasks: ['Read the four-part structure'],
+      body: [
+        {
+          t: 'p',
+          text: 'Most disappointing answers are not the model going wrong. They come from a request that never said what finished looks like.',
+        },
+        {
+          t: 'p',
+          text: 'Four parts fix that. Put them in and you get what you pictured. Leave them out and Claude fills the gaps with guesses.',
+        },
+        {
+          t: 'term',
+          word: 'Result',
+          means: 'What you want to end up with. A thing, not a topic.',
+        },
+        {
+          t: 'term',
+          word: 'Done',
+          means: 'How you will know it worked. The test you are going to apply.',
+        },
+        {
+          t: 'term',
+          word: 'Tools',
+          means: 'What Claude may use and touch to get there.',
+        },
+        {
+          t: 'term',
+          word: 'Limits',
+          means: 'What it must leave alone, however tempting.',
+        },
+        { t: 'p', text: 'Here is the same ask, twice.' },
+        { t: 'do', label: 'The vague version', cmd: 'Tidy up the expenses spreadsheet.' },
+        {
+          t: 'do',
+          label: 'The same ask, four parts',
+          cmd: 'Result: one row per expense, with a category on each.\nDone when: every row has a category and the total\n  still matches the old total.\nYou may use: the expenses sheet in this folder.\nDo not touch: the original file. Work on a copy.',
+        },
+        {
+          t: 'see',
+          text: 'The second one is hard to get wrong. You have said what to make, how you will check it, where to look, and what to leave alone.',
+        },
+        {
+          t: 'warn',
+          text: 'Done is the part everyone skips. It is also the only one that turns "looks about right" into "that is correct".',
+        },
+        { t: 'p', text: 'Your turn. Fill in the four boxes and the request writes itself.' },
+        { t: 'builder' },
+      ],
+      tasks: [],
     },
     {
       title: 'Rewrite a vague request',
@@ -630,88 +808,217 @@ const STEPS: RawStep[][] = [
     },
   ],
 
-  /* 9 — Never Trust a Change You Can't See -------------------------------- */
+  /* 9 — Beyond Text ------------------------------------------------------- */
   [
     {
-      title: 'The loop',
-      kind: 'read',
-      minutes: 6,
-      brief:
-        'Know the state before. See exactly what changed. Prove it still works. Then commit. Skipping a stage is where the bad afternoons come from.',
-      tasks: ['Read the four stages'],
-    },
-    {
-      title: 'Baseline, then change',
-      kind: 'exercise',
-      minutes: 10,
-      brief: 'Start from a known-clean state so that the diff actually means something.',
-      tasks: ['Get your working tree clean and committed', 'Ask Claude for a change'],
-      verify: 'You started from a clean tree, so everything in the diff came from this task.',
-    },
-    {
-      title: 'Diff and verify',
-      kind: 'exercise',
-      minutes: 14,
-      brief: 'Read every line of the diff. Then run the thing.',
-      tasks: [
-        'Read the full diff, not the summary of it',
-        'Run the tests, or run the app',
-        "Question anything you didn't ask for",
-      ],
-      verify: 'You have read every changed line, and the thing actually runs.',
-    },
-    {
-      title: 'Commit it',
-      kind: 'exercise',
-      minutes: 6,
-      brief: 'A commit is the checkpoint that makes the next change safe to attempt.',
-      tasks: ['Write a message that says why, not just what', 'Commit'],
-      verify: 'Your tree is clean again and you could revert this change with one command.',
-    },
-  ],
-
-  /* 10 — Your First Boring Hack ------------------------------------------- */
-  [
-    {
-      title: 'Why boring is the point',
+      title: 'What it can do beyond text',
       kind: 'read',
       minutes: 5,
       brief:
-        'The best first automation is a small, dull task you do often. Boring tasks have clear definitions of done, which is exactly what makes them work.',
-      tasks: ['Read the brief on choosing well'],
-    },
-    {
-      title: 'Pick something boring',
-      kind: 'exercise',
-      minutes: 10,
-      brief:
-        "Something you do weekly, that takes under an hour, and that you'd notice if it went wrong.",
-      tasks: ['List three candidates', 'Pick the dullest one'],
-    },
-    {
-      title: 'Spec it properly',
-      kind: 'exercise',
-      minutes: 12,
-      brief: 'Use the four parts: result, done, tools, limits.',
-      tasks: ['Write the spec before you open Claude', 'State what must not change'],
-    },
-    {
-      title: 'Build it with the loop',
-      kind: 'exercise',
-      minutes: 25,
-      brief: 'Baseline, diff, verify, commit. Use your CLAUDE.md. Use a skill if one fits.',
-      tasks: ['Work in small steps', 'Read every diff', 'Commit at each working point'],
-      verify: 'The thing works, and every change has been reviewed and committed.',
-    },
-    {
-      title: 'Write it up',
-      kind: 'note',
-      minutes: 10,
-      brief: 'Share what you learned so the next person starts further along than you did.',
-      tasks: [
-        'Write a short note: what you built, what surprised you, what you would do differently',
-        'Share it with your team',
+        'Text in, text out is the baseline. The rest changes the answer to a better question: is Claude even the right tool for this job?',
+      body: [
+        {
+          t: 'p',
+          text: 'Most people only ever type and read. These four are the ones worth knowing about, because each one moves a job from "Claude tells me how" to "Claude does it".',
+        },
+        {
+          t: 'term',
+          word: 'Web search',
+          means:
+            'Looks things up as they are now, not as they were when it was trained. It tells you what it found and where.',
+        },
+        {
+          t: 'term',
+          word: 'Files it makes',
+          means:
+            'Real spreadsheets, documents, slides and PDFs that you download and open. Not a description of one.',
+        },
+        {
+          t: 'term',
+          word: 'Artifacts',
+          means:
+            'Small working things built in front of you: a calculator, a chart, a one-page tool. They run beside the conversation.',
+        },
+        {
+          t: 'term',
+          word: 'Connectors',
+          means:
+            'Links to services you already use, so Claude works with your real calendar, files or tickets instead of a description of them. Topic 7 called one of these an MCP server.',
+        },
+        {
+          t: 'p',
+          text: 'Nearly all of this lives in the browser and the desktop app, not the terminal. Web search and file making are not in Claude Code at all. Web search also starts switched off, so if you cannot see it, that is a setting rather than a missing feature.',
+        },
+        {
+          t: 'warn',
+          text: 'Features change often, and Claude does not know which ones it has today. Ask it and you get an answer from what it learned during training, which is already out of date. Check the help pages, or ask whoever runs your account.',
+        },
       ],
+      tasks: [],
+    },
+    {
+      title: 'Make a real file',
+      kind: 'exercise',
+      minutes: 8,
+      brief: 'Ask for the thing itself, not a description of the thing.',
+      body: [
+        {
+          t: 'p',
+          text: 'The quickest way to feel the difference is to make Claude hand you something you can open.',
+        },
+        {
+          t: 'p',
+          text: "Find a small pile of messy data. Last month's expenses, a list of sign-ups, notes from three meetings. Anything untidy and real.",
+        },
+        {
+          t: 'do',
+          label: 'Ask for the file, not a description of it',
+          cmd: 'Turn this into a spreadsheet with the totals worked out.\nGive me the file to download.',
+        },
+        {
+          t: 'see',
+          text: 'A file appears in the conversation with a download button. Download it and open it. The sums are already done.',
+        },
+        {
+          t: 'warn',
+          text: 'The common mistake is accepting a table in the chat window instead. A table you have to copy out by hand is not a spreadsheet. Ask again, and say you want the file.',
+        },
+        {
+          t: 'why',
+          text: 'This is the line between Claude describing your work and Claude doing it. Once you have opened one file it made, you stop asking for instructions you then have to follow yourself.',
+        },
+      ],
+      tasks: [
+        'Find a small pile of messy data',
+        'Ask for a real file, not a table in the chat',
+        'Download it and open it',
+      ],
+      verify: 'You have a file on your machine that Claude made, with the work already done in it.',
+    },
+    {
+      title: 'Which tasks need live information',
+      kind: 'note',
+      minutes: 4,
+      brief: 'One judgement, and it decides which tool you reach for.',
+      body: [
+        {
+          t: 'p',
+          text: 'Some of your work needs the world as it is today: prices, a rival\'s website, this week\'s numbers, anything that changed after the model was trained. That work needs search switched on, or it needs you.',
+        },
+        {
+          t: 'p',
+          text: 'Most of your work does not. Rewriting, summarising, tidying, formatting, drafting. The material is already in front of it.',
+        },
+        {
+          t: 'why',
+          text: 'Knowing which is which prevents both mistakes: trusting a confident answer about something current, and reaching for a search you never needed.',
+        },
+      ],
+      tasks: [
+        'Write down two of your tasks that need current information',
+        'Write down two that do not',
+      ],
+    },
+  ],
+
+  /* 10 — Think Before You Paste ------------------------------------------- */
+  [
+    {
+      title: 'The rule',
+      kind: 'read',
+      minutes: 4,
+      brief: 'One line will keep you out of most trouble. Three specifics follow from it.',
+      body: [
+        {
+          t: 'p',
+          text: 'This part is short. It is not optional. The rest of the course is about getting more out of Claude. This is about not creating a problem while you do it.',
+        },
+        {
+          t: 'term',
+          word: 'The rule',
+          means:
+            'Do not put anything into Claude that you would not put into a Google search.',
+        },
+        { t: 'p', text: 'Three specifics follow from it.' },
+        {
+          t: 'term',
+          word: 'Client and confidential information',
+          means:
+            "Find out what your organisation's policy actually is, not what you assume it is. Ask before you paste.",
+        },
+        {
+          t: 'term',
+          word: "Other people's personal data",
+          means:
+            'Names, health details, salaries, performance issues. Anything about someone who did not agree to it. Take it out, or leave it out.',
+        },
+        {
+          t: 'term',
+          word: 'Credentials',
+          means: 'Never paste a password, a key, or an access token. Not anywhere, not once.',
+        },
+        {
+          t: 'warn',
+          text: 'The rule is a floor, not a ceiling. Plenty of people search for things they would not want read back to them, so it does not excuse a bad decision.',
+        },
+      ],
+      tasks: [],
+    },
+    {
+      title: 'Find your actual policy',
+      kind: 'exercise',
+      minutes: 8,
+      brief: 'Most people follow the policy they assume exists. Go and read the real one.',
+      body: [
+        {
+          t: 'p',
+          text: 'Most people follow a policy they have never read. They follow the version they imagine, which is usually too strict in the places that do not matter and too loose in the ones that do.',
+        },
+        {
+          t: 'p',
+          text: 'So go and find the real one. It takes ten minutes once, and then you stop guessing every time you paste something.',
+        },
+        {
+          t: 'p',
+          text: 'Come back with three things. Which AI tools are approved for work. What you are allowed to put into them. Whether there is a company account, and whether its terms differ from the free version.',
+        },
+        {
+          t: 'why',
+          text: 'The terms are the whole point. A company account and a free personal one can handle your text very differently, and that difference is exactly what your policy turns on.',
+        },
+        {
+          t: 'warn',
+          text: 'If you cannot find a written policy, that is an answer too. Ask your manager, or whoever owns data protection, and get the answer in writing.',
+        },
+      ],
+      tasks: [
+        "Find your organisation's written policy on AI tools",
+        'Write down which tools are approved, and what you may put in them',
+        'If you cannot find it, ask someone who would know',
+      ],
+      verify:
+        'You can name the tool you are allowed to use, and one thing you are not allowed to put in it.',
+    },
+    {
+      title: 'Whose work is it',
+      kind: 'read',
+      minutes: 4,
+      brief: 'Two things follow the work, not the tool.',
+      body: [
+        {
+          t: 'p',
+          text: 'Attribution. The norms differ. Some places expect you to say when AI helped. Some do not care at all. Academic and regulated settings often have firm rules. When you are not sure, ask first rather than find out afterwards.',
+        },
+        {
+          t: 'p',
+          text: 'Ownership. You are responsible for what you send, whatever produced it. If it goes out with your name on it, it is yours.',
+        },
+        {
+          t: 'why',
+          text: '"The AI wrote it" has never once worked as a defence. Read it before you send it, the same as you would anything else with your name on it.',
+        },
+      ],
+      tasks: [],
     },
   ],
 ];
@@ -784,15 +1091,15 @@ const TOPIC_META: Array<{
     accentInk: '#14453B',
   },
   {
-    title: "Never Trust a Change You Can't See",
-    goal: 'Build the baseline → diff → verify → commit habit until it is automatic',
+    title: 'Beyond Text',
+    goal: 'Know what Claude can do besides write back to you, and which of your tasks needs live information',
     biome: 'tundra',
     accent: '#C9E4E7',
     accentInk: '#2A4B50',
   },
   {
-    title: 'Your First Boring Hack',
-    goal: 'Put all of it together on something real, small and genuinely useful to you',
+    title: 'Think Before You Paste',
+    goal: "Know what you must never put into an AI tool, and find out what your own organisation actually allows",
     biome: 'blossom',
     accent: '#FBD9E3',
     accentInk: '#7A3A52',
@@ -815,7 +1122,7 @@ export const TOPICS: Topic[] = TOPIC_META.map((meta, i) => ({
 export const PATHS: LearningPath[] = [
   { number: 1, name: 'Foundations', topicNumbers: [1, 2, 3, 4] },
   { number: 2, name: 'Making It Yours', topicNumbers: [5, 6, 7] },
-  { number: 3, name: 'Shipping With Confidence', topicNumbers: [8, 9, 10] },
+  { number: 3, name: 'Using It Well', topicNumbers: [8, 9, 10] },
 ];
 
 export function pathForTopic(topicNumber: number): LearningPath {

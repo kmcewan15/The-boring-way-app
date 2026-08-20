@@ -1,5 +1,7 @@
 import type { Block } from '../data/curriculum';
 import Rich from './Rich';
+import RequestBuilder from './RequestBuilder';
+import TokenCalc from './TokenCalc';
 import { IconPlay, IconTerminal } from './Icons';
 
 /** A video that has not been recorded yet. Shows which video belongs here so the
@@ -119,6 +121,12 @@ export default function StepBody({ blocks }: { blocks: Block[] }) {
                 </table>
               </div>
             );
+
+          case 'calc':
+            return <TokenCalc key={i} />;
+
+          case 'builder':
+            return <RequestBuilder key={i} />;
 
           case 'video':
             return <VideoSlot key={i} title={b.title} src={b.src} />;

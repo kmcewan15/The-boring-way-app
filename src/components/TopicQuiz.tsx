@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import TrailScape from '../art/TrailScape';
 import { LANDSCAPES } from '../art/landscapes';
-import type { Topic } from '../data/curriculum';
+import { TOTAL_TOPICS, type Topic } from '../data/curriculum';
 import { quizForTopic, scoreTopicQuiz, type TopicQuizOutcome } from '../data/quiz';
 import { useApp } from '../state/useApp';
-import { IconCircle, IconCircleCheck, IconClose, IconVerify } from './Icons';
+import Confetti from './Confetti';
+import { IconCircle, IconCircleCheck, IconClose, IconSparkles, IconVerify } from './Icons';
 
 /* The end-of-world checkpoint. Uses the same full-stage shell as a step so that
    opening it from the trail feels the same, but the surface is the world's own
@@ -58,6 +59,9 @@ export default function TopicQuiz({
 
   const question = questions[at];
   const picked = answers[at];
+  /* The last quiz in the journey closes the whole course, so it gets a finish
+     line rather than just a score. */
+  const finished = outcome !== null && topic.number === TOTAL_TOPICS;
 
   return (
     <div className="step" role="dialog" aria-modal="true" aria-label={`Topic ${topic.number} quiz`}>
@@ -69,6 +73,8 @@ export default function TopicQuiz({
         aria-hidden="true"
         style={{ background: palette.foreDeep }}
       />
+
+      {finished && <Confetti />}
 
       <header className="step__top">
         <button type="button" className="card__action" onClick={onClose} aria-label="Close quiz">
@@ -188,6 +194,16 @@ export default function TopicQuiz({
           {/* ---------------------------------------------------- result */}
           {outcome && (
             <>
+              {finished && (
+                <div className="finale">
+                  <span className="finale__badge" aria-hidden="true">
+                    <IconSparkles size={44} />
+                  </span>
+                  <h2 className="finale__h">Congratulations</h2>
+                  <p className="finale__p">You are AI ready.</p>
+                </div>
+              )}
+
               <div className="step__kind">
                 <IconVerify size={22} />
                 {outcome.passed ? 'Passed' : 'Worth another look'}

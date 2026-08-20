@@ -1455,6 +1455,282 @@ button {
   border-bottom: none;
 }
 
+/* The token and cost estimator. */
+.calc {
+  margin: 0 0 20px;
+  padding: 20px 22px;
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.calc__label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.78;
+}
+
+.calc__in {
+  width: 100%;
+  padding: 13px 15px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  color: inherit;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.calc__in::placeholder {
+  color: inherit;
+  opacity: 0.5;
+}
+
+.calc__in:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.calc__out {
+  margin: 16px 0 0;
+}
+
+.calc__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.calc__row dt {
+  font-size: 17px;
+  font-weight: 500;
+  opacity: 0.86;
+}
+
+.calc__row dd {
+  margin: 0;
+  flex: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* The row that carries the lesson, so it should not read like the others. */
+.calc__row--punch dd {
+  color: var(--lime);
+}
+
+.calc__note {
+  margin: 14px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  opacity: 0.7;
+}
+
+/* The four-part request builder. */
+.rb {
+  margin: 0 0 20px;
+  padding: 20px 22px;
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.rb__field + .rb__field {
+  margin-top: 14px;
+}
+
+.rb__label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 7px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.rb__hint {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.62;
+}
+
+.rb__in {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  color: inherit;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.rb__in::placeholder {
+  color: inherit;
+  opacity: 0.45;
+}
+
+.rb__in:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.rb__out {
+  margin-top: 20px;
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.rb__outLabel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px;
+  background: rgba(255, 255, 255, 0.09);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  opacity: 0.86;
+}
+
+.rb__cmd {
+  margin: 0;
+  padding: 16px 18px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.rb__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 18px 16px;
+}
+
+.rb__status {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0.72;
+}
+
+.rb__copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 16px;
+  font-weight: 700;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.rb__copy:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* ==========================================================================
+   Finish line — the last quiz in the journey only.
+   ========================================================================== */
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  /* Decoration must never block the buttons underneath it. */
+  pointer-events: none;
+}
+
+.confetti__bit {
+  position: absolute;
+  top: -8%;
+  border-radius: 2px;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.confetti__bit--round {
+  border-radius: 50%;
+}
+
+@keyframes confetti-fall {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(var(--drift), 118vh, 0) rotate(var(--spin));
+  }
+}
+
+.finale {
+  margin: 0 0 30px;
+  padding: 26px 24px 28px;
+  border-radius: var(--r-sheet);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  text-align: center;
+}
+
+.finale__badge {
+  display: inline-grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  margin-bottom: 12px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.finale__h {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.finale__p {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+/* A celebration should never be the reason someone feels unwell. */
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+}
+
 /* Video, and the placeholder that stands in until one is recorded. */
 .vid {
   margin: 0 0 20px;
