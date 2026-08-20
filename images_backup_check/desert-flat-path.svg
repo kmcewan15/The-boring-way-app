@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Flat desert path</title>
+  <desc id="desc">A winding pale path crosses a warm, simplified desert between mesas.</desc>
+
+  <rect width="1600" height="900" fill="#F6DDD0"/>
+  <circle cx="1245" cy="150" r="68" fill="#FFF0D3"/>
+
+  <path d="M0 605C130 390 285 230 465 230c155 0 255 147 286 375H0Z" fill="#A55339"/>
+  <path d="M700 605c78-203 210-334 361-334 183 0 328 153 382 334H700Z" fill="#DA9869"/>
+  <path d="M0 590c254-61 435-16 623 1 286 27 590-64 977 15v294H0Z" fill="#F0D9B9"/>
+
+  <path d="M855 386c-57 79-21 147-79 209-52 55 16 96 104 142 104 54 145 100 157 163H1375c-18-102-105-164-214-225-91-50-204-91-196-143 9-55 61-93 40-146-22-55-96-54-150 0Z" fill="#FFF4DF"/>
+  <path d="M994 555c-9 38 80 88 169 139 106 61 178 120 193 206h-75c-32-85-102-143-207-202-94-54-157-95-150-143 7-46 50-82 34-125 18 42 46 74 36 125Z" fill="#F8E6C9" opacity=".72"/>
+
+  <g fill="#2E7258">
+    <path d="M185 705c-21 0-34-18-34-40v-133c0-26 16-42 35-42s35 16 35 42v45c13-14 34-10 34 10v26c0 18-14 29-29 29h-5v23c0 22-14 40-36 40Zm-34-96c-11-18-35-21-46-7-11 15-5 34 12 39l34 10v-42Z"/>
+    <path d="M1360 676c-16 0-26-13-26-30v-85c0-18 11-29 26-29s26 11 26 29v25c9-9 23-7 23 8v16c0 12-9 19-20 19h-3v17c0 17-10 30-26 30Z"/>
+  </g>
+  <g fill="#94503A">
+    <ellipse cx="271" cy="810" rx="30" ry="14"/>
+    <ellipse cx="335" cy="836" rx="19" ry="10"/>
+    <ellipse cx="1458" cy="790" rx="33" ry="15"/>
+  </g>
+</svg>

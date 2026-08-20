@@ -1,0 +1,27 @@
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dfe9e6"/>
+      <stop offset="100%" stop-color="#c9d6d1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="600" fill="url(#sky)"/>
+
+  <!-- the journey: a single road winding away into the distance, narrow/far at top, wide/near at bottom -->
+  <path d="M188,20
+           C150,90 170,150 110,220
+           C60,280 130,330 70,400
+           C20,460 90,500 60,580
+           L260,580
+           C220,500 290,460 240,400
+           C190,330 260,280 210,220
+           C150,150 170,90 212,20
+           Z"
+        fill="#e9d9ad"/>
+
+  <!-- dashed centerline, spacing widens as the road gets nearer -->
+  <path d="M200,30 C165,95 190,155 130,222 C80,282 150,332 90,402 C45,458 110,502 92,578"
+        fill="none" stroke="#b99a5b" stroke-width="4" stroke-dasharray="4 10 6 16 8 22 10 26"
+        stroke-linecap="round" opacity="0.8"/>
+</svg>
