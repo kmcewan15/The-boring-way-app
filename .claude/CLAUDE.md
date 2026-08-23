@@ -90,10 +90,22 @@ rather than content that silently fails to render.
 Two blocks are interactive widgets with no content of their own: `{ t: 'calc' }`
 (`TokenCalc.tsx`) and `{ t: 'builder' }` (`RequestBuilder.tsx`).
 
+`{ t: 'track' }` is a container: a labelled collapsible holding nested `Block[]`,
+used only in topic 1 for the terminal-versus-VS-Code split. `BlockView` in
+`StepBody.tsx` recurses into it. Keep `why` and `warn` out of tracks — both emit
+a fixed `<h2>`, so one per branch duplicates a heading.
+
+**`docs/authoring-lessons.md` is the content style guide** — block ordering
+rules, per-`kind` templates, the `handover/` mini project that topics 2–5 share,
+and the video budget per topic. Read it before writing step content. 33 of 36
+steps have a `body`; topic 8 (3 steps) is the only gap.
+
 Backticks render as inline code via `Rich.tsx`, but **only in prose fields** —
-`p.text`, `why.text`, `term.means`, `see.text`, `warn.text`, and a step's own
-`brief`, `tasks` and `verify`. In `do.label`, `term.word` and `video.title` the
-backticks appear literally on screen.
+`p.text`, `why.text`, `term.means`, `see.text`, `warn.text`, all three `table`
+cell fields, and a step's own `brief`, `tasks` and `verify`. In `do.label`,
+`do.cmd`, `term.word`, `track.label` and `video.title` the backticks appear
+literally on screen. The `Block` union's own doc comment omits the `table`
+fields — it is wrong, the code is right.
 
 Quizzes live in `src/data/quiz.ts`, keyed by topic number, three questions each.
 Nothing is gated on the score — a wrong answer only changes the wording and

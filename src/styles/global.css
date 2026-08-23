@@ -1455,6 +1455,70 @@ button {
   border-bottom: none;
 }
 
+/* Two ways to do the same step: terminal or extension. A collapsible so a
+   reader can fold away the half that is not theirs. Open by default — hiding
+   content behind a click in a learning app loses people. */
+.track {
+  margin: 0 0 16px;
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+
+.track__sum {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  cursor: pointer;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Safari draws its own disclosure triangle without this. */
+.track__sum::-webkit-details-marker {
+  display: none;
+}
+
+.track__sum:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.track__sum:focus-visible {
+  outline: 2px solid var(--path-cream);
+  outline-offset: -2px;
+}
+
+.track__label {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--rock-light);
+}
+
+.track__chev {
+  flex: none;
+  opacity: 0.75;
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.track[open] .track__chev {
+  transform: rotate(180deg);
+}
+
+.track__body {
+  padding: 18px 20px 4px;
+}
+
+/* The nested blocks already carry their own bottom margin, so the last one
+   would otherwise double up with the panel padding. */
+.track__body > *:last-child {
+  margin-bottom: 14px;
+}
+
 /* The token and cost estimator. */
 .calc {
   margin: 0 0 20px;
