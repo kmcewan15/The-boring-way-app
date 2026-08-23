@@ -87,7 +87,44 @@ const STEPS: RawStep[][] = [
       kind: 'read',
       minutes: 5,
       brief:
-        'Claude Code is a terminal agent, not a website. It runs on your machine, in a folder you choose, and it can read and change the files in it.',
+        'Claude Code is an agent that runs in your terminal, not on a website. It runs on your machine, in a folder you choose, and it can read and change the files in it.',
+      body: [
+        {
+          t: 'p',
+          text: 'You have probably used Claude in a browser tab. You describe a problem, it writes something back, and you copy the answer into wherever it actually needed to go.',
+        },
+        {
+          t: 'p',
+          text: 'Claude Code is not that. It runs on your own machine, in one folder you choose, and it opens and changes the files in that folder itself. There is no copying back.',
+        },
+        {
+          t: 'term',
+          word: 'Terminal',
+          means: 'The text window on your computer where you type commands instead of clicking. Claude Code lives here.',
+        },
+        {
+          t: 'term',
+          word: 'Agent',
+          means: 'An AI model that can do more than just chat, it can read, write and run things.',
+        },
+        {
+          t: 'term',
+          word: 'Working directory',
+          means: 'The single folder you started Claude in. It is the whole of what Claude can see.',
+        },
+        {
+          t: 'p',
+          text: 'Nothing is uploaded. Your files stay where they are and Claude comes to them, which is the opposite of how a browser chat works. It is not a website, not a browser extension, and not a server you send your work to.',
+        },
+        {
+          t: 'why',
+          text: 'Every other topic rests on this one idea. Claude is standing in your folder looking at your real material, so its answers are about your work rather than a generic example. Its mistakes land on your real files for the same reason.',
+        },
+        {
+          t: 'warn',
+          text: 'Running on your machine is not the same as running unsupervised. Claude asks before it changes anything, and topic 3 is about keeping that habit rather than clicking through it.',
+        },
+      ],
       tasks: [
         'Read the one-page overview',
         'Note the difference between Claude in a browser and Claude in your terminal',
@@ -98,6 +135,34 @@ const STEPS: RawStep[][] = [
       kind: 'exercise',
       minutes: 10,
       brief: 'Install Claude Code and confirm the command exists before going any further.',
+      body: [
+        {
+          t: 'p',
+          text: 'Installing is the easy half. The half people skip is proving that it worked.',
+        },
+        {
+          t: 'term',
+          word: 'PATH',
+          means: 'The list of places your terminal looks when you type a command. If Claude Code is not on it, your terminal will say it has never heard of `claude` — even though it is installed.',
+        },
+        {
+          t: 'p',
+          text: 'So an installer that finished tells you the files landed. It does not tell you that you can reach them. Only one thing does that.',
+        },
+        { t: 'do', label: 'Check it is really there', cmd: 'claude --version' },
+        {
+          t: 'see',
+          text: 'A version number. If you get `command not found` instead, the install did not finish the job — the files may be on the machine, but your terminal cannot see them.',
+        },
+        {
+          t: 'why',
+          text: 'This is the first of many times you will be asked to prove something rather than assume it. A version number is evidence. A progress bar that reached the end is not.',
+        },
+        {
+          t: 'warn',
+          text: 'Do not go looking for an icon in your dock or taskbar, and do not check whether claude.ai loads in your browser. Neither one tells you anything about whether the command works. This tool has no window of its own.',
+        },
+      ],
       tasks: ["Install Claude Code following your team's instructions", 'Run `claude --version`'],
       verify: "`claude --version` prints a version number rather than 'command not found'.",
     },
@@ -106,6 +171,25 @@ const STEPS: RawStep[][] = [
       kind: 'exercise',
       minutes: 6,
       brief: 'Sign in once so Claude can reach the API. Until this works, nothing else will.',
+      body: [
+        {
+          t: 'p',
+          text: 'Claude needs to know who you are before it will answer anything. This happens once on a machine, and then you can forget about it.',
+        },
+        { t: 'do', label: 'Start it', cmd: 'claude' },
+        {
+          t: 'see',
+          text: 'A sign-in prompt. Follow it, your browser opens, and you sign in there — then come back to the terminal window you started in.',
+        },
+        {
+          t: 'p',
+          text: 'The terminal is waiting for the browser to finish. It carries on by itself once you are signed in, so there is nothing to run a second time.',
+        },
+        {
+          t: 'warn',
+          text: 'If your organisation sends you through its own sign-in page, that is expected. If signing in fails outright, stop and ask whoever set up your account rather than reinstalling — a reinstall does not fix a permissions problem.',
+        },
+      ],
       tasks: [
         'Run `claude` and follow the sign-in prompt',
         'Complete the browser login and return to the terminal',
@@ -118,6 +202,46 @@ const STEPS: RawStep[][] = [
       minutes: 8,
       brief:
         'Point Claude at an actual folder of yours, not a scratch directory. The whole point is that it works on real material.',
+      body: [
+        {
+          t: 'p',
+          text: 'Most people try a new tool somewhere harmless first. Do the opposite here.',
+        },
+        {
+          t: 'p',
+          text: 'The working directory is the whole of what Claude can see. Start it somewhere real and its answers are about your actual work. Start it in an empty folder and it has nothing to go on, so you get the same generic advice a browser chat would have given you.',
+        },
+        {
+          t: 'do',
+          label: 'Go to a project you know well',
+          cmd: 'cd ~/projects/your-project\nclaude',
+        },
+        {
+          t: 'see',
+          text: 'Claude starts and names the folder it is working in. Read that line — it should be your project, not your home folder.',
+        },
+        {
+          t: 'do',
+          label: 'Ask it something only that folder can answer',
+          cmd: 'What is in this folder?',
+        },
+        {
+          t: 'see',
+          text: 'A list of files that genuinely exist. If it names things you do not recognise, you are in the wrong folder.',
+        },
+        {
+          t: 'p',
+          text: 'None of this is a requirement, by the way. An empty folder works. A folder with no version control in it works. More files will not make Claude faster either. The only thing that matters is that the files are yours, so you can tell at a glance whether an answer is right.',
+        },
+        {
+          t: 'why',
+          text: 'This is the test you will use for the rest of the course. You know your own project, so you are the one person who can catch Claude being confidently wrong about it. In a folder you have never seen, every answer looks plausible.',
+        },
+        {
+          t: 'warn',
+          text: 'Pick a project you know well, but not the one carrying this quarter. You will be letting Claude change files in topic 3, and you want your first mistake to be a cheap one.',
+        },
+      ],
       tasks: [
         '`cd` into a project folder you know well',
         'Start `claude`',
@@ -135,6 +259,62 @@ const STEPS: RawStep[][] = [
       minutes: 6,
       brief:
         'In a chat window you copy and paste. An agent reads your files, runs commands and changes things. The failure modes are different too.',
+      body: [
+        {
+          t: 'p',
+          text: 'You already know what a chat window does. You describe the problem, it writes something back, and then you do the work of getting that answer to wherever it needed to go.',
+        },
+        {
+          t: 'p',
+          text: 'An agent closes that gap. It opens the files itself, runs the commands itself, and hands you back a changed project rather than instructions for changing one.',
+        },
+        {
+          t: 'p',
+          text: 'It is worth being precise about what has not changed. It is not a better model, it is not faster, and it does not cost less per message. The model is the same one. What moved is where the work happens.',
+        },
+        { t: 'p', text: 'That makes some jobs obvious and others pointless.' },
+        {
+          t: 'table',
+          rows: [
+            {
+              dimension: 'Work spread over many files',
+              doThis:
+                'Hand it to the agent. Renaming one config key across twelve files is twelve opens and twelve edits, and none of them are yours.',
+              notThis:
+                'Paste the files into a chat one at a time. You will lose track of where you are, and the twelfth one will get missed.',
+            },
+            {
+              dimension: 'General explanation',
+              doThis:
+                'Ask in a chat. What a closure is has nothing to do with your project, so the folder adds nothing to the answer.',
+              notThis:
+                'Open a terminal inside a project to ask a question that has no project in it.',
+            },
+            {
+              dimension: 'Short writing',
+              doThis:
+                'A chat is fine. Drafting an email, or summarising something you pasted in, needs no access to anything.',
+              notThis:
+                'Reach for the agent because it is the newer tool. Nothing on disk needs to change, so nothing is gained.',
+            },
+            {
+              dimension: 'Anything that changes files',
+              doThis:
+                'The agent, with your work committed first. It can do it for you, so make sure you can undo it.',
+              notThis:
+                'Assume advice and action carry the same risk. On disk, a wrong answer is a wrong file.',
+            },
+          ],
+        },
+        {
+          t: 'why',
+          text: 'Most people carry their chat habits across and end up using an agent as a chat window with extra steps. The gain was never better answers. It is that nobody has to copy anything.',
+        },
+        {
+          t: 'warn',
+          text: 'Here is the part worth sitting with. An agent is no more likely to be wrong than the chat was — the accuracy did not change at all. What changed is that a wrong answer now lands in your files instead of on your screen. Same mistake, different blast radius.',
+        },
+      ],
       tasks: [
         'Read the comparison',
         'List two things you currently copy-paste that an agent could just do',
@@ -146,6 +326,42 @@ const STEPS: RawStep[][] = [
       minutes: 12,
       brief:
         'Ask a real question about your project in a browser chat, then ask Claude Code the same thing.',
+      body: [
+        {
+          t: 'p',
+          text: 'Reading about the difference is not the same as seeing it on your own work. Ask one question in both places and compare what comes back.',
+        },
+        {
+          t: 'p',
+          text: 'Pick something specific enough to be checkable — where a setting lives, or which file decides some piece of behaviour you know well.',
+        },
+        {
+          t: 'do',
+          label: 'In a browser chat, with nothing attached',
+          cmd: 'Where is the database connection configured\n  in my project?',
+        },
+        {
+          t: 'see',
+          text: 'A sensible, general answer about where such things usually live. It cannot name your file, because it has never seen your project.',
+        },
+        {
+          t: 'do',
+          label: 'In Claude Code, inside the project folder',
+          cmd: 'Where is the database connection configured\n  in my project?',
+        },
+        {
+          t: 'see',
+          text: 'A filename, and probably a line number. You can go and open it.',
+        },
+        {
+          t: 'p',
+          text: 'That is the whole difference, in one pair of answers. The first told you how projects like yours tend to work. The second told you how yours actually does.',
+        },
+        {
+          t: 'why',
+          text: 'At some point you will have to explain to someone why this is worth their time. One concrete pair of answers from a project they recognise will do that better than any argument you could make.',
+        },
+      ],
       tasks: [
         "Pick a question about your own code, e.g. 'where is X configured?'",
         'Ask it in a browser chat with no files attached',
@@ -159,6 +375,20 @@ const STEPS: RawStep[][] = [
       kind: 'note',
       minutes: 5,
       brief: "Write down what you'd now use an agent for that you would not have used chat for.",
+      body: [
+        {
+          t: 'p',
+          text: 'One task. Not a list and not a strategy — one thing you did by hand this month that an agent could have done, and that you are willing to hand over this week.',
+        },
+        {
+          t: 'p',
+          text: 'The good candidates look alike: dull, repetitive, spread across more than one file, and with a result you could check at a glance. If you could not check it quickly, it is a poor first thing to move.',
+        },
+        {
+          t: 'why',
+          text: 'Habits change when one real task moves across, not when you are convinced in principle. Pick the small dull one. The boring choice is the one that sticks.',
+        },
+      ],
       tasks: ["Note one task you'll move across this week"],
     },
   ],
@@ -171,6 +401,32 @@ const STEPS: RawStep[][] = [
       minutes: 5,
       brief:
         "Claude should look at a file before changing it, and so should you. Most bad edits come from acting on an assumption about what's in the file.",
+      body: [
+        {
+          t: 'p',
+          text: 'Almost every bad edit starts the same way. Someone changed a file based on what they were sure was in it, rather than on what was actually in it.',
+        },
+        {
+          t: 'p',
+          text: 'Claude does this too, and it does it fluently. Asked to change a setting, it can produce a confident edit to a file it never opened — an edit that would have been correct, if the file had looked the way it assumed.',
+        },
+        {
+          t: 'p',
+          text: 'So the order matters. Read, then write. Claude opens the file before it changes it, and you look at what it found before you agree to the change.',
+        },
+        {
+          t: 'p',
+          text: 'Some tools do insist on a read before an edit, and that is a sensible guard. Treat it as your own habit rather than something the tool owes you, though — it is a good instinct even when nothing is enforcing it.',
+        },
+        {
+          t: 'why',
+          text: 'This is the cheapest habit in the course. Reading costs a few seconds. An edit built on a guess costs you the afternoon you spend working out what broke.',
+        },
+        {
+          t: 'warn',
+          text: 'It is not about saving money, and it is not warming anything up. Reading first is not a performance trick. It is the only thing that makes the edit about the real file rather than a plausible one.',
+        },
+      ],
       tasks: ['Read the guidance on reading before editing'],
     },
     {
@@ -179,6 +435,33 @@ const STEPS: RawStep[][] = [
       minutes: 8,
       brief:
         "Ask Claude to explain a file you already understand. You're testing its comprehension, not learning the file.",
+      body: [
+        {
+          t: 'p',
+          text: 'Before you let Claude change anything, find out how well it reads. Pick a file you know well — one you could summarise yourself without opening it.',
+        },
+        {
+          t: 'p',
+          text: 'You are not learning the file here. You are testing the reader, and you can only do that somewhere you already know the answer.',
+        },
+        {
+          t: 'do',
+          label: 'Point it at the file and ask',
+          cmd: 'Summarise what this file does, and what\n  depends on it.',
+        },
+        {
+          t: 'see',
+          text: 'A summary you can mark. Read it against what you know and look for the parts that are subtly off, rather than the parts that are obviously wrong.',
+        },
+        {
+          t: 'p',
+          text: 'The obvious errors are harmless, because you will catch them. What you are hunting for is the confident half-truth: the right shape with a wrong detail sitting inside it.',
+        },
+        {
+          t: 'why',
+          text: 'This is where you calibrate. You are finding out how much of what Claude tells you about your own project you can take at face value, in the one situation where you can check every word of it.',
+        },
+      ],
       tasks: [
         'Pick a file you know well',
         'Ask Claude to summarise what it does',
@@ -192,6 +475,42 @@ const STEPS: RawStep[][] = [
       minutes: 12,
       brief:
         'One small, obviously-correct change. Resist asking for a big refactor on your first go.',
+      body: [
+        {
+          t: 'p',
+          text: 'Now the first real edit. Two things make this safe, and neither of them is about being clever with the prompt.',
+        },
+        {
+          t: 'p',
+          text: 'The first is a way back. Commit your work, or copy the folder somewhere — either is fine, as long as you can put the file back exactly as it was without having to think about how. Do that before you ask for anything.',
+        },
+        {
+          t: 'term',
+          word: 'Diff',
+          means: 'The list of what changed: what the file said before, and what it says now. It is the only honest account of an edit.',
+        },
+        {
+          t: 'p',
+          text: 'The second is asking small. One specific change you could check at a glance — a renamed setting, a corrected message, a single condition. Not "improve this file", not a refactor, and not whatever Claude offers to tidy up while it is in there.',
+        },
+        {
+          t: 'do',
+          label: 'Ask for one specific thing',
+          cmd: 'Change the timeout in this file from 30\n  seconds to 60. Do not change anything else.',
+        },
+        {
+          t: 'see',
+          text: 'A diff. Read it before you accept it, and check the second half of what you asked for too: that nothing else moved.',
+        },
+        {
+          t: 'why',
+          text: 'You are calibrating trust, and you cannot calibrate against a change you cannot check. A refactor you skimmed and accepted teaches you nothing about whether Claude is reliable.',
+        },
+        {
+          t: 'warn',
+          text: 'Asking it to explain its plan first feels like the careful move, and it is not a bad habit. But a plan is just more text, and it is not a way back. If you only do one of the two, keep the backup.',
+        },
+      ],
       tasks: [
         'Make sure your work is committed or backed up first',
         'Ask for one specific, small change',
@@ -204,6 +523,34 @@ const STEPS: RawStep[][] = [
       kind: 'exercise',
       minutes: 6,
       brief: 'Knowing how to get back is what makes everything else safe to try.',
+      body: [
+        {
+          t: 'p',
+          text: 'Undoing the edit is the actual skill in this topic. Knowing you can put things back is what makes you willing to try the next thing.',
+        },
+        {
+          t: 'do',
+          label: 'If you committed first',
+          cmd: 'git checkout -- the-file-you-changed',
+        },
+        {
+          t: 'p',
+          text: 'If you copied the folder instead, this is where you copy the file back over the top. Both routes are fine. What matters is that you have done it once, deliberately, at a moment when nothing was actually wrong.',
+        },
+        {
+          t: 'do',
+          label: 'Confirm there is nothing left',
+          cmd: 'git diff',
+        },
+        {
+          t: 'see',
+          text: 'Nothing at all. Empty output means the file is exactly where it started. If anything prints, something is still changed.',
+        },
+        {
+          t: 'warn',
+          text: 'Practise this while the stakes are zero. The first time you need to undo something in a hurry should not also be the first time you have tried to.',
+        },
+      ],
       tasks: ['Revert the edit', 'Confirm the file is back exactly where it started'],
       verify: '`git diff` (or your editor) shows no remaining changes.',
     },
@@ -217,6 +564,37 @@ const STEPS: RawStep[][] = [
       minutes: 5,
       brief:
         'Claude will state things fluently that are not true. The tone is identical whether it is right or wrong, so tone tells you nothing.',
+      body: [
+        {
+          t: 'p',
+          text: 'Claude will tell you something untrue in exactly the voice it uses for things that are true. No hedging, no tell, no change in tone.',
+        },
+        {
+          t: 'p',
+          text: 'That is the whole problem. Every instinct you have for spotting someone who is unsure — the hesitation, the vagueness, the caveat — is calibrated on people, and none of it transfers.',
+        },
+        {
+          t: 'term',
+          word: 'Hallucination',
+          means: 'A confident answer with nothing behind it. Not a lie, which would require knowing better, and not a bug. It is the same machinery that gets things right, missing.',
+        },
+        {
+          t: 'p',
+          text: 'Two things that feel like checks are not checks. Asking again and getting the same answer tells you the answer is stable, which is a different thing from correct — it can be consistently wrong all day.',
+        },
+        {
+          t: 'p',
+          text: 'And asking how confident it is just produces another confident sentence. A number it makes up about its own reliability is not evidence about its reliability.',
+        },
+        {
+          t: 'why',
+          text: 'Everything else you do with Claude rests on this. Not scepticism in the abstract, but a specific habit: check the claims that are cheap to check and expensive to get wrong.',
+        },
+        {
+          t: 'warn',
+          text: 'Fluency is not evidence. That is the sentence to keep. If a claim matters and you can verify it in under a minute, verify it, however sure it sounded.',
+        },
+      ],
       tasks: ['Read the note on plausible-sounding errors'],
     },
     {
@@ -225,6 +603,50 @@ const STEPS: RawStep[][] = [
       minutes: 15,
       brief:
         'Deliberately ask about something obscure in your project, or about a version number you can check yourself.',
+      body: [
+        {
+          t: 'p',
+          text: 'Go and catch it doing this. It works better than any warning, because the example will be yours and you will remember it.',
+        },
+        {
+          t: 'p',
+          text: 'Ask about something you can check independently, and something obscure enough to be a real test: an exact version number, a specific line in a config, which of two similar files a thing actually lives in.',
+        },
+        {
+          t: 'do',
+          label: 'Ask something with a checkable answer',
+          cmd: 'Which version of the framework does this\n  project use?',
+        },
+        {
+          t: 'see',
+          text: 'A specific, confident answer. Now go and read the file yourself, and compare. Do not skip the reading — the reading is the entire exercise.',
+        },
+        {
+          t: 'p',
+          text: 'If it was right, that is not the end of it. Ask something harder: more obscure, more specific, further from the obvious files. You are looking for the edge of what it actually knows, and moving up in difficulty is how you find it. Note that this is not the same as asking the same question twice — a repeat tests nothing, but a harder question tests something new.',
+        },
+        {
+          t: 'p',
+          text: 'One kind of claim deserves special attention, because it is the one people trust most: whether something ran, and whether it passed.',
+        },
+        {
+          t: 'do',
+          label: 'Make it show you, not tell you',
+          cmd: 'Run the tests and show me the full output.',
+        },
+        {
+          t: 'see',
+          text: 'The real output, scrolling past. "All tests pass" is Claude summarising that output for you, and a summary is a claim like any other. Read the output itself — it is right there, and it takes ten seconds.',
+        },
+        {
+          t: 'why',
+          text: 'Whether a test passed is the highest-stakes cheap check there is. It is the claim most likely to be taken on trust and the most expensive one to get wrong, and the fix is nothing more than looking.',
+        },
+        {
+          t: 'warn',
+          text: 'Write the wrong answer down when you find it: the question, what it said, and what was actually true. A specific memory beats general caution, and you will want it the next time something sounds authoritative.',
+        },
+      ],
       tasks: [
         'Ask about a detail you can independently verify',
         'Verify it',
@@ -237,6 +659,20 @@ const STEPS: RawStep[][] = [
       kind: 'note',
       minutes: 6,
       brief: 'Decide in advance which kinds of claim you will always verify.',
+      body: [
+        {
+          t: 'p',
+          text: 'General caution does not survive a busy week. What survives is a short list of claim types you always check, written down now, while you are thinking about it.',
+        },
+        {
+          t: 'p',
+          text: 'The good candidates share a shape: cheap to verify, expensive to get wrong. Version numbers. Whether a test passed. Whether a file really contains what you were told it contains. Anything you are about to repeat to someone else as fact.',
+        },
+        {
+          t: 'why',
+          text: 'Deciding in advance is what makes it automatic. In the moment, with a good answer sitting in front of you sounding right, you will not stop to weigh it up. You will only follow a rule you already had.',
+        },
+      ],
       tasks: [
         "Write down two categories you'll never take on trust — e.g. version numbers, whether a test passed",
       ],
@@ -251,6 +687,38 @@ const STEPS: RawStep[][] = [
       minutes: 5,
       brief:
         'Every session starts fresh. CLAUDE.md is the file Claude reads each time, so it is where durable project rules belong.',
+      body: [
+        {
+          t: 'p',
+          text: 'Every session starts from nothing. Close the terminal, open it again tomorrow, and Claude has no memory of anything you explained yesterday. The same three corrections, every morning, forever.',
+        },
+        {
+          t: 'p',
+          text: 'One file fixes that. Claude reads it at the start of every session, before you have typed a word.',
+        },
+        {
+          t: 'term',
+          word: 'Session',
+          means: 'One run of Claude, from opening it to closing it. Nothing carries over into the next one by itself.',
+        },
+        {
+          t: 'term',
+          word: 'CLAUDE.md',
+          means: 'A plain text file in your project. Standing instructions, read automatically at the start of every session.',
+        },
+        {
+          t: 'p',
+          text: 'It is worth being clear about what it is not. Not a log of the prompts you have used. Not a changelog of what Claude altered. Not documentation for your colleagues either — they may well read it, but it is written for Claude, and that changes what belongs in it.',
+        },
+        {
+          t: 'why',
+          text: 'This is the difference between a tool you re-explain your project to every day and one that already knows it. Ten minutes on this file pays back in every session that follows.',
+        },
+        {
+          t: 'warn',
+          text: 'It is read every session, which means every line in it costs something every session. That is why the last step of this topic is about deleting things.',
+        },
+      ],
       tasks: ["Read what belongs in CLAUDE.md and what doesn't"],
     },
     {
@@ -259,6 +727,62 @@ const STEPS: RawStep[][] = [
       minutes: 12,
       brief:
         'Start small: three or four rules that are true about your project and would otherwise need repeating every session.',
+      body: [
+        {
+          t: 'p',
+          text: 'Three or four rules. That is the whole first version, and it is deliberately small.',
+        },
+        {
+          t: 'p',
+          text: 'There is one test for whether something belongs: could Claude work this out by reading the code? If it could, leave it out.',
+        },
+        {
+          t: 'table',
+          rows: [
+            {
+              dimension: 'How to run things',
+              doThis:
+                'The exact command, including the flags nobody remembers. This is the single most valuable line in most of these files.',
+              notThis:
+                'Leave it out because it is obvious to you. It is not obvious from the code, which is exactly why it belongs.',
+            },
+            {
+              dimension: 'What the code already says',
+              doThis:
+                'Trust Claude to read. It can see your file layout, your names and your imports without being told.',
+              notThis:
+                'List every file, or describe the code function by function. It is re-read every session, and it stopped being true weeks ago.',
+            },
+            {
+              dimension: 'Decisions and constraints',
+              doThis:
+                'The things nobody could infer: why this library rather than that one, what must never be touched, which pattern to follow.',
+              notThis:
+                'Restate the README. If it is already written down for humans elsewhere, copying it in just doubles what you have to keep true.',
+            },
+            {
+              dimension: 'Length',
+              doThis:
+                'Keep it to what actually changes behaviour. A short file that gets fully read beats a long one that gets skimmed.',
+              notThis:
+                'Paste in everything that might one day help. Bloat is not neutral — it crowds out the lines that matter.',
+            },
+          ],
+        },
+        {
+          t: 'do',
+          label: 'A complete first version',
+          cmd: '# Notes for Claude\n\nRun the tests with: npm test\nDeploy is manual. Never run it.\nUse the existing date helper, not a new one.',
+        },
+        {
+          t: 'p',
+          text: 'Four lines. Every one of them is something Claude could not have guessed, and something you would otherwise be saying out loud again tomorrow. That is a finished first CLAUDE.md.',
+        },
+        {
+          t: 'why',
+          text: 'Small and true beats thorough and ignored. A file with four rules that hold gets followed. A file with forty gets skimmed by Claude and never updated by you.',
+        },
+      ],
       tasks: [
         'Create CLAUDE.md in your project root',
         'Write 3–4 concrete rules, e.g. how to run the tests',
@@ -270,6 +794,37 @@ const STEPS: RawStep[][] = [
       kind: 'verify',
       minutes: 8,
       brief: "A rule you can't prove is being read is a rule you can't rely on.",
+      body: [
+        {
+          t: 'p',
+          text: 'A rule you cannot prove is being read is a rule you cannot rely on. So prove it, once, properly.',
+        },
+        {
+          t: 'p',
+          text: 'The test has to run from a completely fresh session, and you have to avoid hinting. One mention of the rule in your prompt and you have tested nothing at all.',
+        },
+        {
+          t: 'do',
+          label: 'Start clean, then ask for something the rule covers',
+          cmd: 'Run the tests.',
+        },
+        {
+          t: 'see',
+          text: 'Claude uses the exact command from your CLAUDE.md without you naming it. That is the rule working: it read the file, and it acted on it unprompted.',
+        },
+        {
+          t: 'p',
+          text: 'If it does something else instead, the rule is not doing its job. Usually it is buried in too much other text, or it is written as a suggestion rather than an instruction. Shorten it, make it an instruction, and test again.',
+        },
+        {
+          t: 'why',
+          text: 'This is the step people skip, and it is the one that turns CLAUDE.md from a file you hope is working into one you know is. Everything you build on top of it depends on that being settled.',
+        },
+        {
+          t: 'warn',
+          text: 'Claude telling you it has read CLAUDE.md is not evidence. That is a claim, and topic 4 was about exactly this kind of claim. The evidence is behaviour you did not ask for.',
+        },
+      ],
       tasks: [
         'Start a completely fresh session',
         'Ask Claude to do something the rule applies to',
@@ -282,6 +837,20 @@ const STEPS: RawStep[][] = [
       kind: 'note',
       minutes: 5,
       brief: 'A bloated CLAUDE.md gets ignored — by Claude and by you.',
+      body: [
+        {
+          t: 'p',
+          text: 'Go back and read what you wrote. Every line is read again at the start of every session, so every line should be earning that.',
+        },
+        {
+          t: 'p',
+          text: 'Cut anything Claude could have read from the code, anything you added speculatively, and anything you have never actually seen it act on. If you are unsure about a line, delete it. You will notice soon enough if it mattered.',
+        },
+        {
+          t: 'why',
+          text: 'A bloated file fails quietly. Claude skims it, you stop trusting it, and nobody ever updates it. The small version is the one that stays true.',
+        },
+      ],
       tasks: ["Delete anything you added that isn't doing real work"],
     },
   ],
