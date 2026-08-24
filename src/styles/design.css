@@ -725,7 +725,11 @@
 
    Lives on the trail rather than in the app shell: putting it in .main would mean
    editing App.tsx, which belongs to the content stream, and the journey is only
-   ever walked on this screen anyway. */
+   ever walked on this screen anyway.
+
+   Each segment carries --fill, 0 to 1, set inline from that topic's completed
+   steps. The fill, the shimmer's width and the leading cap's position all derive
+   from that one number, so they cannot disagree. */
 .coursebar {
   position: absolute;
   top: 0;
@@ -733,45 +737,147 @@
   right: 0;
   z-index: 42;
   display: flex;
-  gap: 3px;
-  padding: 7px 10px 0;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px 12px;
   pointer-events: none;
   /* The bar sits over whatever the top of the photograph happens to be -- often
-     bright sky -- so the track needs its own shading to stay readable rather than
-     relying on the picture. */
+     bright sky -- so it brings its own shading rather than trusting the picture. */
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.22) 0%,
-    rgba(0, 0, 0, 0.1) 55%,
+    rgba(0, 0, 0, 0.34) 0%,
+    rgba(0, 0, 0, 0.16) 60%,
     rgba(0, 0, 0, 0) 100%
   );
 }
 
+/* States its own meaning, so the bar is not a mystery stripe. */
+.coursebar__pct {
+  flex: none;
+  margin-right: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.coursebar__pct small {
+  font-size: 0.72em;
+  opacity: 0.75;
+  margin-left: 1px;
+}
+
 .coursebar__seg {
   position: relative;
-  height: 5px;
+  height: 8px;
   border-radius: var(--r-pill);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
   /* flex-grow is set inline from the topic's step count; flex-basis 0 makes the
      growth the only thing deciding width, so the ratios hold exactly. */
   flex-basis: 0;
   transition: background var(--dur-fast) var(--ease-calm);
 }
 
-/* The world you are looking at. Brightened rather than recoloured, so it reads
-   at a glance without introducing a colour the world does not own. */
+/* The world on screen: a brighter empty track, so you can see where you are
+   looking even in a topic you have not started. */
 .coursebar__seg--here {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.38);
 }
 
+/* The fill. */
 .coursebar__seg > i {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: var(--w-glass-hi, #fff);
+  background: linear-gradient(
+    180deg,
+    #fff 0%,
+    var(--w-glass-hi, #fff) 55%,
+    var(--w-panel, #e9d7d1) 100%
+  );
+  transform: scaleX(var(--fill, 0));
   transform-origin: left center;
-  /* scaleX rather than width: composited, so a step completing animates without
-     a layout pass. */
-  transition: transform var(--dur-slow) var(--ease-calm);
+  /* scaleX rather than width: composited, so a step completing animates without a
+     layout pass. */
+  transition: transform 700ms var(--ease-calm);
+}
+
+/* A finished world glows. Ten of these lighting up across the bar is the point. */
+.coursebar__seg--full > i {
+  box-shadow:
+    0 0 10px 1px rgba(255, 255, 255, 0.65),
+    0 0 22px 2px rgba(255, 255, 255, 0.28);
+}
+
+/* Slow sweep along the filled stretch. A sibling of the fill rather than a child
+   of it, because the fill is scaled and would squash the sweep flat. Its width
+   changes only when progress does, so this costs no per-frame layout. */
+.coursebar__seg > b {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--fill, 0) * 100%);
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.coursebar__seg > b::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 42%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: coursesheen 3400ms linear infinite;
+}
+
+@keyframes coursesheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+
+/* The head of your progress. Sits exactly at the fill's edge, and glows, so the
+   eye lands on where you have got to rather than on the bar as a whole. Only on
+   the segment holding the cursor, and hidden at either extreme where it would
+   just be a bright dot stuck on an end cap. */
+.coursebar__seg > u {
+  display: none;
+}
+
+.coursebar__seg--front > u {
+  display: block;
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: calc(var(--fill, 0) * 100%);
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: var(--r-pill);
+  background: #fff;
+  box-shadow:
+    0 0 8px 2px rgba(255, 255, 255, 0.9),
+    0 0 18px 4px rgba(255, 255, 255, 0.45);
+  transition: left 700ms var(--ease-calm);
+}
+
+/* Keep the information, drop the perpetual motion. */
+@media (prefers-reduced-motion: reduce) {
+  .coursebar__seg > b::after {
+    animation: none;
+    opacity: 0;
+  }
 }

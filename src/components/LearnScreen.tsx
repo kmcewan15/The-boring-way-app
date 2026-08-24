@@ -589,19 +589,37 @@ export default function LearnScreen({
           (completed.length / totalSteps) * 100,
         )}%`}
       >
+        <span className="coursebar__pct">
+          {Math.round((completed.length / totalSteps) * 100)}
+          <small>%</small>
+        </span>
+
         {TOPICS.map((topic) => {
           const done = topic.steps.filter((s) => isCompleted(s.id)).length;
+          const fill = done / topic.steps.length;
           return (
             <span
               key={topic.id}
-              className={`coursebar__seg${
-                topic.number === focusTopic.number ? ' coursebar__seg--here' : ''
-              }`}
+              className={[
+                'coursebar__seg',
+                /* The world on screen. */
+                topic.number === focusTopic.number ? 'coursebar__seg--here' : '',
+                /* Every step done: earns the full glow. */
+                fill === 1 ? 'coursebar__seg--full' : '',
+                /* The head of your progress, which is where the cursor is rather
+                   than wherever you have scrolled to look. Carries the bright cap. */
+                topic.number === cursor.topic ? 'coursebar__seg--front' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               /* flex-grow by step count, so a five-step world is wider than a
-                 three-step one and the bar stays proportional. */
-              style={{ flexGrow: topic.steps.length }}
+                 three-step one and the bar stays proportional. --fill drives the
+                 fill, the shimmer's width and the cap's position from one number. */
+              style={{ flexGrow: topic.steps.length, '--fill': fill } as CSSProperties}
             >
-              <i style={{ transform: `scaleX(${done / topic.steps.length})` }} />
+              <i />
+              <b />
+              <u />
             </span>
           );
         })}
