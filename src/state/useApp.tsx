@@ -59,12 +59,6 @@ interface AppState {
   topicQuizzes: Record<number, TopicQuizResult>;
   saveTopicQuiz: (topicNumber: number, r: Omit<TopicQuizResult, 'at'>) => void;
 
-  /* Which journey entry is being looked at on the trail, which is not necessarily
-     where the learner is up to -- you can scroll ahead. Null on screens that have
-     no trail. Deliberately NOT persisted: it is a view, not progress. */
-  viewIndex: number | null;
-  setViewIndex: (i: number | null) => void;
-
   /** Derived view of where the learner currently is. */
   current: {
     topic: ReturnType<typeof topicByNumber>;
@@ -73,8 +67,6 @@ interface AppState {
   };
 
   totalSteps: number;
-  /** Topics whose end-of-world quiz has been passed. */
-  topicsPassed: number;
   advance: () => void;
 }
 
@@ -180,11 +172,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  /* Set by the Learn screen as you scroll. Changes once per step rather than per
-     frame, so the handful of components reading it re-render no more often than
-     they already do when the cards change tier. */
-  const [viewIndex, setViewIndex] = useState<number | null>(null);
-
   const value = useMemo<AppState>(() => {
     const topic = topicByNumber(state.cursor.topic);
     return {
@@ -201,20 +188,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addNote,
       topicQuizzes: state.topicQuizzes,
       saveTopicQuiz,
-      viewIndex,
-      setViewIndex,
       current: {
         topic,
         steps: topic.steps,
         path: pathForTopic(topic.number),
       },
       totalSteps: TOTAL_STEPS,
-      /* Counted rather than stored: the quiz results are the source of truth, and
-         a second stored tally would only be a way for the two to disagree. */
-      topicsPassed: Object.values(state.topicQuizzes).filter((r) => r.passed).length,
       advance,
     };
-  }, [tab, state, jumpTo, complete, toggleBookmark, addNote, saveTopicQuiz, advance, viewIndex]);
+  }, [tab, state, jumpTo, complete, toggleBookmark, addNote, saveTopicQuiz, advance]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

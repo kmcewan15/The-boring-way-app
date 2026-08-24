@@ -1,5 +1,6 @@
 import { JOURNEY, TOPICS, globalIndexOf, pathForTopic } from '../data/curriculum';
 import { useApp, type Tab } from '../state/useApp';
+import { useViewIndex } from '../state/viewStore';
 import { IconBookmark, IconCompass, IconResources } from './Icons';
 
 const TABS: Array<{ id: Tab; label: string }> = [
@@ -9,8 +10,12 @@ const TABS: Array<{ id: Tab; label: string }> = [
 ];
 
 export default function Sidebar() {
-  const { tab, setTab, current, cursor, completed, totalSteps, topicsPassed, viewIndex } =
-    useApp();
+  const { tab, setTab, current, cursor, completed, totalSteps, topicQuizzes } = useApp();
+  const viewIndex = useViewIndex();
+
+  /* Derived here rather than added to the shared app state: the quiz results are
+     already the source of truth and this is the only screen that needs the tally. */
+  const topicsPassed = Object.values(topicQuizzes).filter((r) => r.passed).length;
 
   /* Describe what is on screen, not where the learner left off. The two are the
      same until you scroll ahead, and when they differ the trail, the caption

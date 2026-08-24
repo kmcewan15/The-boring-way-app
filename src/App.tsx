@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import ExploreTopics from './components/ExploreTopics';
-import JourneyMap from './components/JourneyMap';
 import LearnScreen from './components/LearnScreen';
 import Modal from './components/Modal';
 import MyPathScreen, { type MyPathRoute } from './components/MyPathScreen';
@@ -23,7 +22,6 @@ const MODAL_LABELS: Record<MyPathRoute, string> = {
 export default function App() {
   const { tab, cursor, complete, advance, addNote, saveTopicQuiz } = useApp();
   const [explore, setExplore] = useState(false);
-  const [map, setMap] = useState(false);
   const [detail, setDetail] = useState<MyPathRoute | null>(null);
   /* Index into the flat journey, so a step from any topic can be opened. */
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -35,25 +33,8 @@ export default function App() {
   useEffect(() => {
     setDetail(null);
     setExplore(false);
-    setMap(false);
     setOpenIndex(null);
   }, [tab]);
-
-  /* `m` opens the map from anywhere on the trail. Guarded against firing while
-     someone is typing a step note, and against opening behind another overlay --
-     the map closes itself on `m`, so it only ever needs to handle opening. */
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'm' && e.key !== 'M') return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const el = e.target as HTMLElement | null;
-      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
-      if (tab !== 'learn' || detail || explore || openIndex !== null) return;
-      setMap(true);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [tab, detail, explore, openIndex]);
 
   return (
     <div className="app">
@@ -63,7 +44,6 @@ export default function App() {
         {tab === 'learn' && (
           <LearnScreen
             onOpenExplore={() => setExplore(true)}
-            onOpenMap={() => setMap(true)}
             onOpenEntry={(globalIndex) => setOpenIndex(globalIndex)}
           />
         )}
@@ -101,8 +81,6 @@ export default function App() {
         )}
 
         {explore && <ExploreTopics onClose={() => setExplore(false)} />}
-
-        {map && <JourneyMap onClose={() => setMap(false)} />}
 
         {entry?.kind === 'step' && (
           <StepView

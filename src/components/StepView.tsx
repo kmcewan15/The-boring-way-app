@@ -6,9 +6,27 @@ import { LANDSCAPES, withAlpha } from '../art/landscapes';
 import type { Step } from '../data/curriculum';
 import { topicByNumber } from '../data/curriculum';
 import { useApp } from '../state/useApp';
-import Reading, { Rich } from './Reading';
 import { StepKindIcon } from './StepCard';
 import { IconCircle, IconCircleCheck, IconClose, IconPause, IconPlay } from './Icons';
+
+/** Renders `backticked` spans as inline code. The curriculum is full of commands
+    and filenames, so they need to look like commands rather than prose. */
+function Rich({ text }: { text: string }) {
+  const parts = text.split(/(`[^`]+`)/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.length > 2 && part.startsWith('`') && part.endsWith('`') ? (
+          <code className="code" key={i}>
+            {part.slice(1, -1)}
+          </code>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  );
+}
 
 const KIND_LABEL: Record<Step['kind'], string> = {
   read: 'Read',
@@ -165,8 +183,6 @@ export default function StepView({
           <p className="step__brief">
             <Rich text={step.brief} />
           </p>
-
-          {step.body && <Reading body={step.body} />}
 
           <h2 className="step__h">What you'll do</h2>
           <ul className="tasks">

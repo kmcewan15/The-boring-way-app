@@ -17,10 +17,6 @@ export interface Step {
   tasks: string[];
   /** How they know it worked. Omitted for reading and note steps. */
   verify?: string;
-  /* The step's own reading material, if it has any -- a `read` step whose task says
-     "Read the overview" needs the overview to live somewhere, and this is it.
-     A small Markdown subset: see src/components/Reading.tsx for what parses. */
-  body?: string;
 }
 
 export interface Topic {
@@ -32,10 +28,10 @@ export interface Topic {
   /** Bottom-panel + pin colour on the Explore topics screen. */
   accent: string;
   accentInk: string;
-  /* Optional photographic backdrop, served out of `images/` -- so `'/foo.jpg'`
-     means `images/foo.jpg`. Topics without one fall back to the generated
-     landscape, and the Learn screen cross-fades between whichever of the two
-     each side of a world boundary happens to be. */
+  /* Optional photographic backdrop, served out of `images/` -- so `'/foo.webp'`
+     means `images/foo.webp`, via `publicDir` in vite.config.ts. Topics without one
+     fall back to the generated landscape, and the Learn screen cross-fades
+     between whichever of the two each side of a world boundary happens to be. */
   photo?: string;
   steps: Step[];
 }
@@ -65,35 +61,6 @@ const STEPS: RawStep[][] = [
         'Read the one-page overview',
         'Note the difference between Claude in a browser and Claude in your terminal',
       ],
-      /* SAMPLE COPY -- replace this with the real overview. It is deliberately
-         short and says nothing Topic 1 does not already assert elsewhere; it is
-         here so the `body` format has a worked example to copy from. */
-      body: `
-        Claude in a browser is a conversation. You describe your problem, it
-        replies, and you carry the answer back to your editor by hand. Claude Code
-        is the same model with a different job: it runs in your terminal, inside a
-        folder you point it at, and it can open, read and change the files there.
-
-        ## What that changes
-
-        - It reads your actual files, so you stop pasting context in by hand
-        - It runs commands, so it can check its own work
-        - It edits on disk, so its mistakes land in your project
-
-        The last one is why the rest of this path exists. An agent that can act is
-        both more useful and less safe than one that can only advise, and the
-        habits that make it safe are learnable.
-
-        ## What it is not
-
-        It is not a website, and it does not need a special kind of project. Any
-        folder will do -- there is no requirement for a git repository, a
-        particular language or a config file, though a repo makes it much easier
-        to undo something you did not want.
-
-        > Rule of thumb for the whole path: if you would not let a new joiner
-        > change a file unsupervised, do not let Claude either. Read the diff.
-      `,
     },
     {
       title: 'Install it',
@@ -586,9 +553,9 @@ export const TOPICS: Topic[] = TOPIC_META.map((meta, i) => ({
   title: meta.title,
   goal: meta.goal,
   biome: meta.biome,
+  photo: meta.photo,
   accent: meta.accent,
   accentInk: meta.accentInk,
-  photo: meta.photo,
   steps: STEPS[i].map((s, j) => ({ ...s, id: `t${i + 1}s${j + 1}` })),
 }));
 

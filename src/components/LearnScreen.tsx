@@ -17,6 +17,8 @@ import {
   pathForTopic,
 } from '../data/curriculum';
 import { useApp } from '../state/useApp';
+import { setViewIndex } from '../state/viewStore';
+import JourneyMap from './JourneyMap';
 import QuizCard from './QuizCard';
 import StepCard from './StepCard';
 import { IconChevronDown, IconCompass } from './Icons';
@@ -118,14 +120,12 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), h
 
 export default function LearnScreen({
   onOpenExplore,
-  onOpenMap,
   onOpenEntry,
 }: {
   onOpenExplore: () => void;
-  onOpenMap: () => void;
   onOpenEntry: (globalIndex: number) => void;
 }) {
-  const { cursor, setViewIndex } = useApp();
+  const { cursor } = useApp();
   const cursorIndex = globalIndexOf(cursor.topic, cursor.step);
 
   /* The whole stage, not just the rail: the caption banner and the focused card's
@@ -424,6 +424,23 @@ export default function LearnScreen({
      crossing instead of on every render that happens to produce a new object. The
      ref swallows the first paint: arriving where you already were is not an
      arrival, and without it this would fanfare on every reload. */
+  /* The map lives with the trail rather than in App, so opening it needs no prop
+     drilled down and no change to the shell. It closes itself on Escape and on a
+     second `m`. */
+  const [mapOpen, setMapOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'm' && e.key !== 'M') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      setMapOpen(true);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const [arrival, setArrival] = useState<{ n: number; title: string; at: number } | null>(
     null,
   );
@@ -546,7 +563,7 @@ export default function LearnScreen({
       <button
         type="button"
         className="trail__mapbtn"
-        onClick={onOpenMap}
+        onClick={() => setMapOpen(true)}
         title="See the whole trail (M)"
         aria-label="See the whole trail"
       >
@@ -652,6 +669,8 @@ export default function LearnScreen({
         <div className="sheet__trail">The {focusPath.name} Path</div>
         <div className="sheet__hint">All topics</div>
       </button>
+
+      {mapOpen && <JourneyMap onClose={() => setMapOpen(false)} />}
     </section>
   );
 }
