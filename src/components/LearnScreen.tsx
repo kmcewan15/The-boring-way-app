@@ -11,6 +11,7 @@ import TrailScape from '../art/TrailScape';
 import { LANDSCAPES, mixHex, mixLandscape, withAlpha } from '../art/landscapes';
 import {
   JOURNEY,
+  TOPICS,
   WORLD_BOUNDARIES,
   entryKey,
   globalIndexOf,
@@ -125,7 +126,7 @@ export default function LearnScreen({
   onOpenExplore: () => void;
   onOpenEntry: (globalIndex: number) => void;
 }) {
-  const { cursor } = useApp();
+  const { cursor, completed, totalSteps, isCompleted } = useApp();
   const cursorIndex = globalIndexOf(cursor.topic, cursor.step);
 
   /* The whole stage, not just the rail: the caption banner and the focused card's
@@ -569,6 +570,42 @@ export default function LearnScreen({
       >
         <IconCompass size={26} />
       </button>
+
+      {/* How far along the course you are. One segment per topic, each as wide as
+          that topic has steps, so the filled length across the whole bar equals
+          overall progress while the divisions still show the ten chapters.
+
+          Counts steps only, matching the sidebar's own Progress row -- passing a
+          quiz is not a 39th step. */}
+      <div
+        className="coursebar"
+        role="progressbar"
+        aria-label="Course progress"
+        aria-valuemin={0}
+        aria-valuemax={totalSteps}
+        aria-valuenow={completed.length}
+        aria-valuetext={`${completed.length} of ${totalSteps} steps complete`}
+        title={`${completed.length} of ${totalSteps} steps · ${Math.round(
+          (completed.length / totalSteps) * 100,
+        )}%`}
+      >
+        {TOPICS.map((topic) => {
+          const done = topic.steps.filter((s) => isCompleted(s.id)).length;
+          return (
+            <span
+              key={topic.id}
+              className={`coursebar__seg${
+                topic.number === focusTopic.number ? ' coursebar__seg--here' : ''
+              }`}
+              /* flex-grow by step count, so a five-step world is wider than a
+                 three-step one and the bar stays proportional. */
+              style={{ flexGrow: topic.steps.length }}
+            >
+              <i style={{ transform: `scaleX(${done / topic.steps.length})` }} />
+            </span>
+          );
+        })}
+      </div>
 
       <div className="trail__top">
         {focus !== cursorIndex && (

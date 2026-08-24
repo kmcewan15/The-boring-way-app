@@ -716,3 +716,62 @@
     margin-top: 26px;
   }
 }
+
+/* ----------------------------------------------------------------- course bar ---
+
+   How far along the course you are, pinned to the top edge of the trail. Above
+   the cards and the caption banner but below the arrival title card and the map,
+   and inert so it can never swallow a scroll.
+
+   Lives on the trail rather than in the app shell: putting it in .main would mean
+   editing App.tsx, which belongs to the content stream, and the journey is only
+   ever walked on this screen anyway. */
+.coursebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 42;
+  display: flex;
+  gap: 3px;
+  padding: 7px 10px 0;
+  pointer-events: none;
+  /* The bar sits over whatever the top of the photograph happens to be -- often
+     bright sky -- so the track needs its own shading to stay readable rather than
+     relying on the picture. */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.22) 0%,
+    rgba(0, 0, 0, 0.1) 55%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.coursebar__seg {
+  position: relative;
+  height: 5px;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.28);
+  /* flex-grow is set inline from the topic's step count; flex-basis 0 makes the
+     growth the only thing deciding width, so the ratios hold exactly. */
+  flex-basis: 0;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+/* The world you are looking at. Brightened rather than recoloured, so it reads
+   at a glance without introducing a colour the world does not own. */
+.coursebar__seg--here {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.coursebar__seg > i {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--w-glass-hi, #fff);
+  transform-origin: left center;
+  /* scaleX rather than width: composited, so a step completing animates without
+     a layout pass. */
+  transition: transform var(--dur-slow) var(--ease-calm);
+}
