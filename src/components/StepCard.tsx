@@ -3,7 +3,14 @@ import type { Landscape } from '../art/landscapes';
 import { withAlpha } from '../art/landscapes';
 import type { Step } from '../data/curriculum';
 import { useApp } from '../state/useApp';
-import { IconBook, IconBookmark, IconNote, IconTerminal, IconVerify } from './Icons';
+import {
+  IconBook,
+  IconBookmark,
+  IconCheckCircle,
+  IconNote,
+  IconTerminal,
+  IconVerify,
+} from './Icons';
 
 export function StepKindIcon({ kind, size = 24 }: { kind: Step['kind']; size?: number }) {
   if (kind === 'read') return <IconBook size={size} />;
@@ -12,14 +19,18 @@ export function StepKindIcon({ kind, size = 24 }: { kind: Step['kind']; size?: n
   return <IconNote size={size} />;
 }
 
+/* How far up the trail this card sits. Each depth is a *different card*, not the
+   same one shrunk: a 27px title rendered at 34% is 9px of unreadable texture, so
+   the further ones drop detail instead and keep what is left at a real size. */
+export type CardDepth = 0 | 1 | 2;
+
 interface Props {
   step: Step;
   index: number;
   total: number;
   /** The palette of the world this step belongs to, which colours the card. */
   palette: Landscape;
-  /** Compact rendering for steps further up the trail. */
-  mini?: boolean;
+  depth?: CardDepth;
   /** Show the primary call to action (only the step you're on). */
   showCta?: boolean;
   onStart?: () => void;
@@ -30,7 +41,7 @@ function StepCard({
   index,
   total,
   palette,
-  mini = false,
+  depth = 0,
   showCta = false,
   onStart,
 }: Props) {
@@ -38,17 +49,67 @@ function StepCard({
   const saved = bookmarks.includes(step.id);
   const done = isCompleted(step.id);
 
+  /* Furthest tier: a waypoint, not a card. Just enough to say "another step, and
+     what kind of work it is". */
+  if (depth === 2) {
+    return (
+      <article
+        className="card card--d2"
+        style={{ background: withAlpha(palette.fore, 0.9) }}
+        aria-hidden="true"
+      >
+        <div className="card__body">
+          <div className="card__meta">
+            <StepKindIcon kind={step.kind} size={19} />
+            <span className="card__index">
+              {index + 1}/{total}
+            </span>
+            {done && <IconCheckCircle size={17} />}
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  /* Middle tier: keeps the title, because knowing what is coming next is the
+     whole point of seeing up the trail. Drops the controls, which are unusable
+     at this size anyway. */
+  if (depth === 1) {
+    return (
+      <article
+        className="card card--d1"
+        style={{ background: withAlpha(palette.fore, 0.94) }}
+        aria-hidden="true"
+      >
+        <div className="card__body">
+          <div className="card__meta">
+            <StepKindIcon kind={step.kind} size={21} />
+            <span className="card__duration">{step.minutes} min</span>
+            {done && (
+              <div className="card__actions">
+                <IconCheckCircle size={19} />
+              </div>
+            )}
+          </div>
+
+          <div className="card__index">
+            Step {index + 1}/{total}
+          </div>
+          <h2 className="card__title">{step.title}</h2>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article
-      className={`card${mini ? ' card--mini' : ''}`}
+      className="card"
       /* `fore` is the darkest landform tone, which keeps white type well clear
-         of AA on every world. Minis sit back slightly so the focused card reads
-         as nearest. */
-      style={{ background: mini ? withAlpha(palette.fore, 0.88) : palette.fore }}
+         of AA on every world. */
+      style={{ background: palette.fore }}
     >
       <div className="card__body">
         <div className="card__meta">
-          {/* Icon sizes stay constant: the trail tier transform-scales the card. */}
           <StepKindIcon kind={step.kind} size={26} />
           <span className="card__duration">{step.minutes} min</span>
 
@@ -71,7 +132,7 @@ function StepCard({
         </div>
         <h2 className="card__title">{step.title}</h2>
 
-        {showCta && !mini && (
+        {showCta && (
           <button
             type="button"
             className="card__cta"

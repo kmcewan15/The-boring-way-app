@@ -1,11 +1,22 @@
+import type { ReactNode } from 'react';
 import { IconBook, IconNote, IconResources, IconTerminal, IconVerify } from './Icons';
 
-/* Reference material to sit alongside the topics. Links are intentionally left
-   as labels — point them at your team's own docs. */
-const GROUPS: Array<{
-  title: string;
-  items: Array<{ name: string; sub: string; meta?: string; icon: 'book' | 'terminal' | 'verify' | 'note' }>;
-}> = [
+/* Reference material to sit alongside the topics.
+
+   Every item carries an optional `href`. Filling one in is the whole job of
+   publishing a resource -- an item with a link renders as a real anchor that
+   opens in a new tab, and an item without one is drawn as visibly not-yet-live
+   rather than as a button that silently does nothing when clicked. */
+type Item = {
+  name: string;
+  sub: string;
+  meta?: string;
+  icon: 'book' | 'terminal' | 'verify' | 'note';
+  /** Point this at your team's own doc. Absolute URL, or an app-relative path. */
+  href?: string;
+};
+
+const GROUPS: Array<{ title: string; items: Item[] }> = [
   {
     title: 'Getting set up',
     items: [
@@ -40,6 +51,59 @@ const GROUPS: Array<{
   },
 ];
 
+const DOCS: Item = {
+  name: 'Claude Code documentation',
+  sub: 'docs.claude.com',
+  icon: 'book',
+  href: 'https://docs.claude.com/en/docs/claude-code/overview',
+};
+
+function ItemIcon({ icon }: { icon: Item['icon'] }) {
+  if (icon === 'terminal') return <IconTerminal size={26} />;
+  if (icon === 'verify') return <IconVerify size={26} />;
+  if (icon === 'note') return <IconNote size={26} />;
+  return <IconBook size={26} />;
+}
+
+function ItemBody({ item, children }: { item: Item; children?: ReactNode }) {
+  return (
+    <>
+      {children ?? <ItemIcon icon={item.icon} />}
+      <span>
+        <h4>{item.name}</h4>
+        <p>{item.sub}</p>
+        {!item.href && <p className="res__soon">Link not set yet</p>}
+      </span>
+      {item.meta && <span className="res__dur">{item.meta}</span>}
+    </>
+  );
+}
+
+function ResourceItem({ item, icon }: { item: Item; icon?: ReactNode }) {
+  const external = /^https?:/.test(item.href ?? '');
+
+  if (!item.href) {
+    /* Not a button: there is nothing to press. Announced as disabled so it is not
+       offered to a screen reader as an action either. */
+    return (
+      <div className="res__item res__item--soon" aria-disabled="true">
+        <ItemBody item={item}>{icon}</ItemBody>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      className="res__item"
+      href={item.href}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer noopener' : undefined}
+    >
+      <ItemBody item={item}>{icon}</ItemBody>
+    </a>
+  );
+}
+
 export default function ResourcesScreen() {
   return (
     <>
@@ -51,17 +115,7 @@ export default function ResourcesScreen() {
           <h2 className="res__group">{g.title}</h2>
           <div className="res__grid">
             {g.items.map((it) => (
-              <button type="button" className="res__item" key={it.name}>
-                {it.icon === 'book' && <IconBook size={26} />}
-                {it.icon === 'terminal' && <IconTerminal size={26} />}
-                {it.icon === 'verify' && <IconVerify size={26} />}
-                {it.icon === 'note' && <IconNote size={26} />}
-                <span>
-                  <h4>{it.name}</h4>
-                  <p>{it.sub}</p>
-                </span>
-                {it.meta && <span className="res__dur">{it.meta}</span>}
-              </button>
+              <ResourceItem item={it} key={it.name} />
             ))}
           </div>
         </section>
@@ -69,13 +123,7 @@ export default function ResourcesScreen() {
 
       <h2 className="res__group">Official docs</h2>
       <div className="res__grid">
-        <button type="button" className="res__item">
-          <IconResources size={26} />
-          <span>
-            <h4>Claude Code documentation</h4>
-            <p>docs.claude.com</p>
-          </span>
-        </button>
+        <ResourceItem item={DOCS} icon={<IconResources size={26} />} />
       </div>
     </>
   );

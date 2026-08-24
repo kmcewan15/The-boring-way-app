@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import FloatingIsland from '../art/FloatingIsland';
 import TrailScape from '../art/TrailScape';
-import { LANDSCAPES, mixLandscape, withAlpha } from '../art/landscapes';
+import { LANDSCAPES, mixHex, mixLandscape, withAlpha } from '../art/landscapes';
 import {
   JOURNEY,
   WORLD_BOUNDARIES,
@@ -12,7 +19,7 @@ import {
 import { useApp } from '../state/useApp';
 import QuizCard from './QuizCard';
 import StepCard from './StepCard';
-import { IconChevronDown } from './Icons';
+import { IconChevronDown, IconCompass } from './Icons';
 
 /* The trail is ONE continuous rail across all ten topics, not one rail per
    topic. Scrolling past the last step of a topic carries straight on into the
@@ -23,13 +30,26 @@ import { IconChevronDown } from './Icons';
    focused one is large and low in the frame, the next ones recede up the path
    toward the horizon. `left` drifts right with distance because the trail's
    vanishing point is up on the right of the frame. */
-const TIERS: Record<number, { bottom: number; left: number; scale: number; opacity: number }> = {
-  [-2]: { bottom: -58, left: 44, scale: 1.1, opacity: 0 },
-  [-1]: { bottom: -34, left: 47, scale: 1.06, opacity: 0 },
-  0: { bottom: 8, left: 50, scale: 1, opacity: 1 },
-  1: { bottom: 44, left: 58, scale: 0.34, opacity: 1 },
-  2: { bottom: 56, left: 63, scale: 0.19, opacity: 0.5 },
-  3: { bottom: 62, left: 66, scale: 0.12, opacity: 0 },
+/* `depth` picks which card gets drawn; distance is carried by real width rather
+   than a scale transform. Scaling shrank strokes, corner radii and shadows along
+   with the type, so a distant card looked like a blurry sticker instead of a small
+   crisp object -- and its 27px title landed at 9px, then 5px. */
+const TIERS: Record<
+  number,
+  { bottom: number; left: number; opacity: number; depth: 0 | 1 | 2; blur: number }
+> = {
+  [-2]: { bottom: -58, left: 44, opacity: 0, depth: 0, blur: 0 },
+  [-1]: { bottom: -34, left: 47, opacity: 0, depth: 0, blur: 0 },
+  0: { bottom: 8, left: 50, opacity: 1, depth: 0, blur: 0 },
+  /* These clear the focused card rather than tucking behind it. The old values
+     assumed cards scaled to a third of their size; at real widths they collided,
+     burying d1's lower half and hiding d2 almost completely behind d1. */
+  1: { bottom: 53, left: 63, opacity: 1, depth: 1, blur: 0 },
+  /* Clear of tier 1 at every window size, not just wide ones. At 1366x768 these
+     used to overlap by 69x37px, which left the far marker as a sliver poking out
+     from behind the near card rather than reading as a point further up the trail. */
+  2: { bottom: 75, left: 76, opacity: 0.9, depth: 2, blur: 0.7 },
+  3: { bottom: 82, left: 81, opacity: 0, depth: 2, blur: 1.6 },
 };
 
 function tierFor(offset: number) {
@@ -41,12 +61,16 @@ function tierFor(offset: number) {
 /** How many steps out the next world starts rising on the horizon. */
 const LEAD_STEPS = 2.2;
 
-/* The palette morph is centred on the crossing rather than finishing before it:
-   the old world holds while the new island is still on the horizon, then the
-   colour washes over you as you step through. Values are distances to the
-   boundary, so BLEND_FROM is ahead of it and BLEND_TO is just past it. */
-const BLEND_FROM = 0.9;
-const BLEND_TO = -0.4;
+/* The crossing runs over the single step before the boundary and is *finished* on
+   arrival. Values are distances to the boundary, so the blend starts one step out
+   and completes as you land on the new world's first entry.
+
+   It used to be centred on the crossing, ending 0.4 steps past it. That was fine
+   for a colour morph, but each world now has a photograph, and arriving at the
+   first step of the jungle while the desert was still 30% opaque read as a double
+   exposure rather than a transition. */
+const BLEND_FROM = 1;
+const BLEND_TO = 0;
 
 /** Cards rendered either side of the focused one. Anything further is invisible. */
 const WINDOW = 4;
@@ -80,16 +104,28 @@ const RESYNC_IDLE_MS = 900;
 
 const LAST = JOURNEY.length - 1;
 
+/* First and last journey index of each world, so a world's photograph can be
+   panned across exactly its own stretch of the trail rather than the whole
+   forty-eight. */
+const WORLD_SPAN = new Map<number, { first: number; last: number }>();
+JOURNEY.forEach((entry, i) => {
+  const span = WORLD_SPAN.get(entry.topic.number);
+  if (span) span.last = i;
+  else WORLD_SPAN.set(entry.topic.number, { first: i, last: i });
+});
+
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 
 export default function LearnScreen({
   onOpenExplore,
+  onOpenMap,
   onOpenEntry,
 }: {
   onOpenExplore: () => void;
+  onOpenMap: () => void;
   onOpenEntry: (globalIndex: number) => void;
 }) {
-  const { cursor } = useApp();
+  const { cursor, setViewIndex } = useApp();
   const cursorIndex = globalIndexOf(cursor.topic, cursor.step);
 
   /* The whole stage, not just the rail: the caption banner and the focused card's
@@ -253,16 +289,83 @@ export default function LearnScreen({
      Quantised so scrolling does not rebuild the palette (and repaint several
      hundred SVG paths) on every scroll event. */
   const morphing = boundary !== undefined && lead <= BLEND_FROM && lead >= BLEND_TO;
-  const biomeA = morphing
-    ? JOURNEY[boundary! - 1].topic.biome
-    : JOURNEY[clamp(Math.round(scrollT), 0, LAST)].topic.biome;
-  const biomeB = morphing ? JOURNEY[boundary!].topic.biome : biomeA;
+  /* The outgoing and incoming worlds. Everything that changes across a crossing --
+     palette, and now the photographic backdrop -- is driven off this one pair, so
+     the colour and the picture always move together. */
+  const topicA = morphing
+    ? JOURNEY[boundary! - 1].topic
+    : JOURNEY[clamp(Math.round(scrollT), 0, LAST)].topic;
+  const topicB = morphing ? JOURNEY[boundary!].topic : topicA;
+  const biomeA = topicA.biome;
+  const biomeB = topicB.biome;
   const rawBlend = morphing ? (BLEND_FROM - lead) / (BLEND_FROM - BLEND_TO) : 0;
+  /* Quantised to 5% for the palette only: every distinct value rebuilds the
+     landscape's several hundred SVG paths, so it is deliberately coarse. */
   const blend = Math.round(clamp(rawBlend, 0, 1) * 20) / 20;
+  /* Photographs are two stacked layers and cost nothing to recolour, so they use
+     the continuous value -- the coarse one made the dissolve visibly step through
+     twenty stages. */
+  const blendSmooth = clamp(rawBlend, 0, 1);
   const palette = useMemo(
     () => mixLandscape(LANDSCAPES[biomeA], LANDSCAPES[biomeB], blend),
     [biomeA, biomeB, blend],
   );
+
+  /* Walks a world's photograph as you walk the world: the foot of the path at its
+     first entry, the far end -- the waterfall -- at its last. `cover` on a tall
+     image renders it far taller than the stage, and a background-position
+     percentage interpolates across exactly that overflow, so the whole picture
+     gets used without needing to know its height.
+
+     Each layer is panned by its own world, which matters mid-crossing: the world
+     you are leaving sits at the top of its path while the one arriving is still at
+     the foot of its own. */
+  /* 0 at the top of the picture, 1 at the bottom -- read by --pan on the photo
+     layer, which turns it into a composited translate. A world starts at the foot
+     of the path (1) and climbs to the landmark at the top (0). */
+  const panFor = (topicNumber: number) => {
+    const span = WORLD_SPAN.get(topicNumber);
+    if (!span || span.last === span.first) return 1;
+    const p = clamp((scrollT - span.first) / (span.last - span.first), 0, 1);
+    return 1 - p;
+  };
+
+  /* Tell the rest of the app which entry is on screen, so the sidebar can describe
+     what you are looking at rather than where you left off -- it was reading the
+     saved cursor while wearing the viewed world's colours, which contradicted
+     itself. Cleared on unmount so other tabs fall back to the cursor. */
+  useEffect(() => {
+    setViewIndex(focus);
+  }, [focus, setViewIndex]);
+
+  useEffect(() => () => setViewIndex(null), [setViewIndex]);
+
+  /* Hand the world's colours to the app chrome as CSS custom properties rather
+     than as React state. The sidebar sits outside this component, and putting a
+     per-frame palette into shared state would re-render the whole tree on every
+     scroll -- these are written straight to the document instead, so the sidebar
+     recolours with no React work at all. Only fires when the blend actually
+     changes, since `palette` is memoised on the quantised value. */
+  useEffect(() => {
+    const root = document.documentElement.style;
+    root.setProperty('--w-chrome', palette.sky);
+    root.setProperty('--w-panel', mixHex(palette.sky, palette.fore, 0.13));
+    root.setProperty('--w-ink', palette.foreDeep);
+    /* Only 6% toward the pale end. Measured across all seven biomes: 30% put the
+       small labels at 3.5:1 and 14% still left the blossom world at 4.47:1, both
+       under AA. Muted enough to read as secondary, dark enough everywhere. */
+    root.setProperty('--w-ink-soft', mixHex(palette.foreDeep, palette.sky, 0.06));
+    root.setProperty('--w-accent', palette.fore);
+    root.setProperty('--w-line', withAlpha(palette.foreDeep, 0.16));
+    root.setProperty('--w-hover', withAlpha(palette.foreDeep, 0.08));
+    /* The "Current step" pill floats over the photograph rather than sitting on a
+       solid surface, so it stays nearly opaque: at the old 0.76 a dark patch of
+       photo showing through dragged the pill down toward its own ink, measuring
+       3.4:1 on the blossom world. 0.93 holds every world at 5.2:1 or better even
+       against pure black, and the backdrop blur still reads as glass. */
+    root.setProperty('--w-glass', withAlpha(palette.sky, 0.93));
+    root.setProperty('--w-glass-hi', withAlpha(palette.sky, 1));
+  }, [palette]);
 
   /* Parallax is measured from the start of the current world, not from the start
      of the journey, so each world is its own climb instead of the scene zooming
@@ -270,9 +373,24 @@ export default function LearnScreen({
   const worldStart = WORLD_BOUNDARIES.filter((b) => b <= scrollT).pop() ?? 0;
   const localT = clamp(scrollT - worldStart, 0, 8);
 
-  /* ---- the next world, rising at the vanishing point as you approach it ---- */
+  /* One entry per world with a photograph, outgoing first. Built as a keyed list
+     rather than two conditionals so React can tell the layers apart. */
+  const photoLayers = [
+    topicA.photo
+      ? { key: topicA.number, photo: topicA.photo, pan: panFor(topicA.number), opacity: 1 - blendSmooth }
+      : null,
+    topicB !== topicA && topicB.photo
+      ? { key: topicB.number, photo: topicB.photo, pan: panFor(topicB.number), opacity: blendSmooth }
+      : null,
+  ].filter((l): l is NonNullable<typeof l> => l !== null);
+
+  /* ---- the next world, rising at the vanishing point as you approach it ----
+     Skipped when either side of the crossing has a photograph: against a
+     photographic backdrop the little illustrated island reads as a sticker stuck
+     on top, and a picture dissolving in or out is already the preview. */
   const nextWorld = useMemo(() => {
     if (boundary === undefined || lead > LEAD_STEPS) return null;
+    if (JOURNEY[boundary].topic.photo || JOURNEY[boundary - 1].topic.photo) return null;
 
     const grow = clamp((LEAD_STEPS - lead) / LEAD_STEPS, 0, 1);
     /* Reaches full opacity well before the boundary so it reads as a crisp
@@ -295,6 +413,40 @@ export default function LearnScreen({
   const focusEntry = JOURNEY[focus];
   const focusTopic = focusEntry.topic;
   const focusPath = pathForTopic(focusTopic.number);
+
+  /* ---- arriving in a new world -------------------------------------------
+     Crossing a boundary is the most worked-on moment in the app -- two
+     photographs dissolving while the palette, the chrome and the caption all
+     migrate together -- and with nothing to mark it, it passes unremarked. This
+     announces it.
+
+     Keyed off the topic NUMBER rather than the topic object, so it fires once per
+     crossing instead of on every render that happens to produce a new object. The
+     ref swallows the first paint: arriving where you already were is not an
+     arrival, and without it this would fanfare on every reload. */
+  const [arrival, setArrival] = useState<{ n: number; title: string; at: number } | null>(
+    null,
+  );
+  const lastWorld = useRef<number | null>(null);
+  const focusNumber = focusTopic.number;
+
+  /* The title is read through a ref so it is not a dependency: it is a pure
+     function of the number, and listing it would only add a way for the effect to
+     re-run without a crossing having happened. */
+  const titleRef = useRef(focusTopic.title);
+  titleRef.current = focusTopic.title;
+
+  useEffect(() => {
+    if (lastWorld.current === null) {
+      lastWorld.current = focusNumber;
+      return;
+    }
+    if (lastWorld.current === focusNumber) return;
+    lastWorld.current = focusNumber;
+    setArrival({ n: focusNumber, title: titleRef.current, at: performance.now() });
+    const id = window.setTimeout(() => setArrival(null), 2600);
+    return () => window.clearTimeout(id);
+  }, [focusNumber]);
 
   /* `memo` on the cards only holds if their props are referentially stable, and
      an inline `() => onOpenEntry(i)` would be a fresh function on every render,
@@ -324,11 +476,48 @@ export default function LearnScreen({
     <section className="trail" ref={stageRef}>
       {/* Landscape drifts as you move up the trail. Driven by the fractional
           position so it tracks the scroll rather than jumping per step. */}
-      <div
-        className="trail__art"
-        style={{ transform: `translateY(${localT * 2.2}%) scale(${1 + localT * 0.045})` }}
-      >
-        <TrailScape palette={palette} />
+      <div className="trail__art">
+        {/* The generated landscape is the floor of this stack: it shows through
+            wherever a world has no photo of its own, and it keeps morphing colour
+            underneath one that does. Its drift stays on this inner wrapper so it
+            cannot compound with the photo pan below, which moves the picture
+            itself. */}
+        <div
+          className="trail__parallax"
+          style={{ transform: `translateY(${localT * 2.2}%) scale(${1 + localT * 0.045})` }}
+        >
+          <TrailScape palette={palette} />
+        </div>
+
+        {/* Two photo layers, outgoing over incoming, cross-faded on the very same
+            `blend` that drives the palette -- so one picture dissolves into the
+            next exactly as you step across the boundary. A world without a photo
+            contributes nothing and simply reveals the landscape below.
+
+            KEYED BY TOPIC, and it has to be. Without keys React matches these by
+            position, so the moment the crossing ended and the list went from two
+            layers to one it reused the outgoing world's node and mutated it into
+            the incoming one -- which, with a transition on background-position,
+            swept the new picture the entire way from top to bottom over 820ms
+            while the correctly-positioned node was thrown away. Keys let the
+            arriving layer simply survive and the departing one unmount. */}
+        {photoLayers.map((layer) => (
+          <div
+            key={layer.key}
+            className="trail__photo"
+            style={{ opacity: layer.opacity }}
+            aria-hidden="true"
+          >
+            <i
+              style={
+                {
+                  backgroundImage: `url(${layer.photo})`,
+                  '--pan': layer.pan,
+                } as CSSProperties
+              }
+            />
+          </div>
+        ))}
       </div>
 
       {nextWorld && (
@@ -347,11 +536,28 @@ export default function LearnScreen({
         </div>
       )}
 
+      {/* Grades the landscape only -- z-index puts it under every card and
+          control. See .grade. */}
+      <div className="grade" aria-hidden="true" />
+
+      {/* Opens the whole-journey map. Sits apart from the centred pill so the two
+          never collide, and carries its shortcut in the tooltip rather than on the
+          face -- the button is small on purpose. */}
+      <button
+        type="button"
+        className="trail__mapbtn"
+        onClick={onOpenMap}
+        title="See the whole trail (M)"
+        aria-label="See the whole trail"
+      >
+        <IconCompass size={26} />
+      </button>
+
       <div className="trail__top">
         {focus !== cursorIndex && (
           <button
             type="button"
-            className="pill fade-in"
+            className="pill pill--world fade-in"
             onClick={() => goTo(cursorIndex)}
           >
             <IconChevronDown size={22} />
@@ -359,6 +565,17 @@ export default function LearnScreen({
           </button>
         )}
       </div>
+
+      {/* Announces the world you have just walked into. Above the cards so it reads
+          as a title card over the scene, and inert so it can never intercept a
+          scroll. The key restarts the animation when one crossing follows another
+          quickly. */}
+      {arrival && (
+        <div className="arrival" key={arrival.at} aria-hidden="true">
+          <span className="arrival__eyebrow">Topic {arrival.n}</span>
+          <span className="arrival__title">{arrival.title}</span>
+        </div>
+      )}
 
       {/* Invisible scroll surface: one snap page per entry, across every topic */}
       <div className="trail__rail" ref={railRef} onScroll={onScroll}>
@@ -375,13 +592,17 @@ export default function LearnScreen({
           return (
             <div
               key={entryKey(j)}
-              className={`trailcard${isFocused ? ' trailcard--active' : ''}`}
+              className={`trailcard trailcard--d${tier.depth}${
+                isFocused ? ' trailcard--active' : ''
+              }`}
               style={{
                 bottom: `${tier.bottom}%`,
                 left: `${tier.left}%`,
                 opacity: tier.opacity,
-                transform: `translateX(-50%) scale(${tier.scale})`,
-                transformOrigin: '50% 100%',
+                transform: 'translateX(-50%)',
+                /* Matches how both photographs haze toward the horizon, so a far
+                   card recedes into the scene rather than just being small. */
+                filter: tier.blur ? `blur(${tier.blur}px) saturate(0.85)` : undefined,
                 zIndex: 100 - j.globalIndex,
               }}
               aria-hidden={!isFocused}
@@ -392,7 +613,7 @@ export default function LearnScreen({
                   index={j.indexInTopic}
                   total={j.topic.steps.length}
                   palette={LANDSCAPES[j.topic.biome]}
-                  mini={!isFocused}
+                  depth={tier.depth}
                   showCta={isFocused}
                   onStart={starterFor(j.globalIndex)}
                 />
@@ -400,7 +621,7 @@ export default function LearnScreen({
                 <QuizCard
                   topic={j.topic}
                   palette={LANDSCAPES[j.topic.biome]}
-                  mini={!isFocused}
+                  depth={tier.depth}
                   showCta={isFocused}
                   onStart={starterFor(j.globalIndex)}
                 />

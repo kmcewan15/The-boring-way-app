@@ -12,7 +12,8 @@ export type IslandBiome =
   | 'tundra'
   | 'forest'
   | 'glacier'
-  | 'blossom';
+  | 'blossom'
+  | 'ocean';
 
 export type IslandPalette = {
   land: string;
@@ -78,6 +79,17 @@ export const BIOME_PALETTES: Record<IslandBiome, IslandPalette> = {
     path: '#F4FBFC',
     foliage: '#2F7488',
     accent: '#E4F6FA',
+  },
+  /* Turquoise shallows, a sun-bleached boardwalk and lantern gold. Distinct from
+     glacier, which is the same family of blues but colder and greyer. */
+  ocean: {
+    land: '#4E9EC4',
+    landDark: '#267093',
+    landLight: '#9FD3E8',
+    underside: '#124459',
+    path: '#F5E2BC',
+    foliage: '#2E7D5B',
+    accent: '#FCE7B8',
   },
   blossom: {
     land: '#D98BA6',
@@ -748,6 +760,21 @@ const BIOME_SPRITES: Record<IslandBiome, Placement[]> = {
     ['roundTree', 236, 288, 0.95],
     ['conifer', 110, 278, 1.15],
     ['roundTree', 152, 290, 1.05],
+  ],
+  /* Palms and beach scrub, thinning toward the near edge where the boardwalk
+     leaves the island. */
+  ocean: [
+    ['palm', 158, 186, 0.55],
+    ['tuft', 196, 180, 0.5],
+    ['palm', 276, 210, 0.62],
+    ['flowers', 124, 208, 0.58],
+    ['palm', 292, 240, 0.76],
+    ['palm', 88, 250, 0.86],
+    ['tuft', 108, 266, 0.8],
+    ['flowers', 322, 254, 0.72],
+    ['palm', 258, 274, 1.02],
+    ['tuft', 234, 290, 0.9],
+    ['palm', 120, 282, 1.12],
   ],
   glacier: [
     ['iceShard', 152, 178, 0.5],

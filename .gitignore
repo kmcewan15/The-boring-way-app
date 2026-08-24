@@ -45,3 +45,4 @@ The-boring-way-app/
 # repo root. The real artwork lives in images/ (served) and art-source/ (masters).
 /*.png
 /*.jpeg
+/*.svg
