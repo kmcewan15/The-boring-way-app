@@ -62,6 +62,27 @@ The cursor and `JOURNEY` are two views of the same position; `globalIndexOf()`
 and `quizPosition()` convert between them. Screens that show "where you are" read
 the cursor; the trail reads `JOURNEY`.
 
+Four more data modules feed the Resources screen and the in-step hints. None of
+them is imported by `curriculum.ts`, so none can break the trail:
+
+- **`src/data/commands.ts`** — the slash commands worth knowing, keyed by step id
+  then by topic number (`commandsFor`). `allCommands()` folds both records into
+  the Resources cheatsheet, one reason per topic, so the two surfaces cannot
+  drift. `CommandHints.tsx` renders the per-step half as a lightbulb in the
+  corner of `StepView`.
+- **`src/data/products.ts`** — the Claude Code and Claude apps glossaries. These
+  facts go stale in weeks (plan defaults, feature names, pricing language), and a
+  reference page gets trusted rather than questioned, so re-read them against the
+  current docs before relying on them.
+- **`src/data/glossary.ts`** — five disciplines, each with terms, copy-ready
+  prompt lines and commands.
+- **`src/data/starters.ts`** — the data rules, the good-fit / poor-fit task
+  lists, and troubleshooting keyed by symptom.
+
+Resources holds all of these behind one `query` state; a section renders only
+when it has a match, so an empty search shows one `.empty` line rather than five.
+It deliberately does **not** index the topics — Learn already does that.
+
 ## Invariants worth knowing
 
 **A cursor `step` equal to `topic.steps.length` means "on the quiz", not

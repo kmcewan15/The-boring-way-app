@@ -2095,6 +2095,28 @@ button {
   box-shadow: 0 12px 26px rgba(123, 58, 34, 0.14);
 }
 
+/* Reused on an anchor and on a plain div in the support section. */
+a.res__item {
+  text-decoration: none;
+}
+
+/* Nothing to click, so it must not behave as though there were. */
+.res__item--static {
+  cursor: default;
+}
+
+.res__item--static:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* The support cards carry a handle chip under the two text lines. `code` is
+   inline by default, so it needs a block box to take a top margin. */
+.res__grid .res__item span > h4 + p + code {
+  display: inline-block;
+  margin-top: 8px;
+}
+
 .res__item svg {
   flex: none;
 }
@@ -2398,4 +2420,761 @@ button {
   font-weight: 600;
   opacity: 0.72;
   text-decoration: line-through;
+}
+
+/* ==========================================================================
+   Command hints — the lightbulb in the corner of a step
+   ========================================================================== */
+
+/* Anchored to `.step`, which is `position: absolute; inset: 0`. Sits above the
+   step content (z 2) and below the confetti burst (z 4). The bottom offset
+   clears `.step__foot`, which is roughly 94px tall. */
+.hints {
+  position: absolute;
+  right: 26px;
+  bottom: 108px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: calc(100% - 52px);
+  /* The wrapper shrinks to the panel's max-content width, which is wider than
+     the clamped panel, so it would otherwise eat wheel and click events over a
+     transparent strip. `.step__scroll` is a sibling, not an ancestor, so the
+     events have nowhere to fall through to. */
+  pointer-events: none;
+}
+
+.hints__fab,
+.hints__panel {
+  pointer-events: auto;
+}
+
+/* Matches `.step__done` rather than the `--shadow-pill` token: on terracotta
+   that token is too faint to read. */
+.hints__fab {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--pink-cream);
+  color: var(--terracotta-deep);
+  box-shadow: 0 8px 22px rgba(60, 25, 15, 0.28);
+  transition:
+    background var(--dur-fast) var(--ease-calm),
+    transform var(--dur-fast) var(--ease-calm);
+}
+
+.hints__fab:hover {
+  background: #fff;
+}
+
+.hints__fab:active {
+  transform: scale(0.96);
+}
+
+/* Open: the deepest brown in the step palette, with a cream ring so the button
+   still reads against `.step`'s mid-brown background. */
+.hints__fab--on {
+  background: var(--terracotta-ink);
+  color: var(--pink-cream);
+  box-shadow:
+    0 0 0 2px rgba(253, 237, 232, 0.9),
+    0 8px 22px rgba(60, 25, 15, 0.32);
+}
+
+/* Holds the open state under the cursor: the plain `:hover` rule above is one
+   class more specific, so without this the button reverts to white while open. */
+.hints__fab--on:hover {
+  background: var(--terracotta-ink);
+  filter: brightness(1.14);
+}
+
+/* The global focus ring is terracotta, which vanishes against `.step`. Only the
+   button on that background needs the override — `.hints__close` sits on cream,
+   where the global ring reads correctly. */
+.hints__fab:focus-visible {
+  outline: 2px solid var(--path-cream);
+  outline-offset: 3px;
+}
+
+.hints__panel {
+  width: min(360px, 100%);
+  max-height: min(46vh, 380px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 16px 18px 14px;
+  border-radius: var(--r-card);
+  background: var(--path-cream);
+  color: var(--terracotta-ink);
+  box-shadow: var(--shadow-card);
+}
+
+.hints__cap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.hints__h {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.hints__close {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  color: var(--terracotta);
+  opacity: 0.7;
+  transition: opacity var(--dur-fast) var(--ease-calm);
+}
+
+.hints__close:hover {
+  opacity: 1;
+}
+
+.hints__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hints__row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 10px;
+}
+
+/* Not `.code` — that one is tuned for white text on terracotta. */
+.hints__cmd {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--pink-soft);
+  color: var(--terracotta-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.hints__when {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.hints__foot {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(156, 82, 54, 0.18);
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.66;
+}
+
+
+/* ==========================================================================
+   Glossary and cheatsheet — the Resources screen
+   ========================================================================== */
+
+.gloss__lead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 500;
+  opacity: 0.78;
+}
+
+.gloss__switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+/* `.pill--solid` is cream, which is what `--pink-bg` already is — on this screen
+   it makes no visible difference. The selected tab takes the same terracotta
+   fill the active sidebar item uses, so it reads at a glance. */
+.pill--pick {
+  background: var(--pink-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.pill--pick:hover {
+  background: var(--rock-light);
+  color: #fff;
+}
+
+/* Paired with its own `:hover` to outrank `.pill:hover`, which is one class more
+   specific than a lone modifier. */
+.pill--pick-on,
+.pill--pick-on:hover {
+  background: var(--terracotta);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(123, 58, 34, 0.24);
+}
+
+.gloss {
+  padding: 24px 26px 26px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  color: var(--terracotta-deep);
+}
+
+.gloss__blurb {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.gloss__h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 12px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.gloss__h svg {
+  flex: none;
+  opacity: 0.8;
+}
+
+.gloss__terms {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.gloss__term {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(253, 237, 232, 0.72);
+}
+
+.gloss__term dt {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+/* 0.84 measured 4.26:1 against `--pink-cream`, under the 4.5:1 AA target, and
+   this rule now sets the type for every definition on the screen. */
+.gloss__term dd {
+  margin: 3px 0 0;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.42;
+  opacity: 0.94;
+}
+
+.gloss__prompts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Three columns, not two: the copy button is a grid item, and left to wrap it
+   would drop to a new row and stretch to the first track's width. */
+.gloss__prompt {
+  display: grid;
+  grid-template-columns: minmax(150px, 200px) 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: rgba(253, 237, 232, 0.72);
+}
+
+.gloss__task {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Written to be selected and pasted, so it reads as a quotation rather than
+   as prose the reader has to rewrite. */
+.gloss__add {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
+.gloss__add::before,
+.gloss__add::after {
+  content: '"';
+  opacity: 0.45;
+}
+
+.gloss__cmds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gloss__cmd {
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--pink-cream);
+  color: var(--terracotta-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---- the cheatsheet table ---- */
+
+.sheetlist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* A fixed first track, not `minmax`: the tracks belong to the row, not to the
+   list, so an auto column would let every row pick its own width and the
+   `when` text would step in and out down the page. 180px clears the longest
+   command, `/privacy-settings`. */
+.sheetlist__row {
+  display: grid;
+  grid-template-columns: 180px 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: var(--pink-soft);
+  color: var(--terracotta-deep);
+}
+
+/* Grid items stretch by default, which turns a short chip like `/cd` into a
+   180px slab. */
+.sheetlist__row > .gloss__cmd {
+  justify-self: start;
+}
+
+/* One line per distinct reason the course gives for the command. */
+.sheetlist__uses {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sheetlist__use {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.sheetlist__when {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+  opacity: 0.86;
+}
+
+.sheetlist__topics {
+  display: flex;
+  gap: 6px;
+  flex: none;
+  margin-left: auto;
+}
+
+/* One number per topic the command appears in. Clicking it opens that topic. */
+.sheetlist__topic {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--pink-cream);
+  color: var(--terracotta-ink);
+  font-size: 15px;
+  font-weight: 700;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.sheetlist__topic:hover {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .gloss__prompt,
+  .sheetlist__row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .gloss__prompt .copybtn,
+  .sheetlist__row .copybtn {
+    justify-self: start;
+  }
+}
+
+
+/* ==========================================================================
+   Resources — search, the rules card, task fit, troubleshooting
+   ========================================================================== */
+
+/* Sticky against `.screen--scroll`, the app's only scrollport. The negative
+   inline margins bleed the bar across `.wrap`'s 48px gutters, and the opaque
+   background stops page text showing through as it scrolls under. */
+.res__searchbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 22px -48px 8px;
+  padding: 14px 48px 12px;
+  background: var(--pink-bg);
+}
+
+.res__search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  height: 54px;
+  border-radius: var(--r-pill);
+  background: var(--pink-soft);
+  color: var(--terracotta-deep);
+  cursor: text;
+}
+
+.res__search svg {
+  flex: none;
+  opacity: 0.7;
+}
+
+/* `.field` sets `outline: none` and never replaces it, so this does not reuse
+   it. The ring goes on the label, because the input has no border of its own. */
+.res__search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  color: inherit;
+}
+
+.res__search input::placeholder {
+  color: var(--terracotta);
+  opacity: 0.6;
+}
+
+.res__search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.res__search:focus-within {
+  outline: 3px solid var(--terracotta);
+  outline-offset: 2px;
+}
+
+.res__clear {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  background: var(--pink-cream);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--terracotta-ink);
+}
+
+.res__clear:hover {
+  background: #fff;
+}
+
+.res__count {
+  margin: 8px 0 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.9;
+  min-height: 20px;
+}
+
+/* A titled card on the light surface, used by the rules, task fit and each
+   product glossary. Same skin as `.gloss`, minus the tab-panel semantics. */
+.panelcard {
+  padding: 22px 26px 24px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  color: var(--terracotta-deep);
+  margin-bottom: 12px;
+}
+
+.panelcard > .gloss__h:first-child {
+  margin-top: 0;
+}
+
+/* ---- what you may put in ---- */
+
+.rules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rules__row {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: rgba(253, 237, 232, 0.72);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.rules__tag {
+  padding: 3px 0;
+  border-radius: var(--r-pill);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The three levels are the whole point of the card, so they are colour-coded —
+   but each also carries its own word, because colour alone is not a label. */
+.rules__row--never .rules__tag {
+  background: var(--terracotta-ink);
+  color: #fff;
+}
+
+/* `--rock-light` measured 3.74:1 behind the tag text. This is the middle tier of
+   a compliance card, so it has to be legible. */
+.rules__row--ask .rules__tag {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.rules__row--fine .rules__tag {
+  background: var(--teal-plant);
+  color: #fff;
+}
+
+.rules__test {
+  margin: 14px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* ---- is this a good task ---- */
+
+.fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.fit__col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 16px;
+  border-radius: 14px;
+  background: rgba(253, 237, 232, 0.72);
+}
+
+.fit__h {
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.fit__col--good {
+  box-shadow: inset 3px 0 0 var(--teal-plant);
+}
+
+.fit__col--poor {
+  box-shadow: inset 3px 0 0 var(--terracotta-ink);
+}
+
+.fit__row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.fit__row strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.fit__row span {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.42;
+  opacity: 0.94;
+}
+
+/* ---- when it goes wrong ---- */
+
+.fixlist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+}
+
+.fixlist__row {
+  padding: 16px 20px 18px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  color: var(--terracotta-deep);
+}
+
+.fixlist__sym {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.fixlist__cause {
+  margin: 6px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.42;
+  opacity: 0.95;
+}
+
+.fixlist__fix {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(156, 82, 54, 0.2);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.44;
+}
+
+/* ---- copy button ---- */
+
+.copybtn {
+  flex: none;
+  justify-self: end;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  background: var(--pink-cream);
+  color: var(--terracotta-ink);
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast) var(--ease-calm),
+    background var(--dur-fast) var(--ease-calm);
+}
+
+/* Hidden until wanted, but never hidden from the keyboard. */
+.gloss__prompt:hover .copybtn,
+.sheetlist__row:hover .copybtn,
+.copybtn:focus-visible,
+.copybtn--done {
+  opacity: 1;
+}
+
+.copybtn:hover {
+  background: #fff;
+}
+
+.copybtn--done {
+  background: var(--teal-plant);
+  color: #fff;
+}
+
+/* ---- the disclosure, on a light surface ---- */
+
+/* `.track` is built for the dark step overlay: black and white alphas over a
+   dark card. The structure and the [open] chevron transfer; the colours do not. */
+.track--onLight {
+  background: var(--pink-soft);
+  color: var(--terracotta-deep);
+  box-shadow: none;
+}
+
+.track--onLight .track__sum {
+  background: rgba(156, 82, 54, 0.08);
+  padding: 16px 22px;
+}
+
+.track--onLight .track__sum:hover {
+  background: rgba(156, 82, 54, 0.14);
+}
+
+.track--onLight .track__sum:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: -2px;
+}
+
+.track--onLight .track__label {
+  color: var(--terracotta-deep);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+}
+
+.track--onLight .track__body {
+  padding: 16px 18px 6px;
+}
+
+@media (max-width: 900px) {
+  .rules__row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .rules__tag {
+    justify-self: start;
+    padding: 3px 12px;
+  }
+
+  .res__searchbar {
+    margin-left: -24px;
+    margin-right: -24px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
 }

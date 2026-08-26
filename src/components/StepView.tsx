@@ -7,6 +7,7 @@ import { useApp } from '../state/useApp';
 import { StepKindIcon } from './StepCard';
 import Rich from './Rich';
 import StepBody from './StepBody';
+import CommandHints from './CommandHints';
 import { IconCircle, IconCircleCheck, IconClose, IconPause, IconPlay } from './Icons';
 
 const KIND_LABEL: Record<Step['kind'], string> = {
@@ -184,6 +185,8 @@ export default function StepView({
           )}
         </div>
       </div>
+
+      <CommandHints key={step.id} topicNumber={topicNumber} stepId={step.id} />
 
       <footer className="step__foot">
         {/* Omitted entirely, not left empty: an empty flex item still takes the

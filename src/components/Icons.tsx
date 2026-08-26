@@ -100,6 +100,77 @@ export function IconNote({ size = 24, className }: IconProps) {
   );
 }
 
+/** Lightbulb — the contextual command hints in a step. */
+export function IconBulb({ size = 24, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M12 3.4a5.8 5.8 0 0 0-3.3 10.6c.6.4.9 1.1.9 1.8v.4h4.8v-.4c0-.7.3-1.4.9-1.8A5.8 5.8 0 0 0 12 3.4Z" />
+      <path d="M9.6 18.7h4.8" />
+      <path d="M10.8 21h2.4" />
+    </svg>
+  );
+}
+
+/** Speech bubble — a support channel to ask in. */
+export function IconChat({ size = 24, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M20.4 12.4c0 3.8-3.8 6.8-8.4 6.8a10 10 0 0 1-2.4-.3l-4 1.5 1.2-3.3a6.4 6.4 0 0 1-2.8-5.2c0-3.8 3.8-6.8 8.4-6.8s8 3 8 6.8Z" />
+      <path d="M9 12h.01M12 12h.01M15 12h.01" strokeWidth={2.2} />
+    </svg>
+  );
+}
+
+/** Link out — an external destination rather than a screen in the app. */
+export function IconLink({ size = 24, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M13.6 5.6h4.8v4.8" />
+      <path d="M18.4 5.6 11 13" />
+      <path d="M17.2 14v3.6a1.6 1.6 0 0 1-1.6 1.6H6.4a1.6 1.6 0 0 1-1.6-1.6V8.4a1.6 1.6 0 0 1 1.6-1.6H10" />
+    </svg>
+  );
+}
+
+/** Magnifier — the Resources search field. */
+export function IconSearch({ size = 24, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <circle cx="10.8" cy="10.8" r="6.6" />
+      <path d="M15.7 15.7 20.4 20.4" strokeWidth={2} />
+    </svg>
+  );
+}
+
+/** Two stacked sheets — copy to the clipboard. */
+export function IconCopy({ size = 20, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <rect x="9" y="9" width="11" height="11" rx="2.2" />
+      <path d="M15.4 5.6a2.2 2.2 0 0 0-2.2-1.6H6.2A2.2 2.2 0 0 0 4 6.2v7a2.2 2.2 0 0 0 1.6 2.2" />
+    </svg>
+  );
+}
+
+/** Bare tick, for a button that has just done its job. */
+export function IconCheckSmall({ size = 20, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M5 12.6l4.4 4.4L19 6.6" strokeWidth={2.2} />
+    </svg>
+  );
+}
+
+/** Triangle with a bar — a rule you must not break. */
+export function IconWarn({ size = 24, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M12 4.4 21 19.6H3Z" />
+      <path d="M12 10v4.2M12 17h.01" strokeWidth={2.2} />
+    </svg>
+  );
+}
+
 export function IconChevronDown({ size = 26, className }: IconProps) {
   return (
     <svg {...base(size)} className={className} aria-hidden="true">
