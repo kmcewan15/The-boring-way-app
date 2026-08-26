@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { JOURNEY, TOPICS, globalIndexOf, pathForTopic } from '../data/curriculum';
 import { useApp, type Tab } from '../state/useApp';
 import { useViewIndex } from '../state/viewStore';
@@ -104,17 +105,24 @@ export default function Sidebar() {
             <hr />
           </>
         )}
+        {/* The one number worth a glance rather than a read gets a bar, not
+            just more bold text in a column that was already all bold text.
+            Worlds complete moved in alongside it rather than keeping its own
+            heading below -- it's a second progress figure, not a new topic,
+            so it reads as this row's footnote instead of a peer of "Path" and
+            "Position" above. Steps and worlds still don't share one number:
+            passing a quiz is not a 39th step, so each keeps its own line. */}
         <dt>Progress</dt>
-        <dd>
-          {completed.length}/{totalSteps} steps · {pct}%
-        </dd>
-        <hr />
-        {/* Steps and worlds are counted separately on purpose. Passing a quiz is
-            not a 39th step, and folding it into the step percentage would make the
-            one number mean two things. */}
-        <dt>Worlds complete</dt>
-        <dd>
-          {topicsPassed} of {TOPICS.length}
+        <dd className="side__progress">
+          <span className="side__bar" style={{ '--fill': pct / 100 } as CSSProperties}>
+            <i />
+          </span>
+          <span className="side__progress-line">
+            {completed.length}/{totalSteps} steps · {pct}%
+          </span>
+          <span className="side__progress-line side__progress-line--sub">
+            {topicsPassed} of {TOPICS.length} worlds complete
+          </span>
         </dd>
       </dl>
     </aside>

@@ -75,16 +75,27 @@ button {
 }
 
 .side__brand {
-  padding: 0 14px;
-  font-size: 23px;
+  /* At the old 14px/23px this measured 172.7px of text in a 151.3px-wide
+     box -- "Way" had nowhere to go but its own line. Trimmed both padding
+     and size until the same measurement (149.7px in a 159.3px box) clears
+     with room to spare, rather than sitting right on the wrap boundary
+     where a font hinting difference could tip it back over. */
+  padding: 0 10px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.3px;
   line-height: 1.2;
+  white-space: nowrap;
   color: var(--w-ink, var(--terracotta-deep));
   transition: color var(--dur-slow) var(--ease-calm);
 }
 
 .side__brand span {
+  /* white-space is inherited, and the nowrap above is meant for the title
+     line only -- left alone, this tagline tried to honour it too and ran
+     straight off the edge of the sidebar instead of wrapping onto its usual
+     two lines. */
+  white-space: normal;
   display: block;
   margin-top: 4px;
   font-size: 13px;
@@ -158,19 +169,21 @@ button {
 
 .side__foot dt {
   font-size: 13px;
-  font-weight: 700;
+  /* Softened from the value's 700 to separate label from value by weight,
+     not colour -- lowering this to the muted ink tone was the first thing
+     tried, and it measured 4.0-4.2:1 against the panel on the paler worlds,
+     under the 4.5:1 AA floor for text this size. Weight carries no
+     contrast-ratio cost, so this is the version of "quieter" that doesn't
+     also mean "fails AA on half the worlds". */
+  font-weight: 600;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  /* Full-strength ink, not the muted tone: at 13px these labels measured 4.0-4.2:1
-     against the panel on the paler worlds, under AA. Their hierarchy is already
-     carried by size, capitals and letter-spacing, so they lose nothing by being
-     as dark as the value beneath them. */
   color: var(--w-ink, var(--terracotta-deep));
   transition: color var(--dur-slow) var(--ease-calm);
 }
 
 .side__foot dd {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   font-size: 18px;
   font-weight: 700;
   line-height: 1.25;
@@ -185,9 +198,60 @@ button {
   font-weight: 600;
 }
 
+/* The one figure in this panel worth a glance rather than a read. Same fill
+   language as the coursebar above the trail, scaled down to sidebar size --
+   scaleX rather than width so it animates without a layout pass. */
+.side__bar {
+  display: block;
+  position: relative;
+  height: 7px;
+  margin: 7px 0 6px;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: var(--w-line, rgba(156, 82, 54, 0.16));
+  /* A hue-matched line can sit too close to the panel's own lightness on a
+     cooler or darker world -- measured on jungle, the empty track composited
+     to roughly a 25-in-255 delta against the panel, easy to lose entirely at
+     7px tall. Same fixed-alpha black ring the coursebar uses on the trail,
+     for a floor of contrast no world's palette can wash out. */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+.side__bar > i {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--w-accent, var(--terracotta));
+  transform: scaleX(var(--fill, 0));
+  transform-origin: left center;
+  transition: transform 700ms var(--ease-calm);
+}
+
+.side__progress {
+  display: flex;
+  flex-direction: column;
+}
+
+.side__progress-line {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* Worlds complete folded in here rather than kept as its own heading below --
+   a second progress figure, not a new topic, so it reads as this row's
+   footnote rather than a peer of Path and Position above it. */
+.side__progress-line--sub {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  opacity: 0.72;
+}
+
 .side__foot hr {
   height: 1px;
-  margin: 14px 0;
+  margin: 10px 0;
   border: 0;
   background: var(--w-line, rgba(156, 82, 54, 0.16));
 }
@@ -1077,12 +1141,83 @@ button {
   transform: scale(1.06);
 }
 
+/* The one currently on offer below, not yet confirmed. A ring rather than
+   just full opacity -- "on" already means full opacity for a topic you've
+   reached, and picking an untouched one needed to look different from that,
+   not like it had secretly been visited. */
+.prog__orb--picked {
+  opacity: 1;
+  transform: scale(1.06);
+  box-shadow: 0 0 0 3px var(--terracotta);
+}
+
 /* The island's landmass sits low and inset in its viewBox, so zoom past the
    margins and lift it to centre the land inside the circular crop. */
 .prog__orb > svg,
 .panel__orbs > span > svg {
   transform: scale(1.9) translateY(-11%);
   transform-origin: 50% 50%;
+}
+
+/* The choice a tap on an orb opens -- see the comment in ProgressScreen.tsx.
+   Same panel language as the rest of this screen, but with its own CTA
+   rather than being tappable as a whole: "cancel" and "go" both need to be
+   deliberate, unlike the single-purpose panels around it. */
+.orbconfirm {
+  margin-top: 18px;
+  padding: 18px 22px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: home-rise var(--dur-mid) var(--ease-calm) both;
+}
+
+.orbconfirm__art {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.orbconfirm__art svg {
+  transform: scale(1.9) translateY(-11%);
+  transform-origin: 50% 50%;
+}
+
+.orbconfirm__text {
+  min-width: 0;
+  flex: 1;
+}
+
+.orbconfirm__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.orbconfirm__title {
+  display: block;
+  margin-top: 2px;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .orbconfirm {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbconfirm {
+    animation: none;
+  }
 }
 
 .prog__cols {

@@ -4,7 +4,13 @@ import { useApp } from '../state/useApp';
 import { StepKindIcon } from './StepCard';
 import { IconCheckCircle, IconPause, IconPlay } from './Icons';
 
-/* ---------------------------------------------------------------- Completed */
+/* ---------------------------------------------------------------- Completed
+
+   No longer its own destination -- it used to be a whole modal one tap away
+   from "My progress", telling a version of the same story from a colder
+   start (a second big page title, "0 of 38" repeated from scratch). Now it's
+   the last section on that same progress page: a summary panel matching the
+   quiz/next-up panels already there, with the actual log underneath. */
 
 export function CompletedSteps() {
   const { completed, totalSteps } = useApp();
@@ -20,12 +26,14 @@ export function CompletedSteps() {
 
   return (
     <>
-      <h1 className="prog__level">Completed steps</h1>
-      <p className="prog__trail">
-        {found.length === 0
-          ? `Nothing finished yet — ${totalSteps} steps ahead of you`
-          : `${found.length} of ${totalSteps} steps · about ${minutes} minutes of practice`}
-      </p>
+      <div className="panel">
+        <h3 className="panel__h">Completed steps</h3>
+        <p className="panel__p">
+          {found.length === 0
+            ? `Nothing finished yet — ${totalSteps} steps ahead of you`
+            : `${found.length} of ${totalSteps} steps · about ${minutes} minutes of practice`}
+        </p>
+      </div>
 
       {found.length === 0 ? (
         <p className="empty">Finish a step and it will appear here.</p>

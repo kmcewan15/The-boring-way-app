@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import FloatingIsland from '../art/FloatingIsland';
+import Particles from '../art/Particles';
 import TrailScape from '../art/TrailScape';
 import { LANDSCAPES, withAlpha } from '../art/landscapes';
 import { TOPICS, type Topic } from '../data/curriculum';
@@ -99,6 +100,12 @@ export default function TopicQuiz({
       />
 
       <div className="grade grade--step" aria-hidden="true" />
+
+      {/* The world only comes alive once you've actually cleared it -- ambient
+          motes sit out during the questions themselves, same as a regular
+          reading step, and only join once there's something worth
+          celebrating. */}
+      {outcome?.passed && <Particles biome={topic.biome} palette={palette} />}
 
       <header className="step__top">
         <button type="button" className="card__action" onClick={onClose} aria-label="Close quiz">
@@ -217,7 +224,15 @@ export default function TopicQuiz({
 
           {/* ------------------------------------------- result: passed */}
           {outcome && outcome.passed && (
-            <>
+            <div className="worldcomplete">
+              {/* A lantern-glow beat behind the one line that matters, same
+                  language as the button on the trailhead screen -- this is
+                  the other bookend of that gesture. */}
+              <div
+                className="worldcomplete__glow"
+                aria-hidden="true"
+                style={{ '--wc-glow': withAlpha(palette.plantLit, 0.6) } as CSSProperties}
+              />
               <div className="step__kind">
                 <IconVerify size={22} />
                 Topic {topic.number} complete
@@ -232,9 +247,21 @@ export default function TopicQuiz({
               </p>
 
               {/* The payoff for closing a world: the next one, named and drawn.
-                  Ten of these are what give a five-hour curriculum chapters. */}
+                  Ten of these are what give a five-hour curriculum chapters.
+                  Coloured from the world just finished, not a fixed green --
+                  it used to always be jungle-tinted no matter which of the
+                  eight biomes you'd actually just walked out of. */}
               {nextTopic ? (
-                <div className="sealed">
+                <div
+                  className="sealed"
+                  style={
+                    {
+                      '--seal-bg': withAlpha(palette.foreDeep, 0.36),
+                      '--seal-ring': withAlpha(palette.plantLit, 0.32),
+                      '--seal-label': palette.plantLit,
+                    } as CSSProperties
+                  }
+                >
                   <div className="sealed__art" aria-hidden="true">
                     <FloatingIsland biome={nextTopic.biome} />
                   </div>
@@ -280,7 +307,7 @@ export default function TopicQuiz({
                   {nextTopic ? `On to Topic ${nextTopic.number}` : 'Back to the trail'}
                 </button>
               </div>
-            </>
+            </div>
           )}
 
           {/* ------------------------------------------- result: not yet */}

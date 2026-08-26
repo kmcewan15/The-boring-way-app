@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from 'react';
 import FloatingIsland from '../art/FloatingIsland';
+import Particles from '../art/Particles';
 import TrailScape from '../art/TrailScape';
 import { LANDSCAPES, mixHex, mixLandscape, withAlpha } from '../art/landscapes';
 import {
@@ -536,6 +537,15 @@ export default function LearnScreen({
             />
           </div>
         ))}
+
+        {/* Above the landscape and any photo so its motes read as sitting in
+            the air over the scene, but still inside .trail__art so .grade's
+            vignette and grain settle over them exactly as they do everything
+            else -- otherwise they'd be the one thing in the frame that never
+            aged into the picture. Biome picks *what* drifts; the current
+            (possibly blending) palette picks its colour, so the dust doesn't
+            jump hue independently of the world it's drifting through. */}
+        <Particles biome={focusTopic.biome} palette={palette} />
       </div>
 
       {nextWorld && (
@@ -594,33 +604,56 @@ export default function LearnScreen({
           <small>%</small>
         </span>
 
-        {TOPICS.map((topic) => {
+        {TOPICS.map((topic, i) => {
           const done = topic.steps.filter((s) => isCompleted(s.id)).length;
           const fill = done / topic.steps.length;
+          /* Tooltips at the ends would hang off the screen, so the outermost two
+             on each side align to their edge instead of centring. */
+          const align = i <= 1 ? ' coursebar__slot--l' : i >= TOPICS.length - 2 ? ' coursebar__slot--r' : '';
           return (
-            <span
+            <button
               key={topic.id}
+              type="button"
+              /* A scrubber, not a bookmark: this walks the trail to that world and
+                 leaves your saved place alone. Moving the cursor here would claim
+                 you had left off somewhere you were only glancing at. */
+              onClick={() => goTo(globalIndexOf(topic.number, 0))}
+              aria-label={`Topic ${topic.number}, ${topic.title}. ${done} of ${topic.steps.length} steps complete. Go to this world`}
               className={[
-                'coursebar__seg',
+                'coursebar__slot',
+                align.trim(),
                 /* The world on screen. */
-                topic.number === focusTopic.number ? 'coursebar__seg--here' : '',
+                topic.number === focusTopic.number ? 'coursebar__slot--here' : '',
                 /* Every step done: earns the full glow. */
-                fill === 1 ? 'coursebar__seg--full' : '',
+                fill === 1 ? 'coursebar__slot--full' : '',
                 /* The head of your progress, which is where the cursor is rather
                    than wherever you have scrolled to look. Carries the bright cap. */
-                topic.number === cursor.topic ? 'coursebar__seg--front' : '',
+                topic.number === cursor.topic ? 'coursebar__slot--front' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
               /* flex-grow by step count, so a five-step world is wider than a
                  three-step one and the bar stays proportional. --fill drives the
-                 fill, the shimmer's width and the cap's position from one number. */
+                 fill, the sheen's width and the cap's position from one number. */
               style={{ flexGrow: topic.steps.length, '--fill': fill } as CSSProperties}
             >
-              <i />
-              <b />
+              {/* The track clips the fill and the sheen. The cap and the tooltip
+                  sit outside it, or the clip would cut the cap's glow off and
+                  swallow the tooltip entirely. */}
+              <span className="coursebar__seg">
+                <i />
+                <b />
+              </span>
               <u />
-            </span>
+              <span className="coursebar__tip">
+                <strong>
+                  {topic.number} · {topic.title}
+                </strong>
+                <small>
+                  {done} of {topic.steps.length} steps
+                </small>
+              </span>
+            </button>
           );
         })}
       </div>

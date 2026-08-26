@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import FloatingIsland from '../art/FloatingIsland';
 import { TOPICS } from '../data/curriculum';
+import { CompletedSteps } from './MyPathDetails';
 import { useApp } from '../state/useApp';
 
 export default function ProgressScreen({ onOpenExplore }: { onOpenExplore: () => void }) {
-  const { cursor, current, completed, totalSteps, jumpTo, topicQuizzes } = useApp();
+  const { cursor, current, completed, totalSteps, jumpTo, setTab, topicQuizzes } = useApp();
   const { topic, steps, path } = current;
   /* The cursor can sit past the last step, which means the end-of-topic quiz. */
   const onQuiz = cursor.step >= steps.length;
@@ -11,6 +13,21 @@ export default function ProgressScreen({ onOpenExplore }: { onOpenExplore: () =>
   const quizResult = topicQuizzes[topic.number];
 
   const pct = Math.round((completed.length / totalSteps) * 100);
+
+  /* A tap on an orb used to jump the cursor silently and leave you sitting in
+     this modal -- nothing on screen said anything had happened, let alone
+     "taken you" anywhere. Now it opens a choice instead of acting on the
+     first tap, and confirming is what actually leaves: the cursor moves and
+     the Learn tab takes over, which is the one thing that can make a jump
+     feel like arriving somewhere rather than a number changing behind you. */
+  const [pendingTopic, setPendingTopic] = useState<number | null>(null);
+  const pending = pendingTopic === null ? null : TOPICS.find((t) => t.number === pendingTopic);
+
+  const confirmGo = (n: number) => {
+    jumpTo({ topic: n, step: 0 });
+    setTab('learn');
+    setPendingTopic(null);
+  };
 
   return (
     <>
@@ -31,15 +48,47 @@ export default function ProgressScreen({ onOpenExplore }: { onOpenExplore: () =>
           <button
             key={t.id}
             type="button"
-            className={`prog__orb${t.number <= cursor.topic ? ' prog__orb--on' : ''}`}
+            className={[
+              'prog__orb',
+              t.number <= cursor.topic ? ' prog__orb--on' : '',
+              t.number === pendingTopic ? ' prog__orb--picked' : '',
+            ].join('')}
             title={`Topic ${t.number}: ${t.title}`}
-            aria-label={`Go to topic ${t.number}, ${t.title}`}
-            onClick={() => jumpTo({ topic: t.number, step: 0 })}
+            aria-label={`Topic ${t.number}, ${t.title}`}
+            aria-pressed={t.number === pendingTopic}
+            onClick={() => setPendingTopic((p) => (p === t.number ? null : t.number))}
           >
             <FloatingIsland biome={t.biome} />
           </button>
         ))}
       </div>
+
+      {/* The choice a tap opens rather than acts on -- see the comment above
+          confirmGo. Below the strip rather than pinned under the picked orb:
+          the strip scrolls horizontally, and anything anchored to one orb's
+          own position would be clipped by that scroll container the moment
+          it needed to sit taller than the row itself. */}
+      {pending && (
+        <div className="orbconfirm">
+          <div className="orbconfirm__art" aria-hidden="true">
+            <FloatingIsland biome={pending.biome} />
+          </div>
+          <div className="orbconfirm__text">
+            <span className="orbconfirm__label">Topic {pending.number}</span>
+            <strong className="orbconfirm__title">{pending.title}</strong>
+          </div>
+          <button type="button" className="chip" onClick={() => setPendingTopic(null)}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="chip chip--solid"
+            onClick={() => confirmGo(pending.number)}
+          >
+            Take me to this world
+          </button>
+        </div>
+      )}
 
       <div className="prog__cols">
         <div>
@@ -105,6 +154,12 @@ export default function ProgressScreen({ onOpenExplore }: { onOpenExplore: () =>
           ))}
         </span>
       </button>
+
+      {/* The step-by-step log used to be its own destination one tap away --
+          "My progress" and "Completed steps" telling the same overall story
+          from two separate screens. It reads as one continuous section now:
+          the summary above, the detail here. */}
+      <CompletedSteps />
     </>
   );
 }

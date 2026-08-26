@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import ExploreTopics from './components/ExploreTopics';
+import HomeScreen from './components/HomeScreen';
 import LearnScreen from './components/LearnScreen';
 import Modal from './components/Modal';
 import MyPathScreen, { type MyPathRoute } from './components/MyPathScreen';
-import { CompletedSteps, Notes, Timebox } from './components/MyPathDetails';
+import { Notes, Timebox } from './components/MyPathDetails';
 import ProgressScreen from './components/ProgressScreen';
+import QuickStats from './components/QuickStats';
 import ResourcesScreen from './components/ResourcesScreen';
 import Sidebar from './components/Sidebar';
 import StepView from './components/StepView';
@@ -15,7 +17,6 @@ import { useApp } from './state/useApp';
 const MODAL_LABELS: Record<MyPathRoute, string> = {
   timebox: 'Timebox',
   progress: 'My progress',
-  completed: 'Completed steps',
   notes: 'My notes',
 };
 
@@ -25,6 +26,8 @@ export default function App() {
   const [detail, setDetail] = useState<MyPathRoute | null>(null);
   /* Index into the flat journey, so a step from any topic can be opened. */
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  /* The trail waits behind the home screen until this flips, once, per visit. */
+  const [entered, setEntered] = useState(false);
 
   const entry = openIndex === null ? null : JOURNEY[openIndex];
 
@@ -36,11 +39,19 @@ export default function App() {
     setOpenIndex(null);
   }, [tab]);
 
+  if (!entered) return <HomeScreen onEnter={() => setEntered(true)} />;
+
   return (
     <div className="app">
       <Sidebar />
 
       <main className="main">
+        {/* Sits above every tab, not just the trail, so where you stand is
+            never more than one click away. Collapses itself the moment a step
+            or quiz opens -- entry !== null is "starting to learn" in this
+            app's terms. */}
+        <QuickStats collapseOn={entry !== null} />
+
         {tab === 'learn' && (
           <LearnScreen
             onOpenExplore={() => setExplore(true)}
@@ -74,7 +85,6 @@ export default function App() {
                 }}
               />
             )}
-            {detail === 'completed' && <CompletedSteps />}
             {detail === 'notes' && <Notes />}
             {detail === 'timebox' && <Timebox />}
           </Modal>

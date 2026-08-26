@@ -1,7 +1,11 @@
 import DesertTrailThumb from '../art/DesertTrailThumb';
-import { IconCheckCircle, IconSparkles, IconStopwatch } from './Icons';
+import { IconSparkles, IconStopwatch } from './Icons';
 
-export type MyPathRoute = 'timebox' | 'progress' | 'completed' | 'notes';
+/* 'completed' used to be its own destination here, one tile below "My
+   progress" telling a version of the same story. It's a section inside
+   "My progress" now instead of a peer of it -- see CompletedSteps in
+   MyPathDetails.tsx, folded into ProgressScreen. */
+export type MyPathRoute = 'timebox' | 'progress' | 'notes';
 
 export default function MyPathScreen({ onOpen }: { onOpen: (r: MyPathRoute) => void }) {
   return (
@@ -32,18 +36,7 @@ export default function MyPathScreen({ onOpen }: { onOpen: (r: MyPathRoute) => v
 
       <button
         type="button"
-        className="tile tile--brown tile--row"
-        onClick={() => onOpen('completed')}
-      >
-        <span className="tile__label">Completed steps</span>
-        <span className="tile__icon">
-          <IconCheckCircle size={42} />
-        </span>
-      </button>
-
-      <button
-        type="button"
-        className="tile tile--brown tile--row"
+        className="tile tile--brown tile--row myway__wide"
         onClick={() => onOpen('notes')}
       >
         <span className="tile__label">My notes</span>

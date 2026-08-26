@@ -27,6 +27,17 @@ export function IconCompass({ size = 26, className }: IconProps) {
   );
 }
 
+/** Three lines — the quick-stats menu, collapsed. */
+export function IconMenu({ size = 22, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M4 7h16" />
+      <path d="M4 12h16" />
+      <path d="M4 17h16" />
+    </svg>
+  );
+}
+
 /** Bookmark / ribbon — the My Path tab and the save action. */
 export function IconBookmark({
   size = 26,
