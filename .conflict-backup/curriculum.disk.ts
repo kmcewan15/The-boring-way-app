@@ -10,12 +10,11 @@ export type StepKind = 'read' | 'exercise' | 'verify' | 'note';
    not a developer, so every block renders as a visually distinct thing rather
    than as another paragraph in a wall of prose.
 
-   Backticked spans render as inline code, and [label](https://url) renders as a
-   link, in the prose fields — `p.text`, `why.text`, `tip.text`, `term.means`,
-   `see.text`, `warn.text`, the three `table` cell fields, and a step's own
-   `brief`, `tasks` and `verify`. Neither works in `do.label`, `do.cmd`,
-   `term.word`, `track.label` or `video.title`, which are labels: write those as
-   plain text or the markup appears on screen. */
+   Backticked spans render as inline code in the prose fields — `p.text`,
+   `why.text`, `term.means`, `see.text` and `warn.text`, as well as in a step's
+   own `brief`, `tasks` and `verify`. They do not in `do.label`, `term.word` or
+   `video.title`, which are labels: write those as plain text or the backticks
+   appear on screen. */
 export type Block =
   /** Plain prose. Keep it to two or three short sentences. */
   | { t: 'p'; text: string }
@@ -34,15 +33,11 @@ export type Block =
       t: 'table';
       rows: Array<{ dimension: string; doThis: string; notThis: string }>;
     }
-  /** A helpful aside: an extra route, a shortcut, an optional detail. Emits a
-      fixed heading like `why` and `warn`, so keep it to one per step. */
-  | { t: 'tip'; text: string }
-  /** A labelled collapsible holding nested blocks. Used for the same step done
-      two ways (terminal or extension), and for an optional aside worth folding
-      away — pass `open: false` for the latter. Keep `why` and `warn` outside a
-      track: they emit fixed headings, so one in each branch reads as a
-      duplicate. */
-  | { t: 'track'; label: string; blocks: Block[]; open?: boolean }
+  /** The same step done two ways — terminal or extension. Renders as a labelled,
+      collapsible section so a reader follows only the path that is theirs. Keep
+      `why` and `warn` outside a track: they emit fixed headings, so one in each
+      branch reads as a duplicate. */
+  | { t: 'track'; label: string; blocks: Block[] }
   /** The interactive token and cost estimator. Takes no content of its own. */
   | { t: 'calc' }
   /** The interactive four-part request builder. Takes no content of its own. */
@@ -150,9 +145,10 @@ const STEPS: RawStep[][] = [
           t: 'p',
           text: 'There are two main ways to run Claude Code and you only need one. Pick the terminal if you are comfortable there, otherwise install Visual Studio Code (a coding environment) for a friendlier interface where you can install Claude Code as an extension',
         },
-        {
-          t: 'tip',
-          text: 'There are more ways to install and run it. The official steps live in the [Claude Code quickstart](https://code.claude.com/docs/en/quickstart).',
+        // TODO: Add below paragraph as a tip and turn "here" into the correct clickable link for claude.ai official installation instructions
+               {
+          t: 'p',
+          text: 'There are more ways to install and run it, click here',
         },
         {
           t: 'track',
@@ -195,7 +191,7 @@ const STEPS: RawStep[][] = [
           blocks: [
             {
               t: 'p',
-              text: 'Open the Extensions panel, search for Claude Code, and install it. The video below walks through the process.',
+              text: 'Open the Extensions panel, search for Claude Code, and install it. The video below walksthrough the process.',
             },
             { t: 'video', title: 'Installing the Claude Code extension in Visual Studio Code', src: '/demos/claude_install_vsc.mp4',},
           ],
@@ -216,9 +212,10 @@ const STEPS: RawStep[][] = [
           t: 'p',
           text: 'Signing in happens once on a machine. The videos cover the whole flow, so watch the one that matches how you installed it.',
         },
+        // TODO: Add the below paragraph as a tip and ensure "claude.ai" is a clickable link
         {
-          t: 'tip',
-          text: 'Sign in at [claude.ai](https://claude.ai). If you are on Claude Enterprise, you sign in on the web through UKI Okta.',
+          t: 'p',
+          text: 'Sign in at claude.ai, if you are using Claude Enterprise, you can sign in on the web through UKI Okta.',
         },
         {
           t: 'track',
@@ -229,10 +226,7 @@ const STEPS: RawStep[][] = [
               t: 'see',
               text: 'A sign-in prompt. Follow it, your browser opens, and you come back to the same terminal window when it is done.',
             },
-            {
-              t: 'p',
-              text: 'Customise your UI, read the security notes carefully, and keep the recommended settings for now.',
-            },
+            { t: 'p', text : 'Customise your UI, read security notes carefully and keep recommended settings for now. ' },
             { t: 'video', title: 'Signing in from the terminal', src: '/demos/claude_login_terminal.mp4', },
           ],
         },
@@ -259,22 +253,7 @@ const STEPS: RawStep[][] = [
           t: 'warn',
           text: 'It is recommended to authenticate through Claude Enterprise if on your work device, never use Claude Code on a directory containing work files if authenticated with a personal subscription.',
         },
-        {
-          t: 'track',
-          label: 'Did you know...',
-          open: false,
-          blocks: [
-            {
-              t: 'p',
-              text: 'If you have both installed, you can open the terminal from inside the Visual Studio Code extension — so you never have to pick one for good.',
-            },
-            {
-              t: 'video',
-              title: 'Using the terminal from inside the extension',
-              src: '/demos/claude_use_both.mp4',
-            },
-          ],
-        },
+        // TODO: Add below a collapsible tip showing title "Did you know if you have both installed, you can open the terminal from the visual studio code extension?" OR A "Did you know..." and when it expands have the full rhetorical. Then in the collapsible is claude_use_both.mp4, that is all."
       ],
       tasks: [
         'Open Claude — in the terminal, or from the Visual Studio Code panel',
@@ -288,6 +267,7 @@ const STEPS: RawStep[][] = [
       minutes: 8,
       brief:
         'Point Claude at an actual folder of yours, not a scratch directory. The whole point is that it works on real material.',
+      // Add a "Warning" paragraph, if not authenticated through Claude Enterprise to not point Claued at real work
       body: [
         {
           t: 'p',
@@ -320,7 +300,7 @@ const STEPS: RawStep[][] = [
               t: 'p',
               text: 'Open the folder in Visual Studio Code first. Whichever folder is open is the one Claude works in.',
             },
-            { t: 'video', title: 'How to open a project folder in Visual Studio Code', src: '/demos/open_dir_vsc.mp4', },
+            { t: 'video', title: 'Opening a project folder in Visual Studio Code' },
           ],
         },
         {
@@ -333,12 +313,16 @@ const STEPS: RawStep[][] = [
           text: 'A list of files that genuinely exist. Open one and check, because it is reading your folder rather than guessing at what a project like yours usually holds. If it names things you do not recognise, you are in the wrong folder.',
         },
         {
+          t: 'p',
+          text: 'None of this is enforced, by the way. An empty folder works, version control is not required, and Claude does not need you to explain the project before it can read it. It only has to be material you know well enough to check.',
+        },
+        {
           t: 'why',
           text: 'You know your own project, so you are the one person who can catch Claude being confidently wrong about it. In a folder you have never seen, every answer looks plausible.',
         },
         {
           t: 'warn',
-          text: 'Only do this on real work if you signed in through Claude Enterprise. On a personal subscription, point Claude at a folder with nothing confidential in it — topic 10 covers why that line matters.',
+          text: 'Pick a project you know, but not the one carrying this quarter. You will let Claude change files in topic 3, and you want your first mistake to be a cheap one.',
         },
       ],
       tasks: [
@@ -387,15 +371,16 @@ const STEPS: RawStep[][] = [
             },
             {
               dimension: 'Anything that changes files',
-              doThis: 'The agent, it can do it for you. You can also undo work with /rewind command',
+              doThis: 'The agent, with a backup first. It can do it for you, so make sure you can undo it.',
               notThis: 'Assume advice and action carry the same risk. On disk, a wrong answer is a wrong file.',
             },
           ],
         },
         {
           t: 'warn',
-          text: 'An agent is less likely to be wrong because its answer is grounded within your files, but that carries greater risk as it can actually make changes to your files.',
+          text: 'An agent is no more likely to be wrong than the chat was. What changed is that a wrong answer now lands in your files instead of on your screen.',
         },
+        { t: 'video', title: 'Chat and agent, same question, side by side' },
       ],
       tasks: [
         'Read the comparison',
@@ -435,6 +420,7 @@ const STEPS: RawStep[][] = [
           cmd: 'Which week mentions the vendor renewal?',
         },
         { t: 'see', text: 'The filename, and the line it is on.' },
+        { t: 'video', title: 'Building the handover pack and asking both ways' },
       ],
       tasks: [
         'Ask the agent to create the `handover` folder and its files',

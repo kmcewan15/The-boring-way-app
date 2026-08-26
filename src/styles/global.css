@@ -1455,6 +1455,53 @@ button {
   border-bottom: none;
 }
 
+/* A helpful aside. Cooler than `why` and softer than `warn`, so a reader can
+   tell at a glance that it is optional rather than load-bearing. */
+.tip {
+  margin: 0 0 18px;
+  padding: 20px 22px;
+  border-radius: var(--r-card);
+  background: rgba(201, 228, 231, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(201, 228, 231, 0.32);
+}
+
+.tip__h {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: #c9e4e7;
+}
+
+.tip__p {
+  margin: 7px 0 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* Inline links in lesson prose. Underlined rather than colour-only, so the cue
+   survives on every world palette without a contrast recheck per biome. */
+.link {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+}
+
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--path-cream);
+  outline-offset: 3px;
+}
+
 /* Two ways to do the same step: terminal or extension. A collapsible so a
    reader can fold away the half that is not theirs. Open by default — hiding
    content behind a click in a learning app loses people. */

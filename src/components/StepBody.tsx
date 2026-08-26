@@ -78,6 +78,16 @@ function BlockView({ b }: { b: Block }) {
         </p>
       );
 
+    case 'tip':
+      return (
+        <div className="tip">
+          <h2 className="tip__h">Tip</h2>
+          <p className="tip__p">
+            <Rich text={b.text} />
+          </p>
+        </div>
+      );
+
     case 'warn':
       return (
         <div className="warn">
@@ -130,7 +140,7 @@ function BlockView({ b }: { b: Block }) {
        so nobody misses content they did not know was hidden. */
     case 'track':
       return (
-        <details className="track" open>
+        <details className="track" open={b.open ?? true}>
           <summary className="track__sum">
             <span className="track__label">{b.label}</span>
             <IconChevronDown size={20} className="track__chev" />
