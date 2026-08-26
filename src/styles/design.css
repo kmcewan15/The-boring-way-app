@@ -128,6 +128,92 @@
 }
 
 
+/* ------------------------------------------------------------------ motes ---
+
+   Ambient life over the landscape -- see src/art/Particles.tsx for what each
+   biome gets and why. Every mote shares one drift: fade in, travel, fade out,
+   loop; direction, size, speed and colour are set per-mote as custom
+   properties so this stays one keyframe for every biome instead of five. */
+
+.motes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Explicit rather than relying on DOM order: on the quiz's results screen
+     this sits between the wash/grain (also z-index 1, but earlier in the
+     DOM, so this still paints over them) and the actual copy at z-index 2,
+     which motes must never drift in front of. */
+  z-index: 1;
+}
+
+.motes > i {
+  position: absolute;
+  display: block;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: var(--mote-color);
+  opacity: 0;
+  animation: mote-drift var(--dur) linear var(--delay) infinite;
+}
+
+@keyframes mote-drift {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(var(--sway), calc(var(--travel) * 0.5));
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, var(--travel));
+    opacity: 0;
+  }
+}
+
+/* Dust and bubbles are light-catching rather than coloured, so they need an
+   actual glow to read against a bright world -- a flat translucent circle in
+   the same pale family as the sky behind it had nothing to contrast with and
+   disappeared outright on the desert and ocean worlds. */
+.motes--dust > i,
+.motes--bubble > i {
+  box-shadow: 0 0 5px 1px var(--mote-color);
+}
+
+/* A firefly is a light source, not a coloured dot -- the glow carries it --
+   and blinks on its own faster cycle layered over the shared drift, rather
+   than just fading in and out with it like everything else in the air. */
+.motes--firefly > i {
+  box-shadow: 0 0 6px 2px var(--mote-color);
+  animation:
+    mote-drift var(--dur) linear var(--delay) infinite,
+    firefly-blink 1800ms ease-in-out calc(var(--delay) * 0.6) infinite;
+}
+
+@keyframes firefly-blink {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* This is ambience, not information -- nothing is lost by turning it off. */
+@media (prefers-reduced-motion: reduce) {
+  .motes {
+    display: none;
+  }
+}
+
+
 /* A screenful of text over a photograph: the copy carries its own backing rather
    than dimming the whole picture. Used by both the quiz and the step page. Alpha
    is measured, not guessed -- see the ratios noted on .step__wash's history. */
@@ -420,11 +506,15 @@
 }
 
 
-/* Small round control on the trail, out of the centred pill's way. */
+/* Small round control on the trail, out of the centred pill's way. Cleared
+   below the coursebar's own box (46px: 10+12 padding around its 24px-tall
+   slots) with a real gap, rather than the 30px that used to tuck it 16px
+   *under* the bar's own row -- see the matching gap on .quickstats, which
+   overlapped the bar's percentage label outright at that offset. */
 .trail__mapbtn {
   position: absolute;
   z-index: 41;
-  top: 30px;
+  top: 58px;
   right: 26px;
   width: 46px;
   height: 46px;
@@ -554,9 +644,81 @@
 
 
 
+/* --------------------------------------------------------- world complete ---
+
+   The quiz's passed-result screen, promoted from "another text panel" to an
+   actual moment: the heading gets a lantern-glow beat (same language as the
+   trailhead button), the seal card rises in a beat after it, and ambient
+   motes join the scene for the first time on this topic -- see the
+   Particles call in TopicQuiz.tsx. Nothing here is new mechanics, just this
+   screen finally cashing in tools already built for the trail and the
+   welcome screen. */
+
+.worldcomplete {
+  position: relative;
+}
+
+.worldcomplete .step__kind {
+  position: relative;
+  z-index: 1;
+  animation: home-rise var(--dur-slow) var(--ease-calm) both;
+}
+
+.worldcomplete .step__title,
+.worldcomplete .step__brief {
+  animation: home-rise var(--dur-slow) var(--ease-calm) 80ms both;
+}
+
+/* Sits behind the "Topic N complete" pill rather than the whole screen --
+   the point is one small beat of light where your eye already lands, not a
+   wash over copy that still has to be read. */
+.worldcomplete__glow {
+  position: absolute;
+  z-index: 0;
+  top: -30px;
+  left: -30px;
+  width: 220px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--wc-glow, transparent) 0%, transparent 72%);
+  filter: blur(4px);
+  animation: worldcomplete-glow 2200ms var(--ease-calm) both;
+}
+
+@keyframes worldcomplete-glow {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .worldcomplete .step__kind,
+  .worldcomplete .step__title,
+  .worldcomplete .step__brief,
+  .worldcomplete .sealed,
+  .worldcomplete__glow {
+    animation: none;
+  }
+}
+
 /* Closing a world. Sits where .verify would, but wider-feeling and with the next
    world actually drawn in it -- the point is that finishing a topic hands you
-   somewhere to go rather than just a score. */
+   somewhere to go rather than just a score.
+
+   Coloured from the world just finished via --seal-* custom properties (set
+   inline in TopicQuiz from that topic's own palette) rather than the fixed
+   jungle green this used to be -- passing a desert or ocean quiz was closing
+   the card in someone else's colours. The fallbacks are that same green, so
+   nothing breaks if a caller ever forgets to set them. */
 .sealed {
   margin-top: 26px;
   padding: 18px 22px;
@@ -564,8 +726,9 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  background: rgba(20, 69, 59, 0.36);
-  box-shadow: inset 0 0 0 1px rgba(220, 239, 156, 0.3);
+  background: var(--seal-bg, rgba(20, 69, 59, 0.36));
+  box-shadow: inset 0 0 0 1px var(--seal-ring, rgba(220, 239, 156, 0.3));
+  animation: home-rise var(--dur-slow) var(--ease-calm) 260ms both;
 }
 
 
@@ -594,7 +757,7 @@
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--lime);
+  color: var(--seal-label, var(--lime));
 }
 
 
@@ -719,17 +882,16 @@
 
 /* ----------------------------------------------------------------- course bar ---
 
-   How far along the course you are, pinned to the top edge of the trail. Above
-   the cards and the caption banner but below the arrival title card and the map,
-   and inert so it can never swallow a scroll.
+   How far along the course you are, pinned to the top edge of the trail, and a
+   scrubber for it: each of the ten segments walks the trail to that world.
 
    Lives on the trail rather than in the app shell: putting it in .main would mean
    editing App.tsx, which belongs to the content stream, and the journey is only
    ever walked on this screen anyway.
 
-   Each segment carries --fill, 0 to 1, set inline from that topic's completed
-   steps. The fill, the shimmer's width and the leading cap's position all derive
-   from that one number, so they cannot disagree. */
+   Each slot carries --fill, 0 to 1, set inline from that topic's completed steps.
+   The fill, the sheen's width and the leading cap's position all derive from that
+   one number, so they cannot disagree. */
 .coursebar {
   position: absolute;
   top: 0;
@@ -740,6 +902,9 @@
   align-items: center;
   gap: 4px;
   padding: 10px 14px 12px;
+  /* The container stays transparent to the pointer so it cannot swallow a scroll;
+     only the segments take events. The wheel handler is on the stage and events
+     from the segments bubble up to it, so scrolling over the bar still works. */
   pointer-events: none;
   /* The bar sits over whatever the top of the photograph happens to be -- often
      bright sky -- so it brings its own shading rather than trusting the picture. */
@@ -769,23 +934,61 @@
   margin-left: 1px;
 }
 
+/* One world. Not clipped, so the cap's glow and the tooltip can leave the track.
+   The hit area is taller than the 8px track via padding, because an 8px target is
+   not a target. */
+.coursebar__slot {
+  position: relative;
+  flex-basis: 0;
+  padding: 8px 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.coursebar__slot:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* The track. Clips the fill and the sheen to the rounded ends.
+
+   An inset border alone reads fine over a dark or mid photo, but at 0% -- an
+   untouched course, before there is anything to fill -- it all but vanished
+   over the desert's bright sky: a translucent white ring on a near-white
+   backdrop has almost nothing to contrast against. The outer shadow is what
+   actually separates the track from the picture behind it regardless of that
+   picture's own tone, so the empty state still reads as a deliberate bar and
+   not a rendering artefact. */
 .coursebar__seg {
+  display: block;
   position: relative;
   height: 8px;
   border-radius: var(--r-pill);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
-  /* flex-grow is set inline from the topic's step count; flex-basis 0 makes the
-     growth the only thing deciding width, so the ratios hold exactly. */
-  flex-basis: 0;
-  transition: background var(--dur-fast) var(--ease-calm);
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  transition:
+    background var(--dur-fast) var(--ease-calm),
+    box-shadow var(--dur-fast) var(--ease-calm),
+    transform var(--dur-fast) var(--ease-calm);
 }
 
 /* The world on screen: a brighter empty track, so you can see where you are
    looking even in a topic you have not started. */
-.coursebar__seg--here {
-  background: rgba(255, 255, 255, 0.38);
+.coursebar__slot--here .coursebar__seg {
+  background: rgba(255, 255, 255, 0.46);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.24);
+}
+
+/* Reachable, and it says so. */
+.coursebar__slot:hover .coursebar__seg {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scaleY(1.35);
 }
 
 /* The fill. */
@@ -806,13 +1009,6 @@
   transition: transform 700ms var(--ease-calm);
 }
 
-/* A finished world glows. Ten of these lighting up across the bar is the point. */
-.coursebar__seg--full > i {
-  box-shadow:
-    0 0 10px 1px rgba(255, 255, 255, 0.65),
-    0 0 22px 2px rgba(255, 255, 255, 0.28);
-}
-
 /* Slow sweep along the filled stretch. A sibling of the fill rather than a child
    of it, because the fill is scaled and would squash the sweep flat. Its width
    changes only when progress does, so this costs no per-frame layout. */
@@ -822,7 +1018,6 @@
   width: calc(var(--fill, 0) * 100%);
   overflow: hidden;
   border-radius: inherit;
-  pointer-events: none;
 }
 
 .coursebar__seg > b::after {
@@ -850,19 +1045,27 @@
   }
 }
 
-/* The head of your progress. Sits exactly at the fill's edge, and glows, so the
-   eye lands on where you have got to rather than on the bar as a whole. Only on
-   the segment holding the cursor, and hidden at either extreme where it would
-   just be a bright dot stuck on an end cap. */
-.coursebar__seg > u {
+/* A finished world glows. Ten of these lighting up across the bar is the point.
+   On the slot rather than inside the track, so the bloom is not clipped away. */
+.coursebar__slot--full .coursebar__seg {
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.16),
+    0 0 10px 1px rgba(255, 255, 255, 0.6),
+    0 0 22px 2px rgba(255, 255, 255, 0.26);
+}
+
+/* The head of your progress. Sits exactly at the fill's edge and glows, so the eye
+   lands on where you have got to rather than on the bar as a whole. Outside the
+   track, or the overflow clip would shave the bloom off top and bottom. */
+.coursebar__slot > u {
   display: none;
 }
 
-.coursebar__seg--front > u {
+.coursebar__slot--front > u {
   display: block;
   position: absolute;
-  top: -2px;
-  bottom: -2px;
+  top: 5px;
+  bottom: 5px;
   left: calc(var(--fill, 0) * 100%);
   width: 3px;
   margin-left: -1.5px;
@@ -874,6 +1077,67 @@
   transition: left 700ms var(--ease-calm);
 }
 
+/* Which world a segment is, on hover or keyboard focus. The bar can be read at a
+   glance and interrogated up close, without labelling ten things at once. */
+.coursebar__tip {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 14px 9px;
+  border-radius: var(--r-card);
+  background: var(--w-glass, rgba(253, 237, 232, 0.93));
+  color: var(--w-ink, var(--terracotta-deep));
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  white-space: nowrap;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-fast) var(--ease-calm),
+    transform var(--dur-fast) var(--ease-calm);
+}
+
+.coursebar__slot--l .coursebar__tip {
+  left: 0;
+  transform: translateY(-4px);
+}
+
+.coursebar__slot--r .coursebar__tip {
+  left: auto;
+  right: 0;
+  transform: translateY(-4px);
+}
+
+.coursebar__slot:hover .coursebar__tip,
+.coursebar__slot:focus-visible .coursebar__tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.coursebar__slot--l:hover .coursebar__tip,
+.coursebar__slot--l:focus-visible .coursebar__tip,
+.coursebar__slot--r:hover .coursebar__tip,
+.coursebar__slot--r:focus-visible .coursebar__tip {
+  transform: translateY(0);
+}
+
+.coursebar__tip strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.coursebar__tip small {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.72;
+}
+
 /* Keep the information, drop the perpetual motion. */
 @media (prefers-reduced-motion: reduce) {
   .coursebar__seg > b::after {
@@ -881,3 +1145,408 @@
     opacity: 0;
   }
 }
+
+/* ==========================================================================
+   Home screen
+   ==========================================================================
+
+   The one screen that isn't the trail: brand, tagline, a hamburger that is
+   the way in rather than a menu. It covers the sidebar too, so it lives
+   outside .app rather than inside .main -- App swaps it for the real shell
+   wholesale rather than layering it on top.
+   ========================================================================== */
+
+.home {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+  /* Base colour under the art, not just a fallback for a load failure -- the
+     art is generated SVG and always paints, but its own sky is this same
+     tone, so there is never a seam between "behind the picture" and "the
+     picture's own sky". */
+  background: var(--pink-bg);
+}
+
+/* The exit used to fade the whole screen at once. Now the title is the one
+   thing that doesn't fade -- it slides up to the corner instead, toward
+   roughly where the sidebar's own brand text sits once the app shell mounts
+   underneath, so the name reads as relocating rather than the page simply
+   dissolving. Everything else (art, motes, grain, the button) still fades
+   away beneath it. */
+.home__art,
+.motes,
+.grade,
+.home__enter {
+  transition: opacity var(--dur-slow) var(--ease-calm);
+}
+
+.home--entering .home__art,
+.home--entering .motes,
+.home--entering .grade {
+  opacity: 0;
+}
+
+/* .home__enter's own home-rise entrance animation finishes long before
+   anyone actually clicks, but "finished" for a fill:both animation still
+   means it's holding opacity:1 on the property forever -- a held animation
+   value outranks a transition on that same property, so setting opacity:0
+   here too would be a no-op. `.home--entering` only clears the animation
+   (freezing it at that held value); `.home--sliding`, a frame later once
+   that freeze has painted, is what actually sets the target the transition
+   animates to -- see the comment in HomeScreen.tsx. */
+.home--entering .home__enter {
+  animation: none;
+}
+
+.home--sliding .home__enter {
+  opacity: 0;
+}
+
+/* Softer and calmer than the trail's own full-strength art -- this is a
+   threshold to pause on, not the thing you're here to read. TrailScape's own
+   composition already keeps its centre open for a card-sized shape (see the
+   comment in TrailScape.tsx), which is exactly the column of text and button
+   sitting on top of it here. */
+.home__art {
+  position: absolute;
+  inset: -4%;
+  opacity: 0.55;
+  filter: saturate(0.75) blur(1px);
+}
+
+.home__brand {
+  /* Above .grade (z-index 20) on purpose -- without this the vignette and
+     grain paint over the letters instead of just the art behind them, same as
+     every card on the trail needs its own explicit z-index for the same
+     reason. */
+  position: relative;
+  z-index: 30;
+  text-align: center;
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+  color: var(--terracotta-deep);
+  text-shadow: 0 2px 20px rgba(253, 237, 232, 0.8);
+  animation: home-rise var(--dur-slow) var(--ease-calm) both;
+  transition:
+    transform 640ms var(--ease-calm),
+    text-shadow 640ms var(--ease-calm);
+}
+
+/* animation: none clears home-rise's held transform, same reasoning as
+   .home--entering .home__enter above -- this only freezes it. */
+.home--entering .home__brand {
+  animation: none;
+}
+
+/* The slide itself is an inline style, not this class -- see HomeScreen.tsx.
+   A fixed vw/vh guess was tried first and badly overshot (it doesn't know the
+   title's actual box, so "roughly toward the corner" landed past the corner
+   and off the edge of the screen); the real distance is measured off the
+   title's own getBoundingClientRect at the moment of the tap. This class
+   only drops the paper-glow text-shadow, which made sense sitting on top of
+   the busier trail art and doesn't once the title's making for the flat
+   sidebar-coloured corner. */
+.home--sliding .home__brand {
+  text-shadow: none;
+}
+
+.home__brand span {
+  display: block;
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--rock-mid);
+}
+
+/* Rises in after the title rather than alongside it, so the eye lands on the
+   name first and the way in second -- an order, not a pile. */
+.home__enter {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: home-rise var(--dur-slow) var(--ease-calm) 180ms both;
+}
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The button IS the icon: a big enough hit area that the three bars read as
+   the thing to press, not as a label floating near one. */
+.home__burger {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 88px;
+  height: 88px;
+  border-radius: var(--r-pill);
+  background: var(--pink-cream);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--dur-fast) var(--ease-calm);
+  /* Invites the tap before it's taken: settles into a slow breath so the door
+     reads as waiting rather than static. */
+  animation: homebreathe 2600ms var(--ease-calm) infinite;
+}
+
+/* A lantern rather than a plain button -- the trailhead's own light, echoed
+   behind the one thing on screen worth touching. Sits behind the button in
+   its stacking order (negative z-index, same box) so it breathes on the exact
+   same cycle without needing its own animation. */
+.home__burger::before {
+  content: '';
+  position: absolute;
+  inset: -30px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 205, 148, 0.55) 0%,
+    rgba(255, 205, 148, 0) 70%
+  );
+  filter: blur(3px);
+}
+
+.home__burger:hover,
+.home__burger:focus-visible {
+  transform: scale(1.06);
+}
+
+.home__burger i {
+  display: block;
+  width: 34px;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--terracotta);
+  transition:
+    transform var(--dur-mid) var(--ease-calm),
+    opacity var(--dur-mid) var(--ease-calm),
+    width var(--dur-mid) var(--ease-calm);
+}
+
+/* Tapped: the three bars resolve into a right-facing arrow -- top and bottom
+   become its two strokes, the middle one has no part in an arrow and empties
+   out rather than sitting there unexplained. */
+.home--entering .home__burger {
+  animation: none;
+}
+
+.home--entering .home__burger i:nth-child(1) {
+  width: 20px;
+  transform: translate(3px, 7px) rotate(45deg);
+}
+
+.home--entering .home__burger i:nth-child(2) {
+  opacity: 0;
+}
+
+.home--entering .home__burger i:nth-child(3) {
+  width: 20px;
+  transform: translate(3px, -7px) rotate(-45deg);
+}
+
+@keyframes homebreathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.home__hint {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--rock-mid);
+  transition: opacity var(--dur-mid) var(--ease-calm);
+}
+
+.home--entering .home__hint {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home__burger,
+  .home__brand,
+  .home__enter {
+    animation: none;
+  }
+
+  .home__brand,
+  .home__art,
+  .motes,
+  .grade,
+  .home__enter {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Quick stats
+   ==========================================================================
+
+   A hamburger that lives above every tab, not just the trail, mirroring the
+   map button's spot on the opposite corner. Themed off the same --w-* set the
+   trail writes to the document, so it carries the current world's colours on
+   every screen exactly as the sidebar does. Anchored to .main -- see the
+   comment above <QuickStats /> in App.tsx for why it sits there and not
+   inside LearnScreen.
+
+   top matches .trail__mapbtn's own comment: cleared below the coursebar's
+   full 46px box rather than sitting inside it, where this used to land
+   directly under -- almost touching -- the bar's "0%" label on the Learn
+   tab. */
+
+.quickstats {
+  position: absolute;
+  z-index: 43;
+  top: 58px;
+  left: 26px;
+}
+
+.quickstats__toggle {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--w-glass, var(--pink-cream));
+  color: var(--w-ink, var(--terracotta-deep));
+  box-shadow: var(--shadow-pill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    background var(--dur-slow) var(--ease-calm),
+    color var(--dur-slow) var(--ease-calm);
+}
+
+.quickstats__toggle:hover {
+  transform: scale(1.08);
+}
+
+/* Open: pinned under the toggle rather than floating free, so the two read as
+   one control rather than a button and an unrelated card. */
+.quickstats--open .quickstats__toggle {
+  transform: scale(1.04);
+}
+
+/* The row that grows: always in the DOM so shrinking has somewhere to
+   transition back to, rather than the panel just vanishing on close. A grid
+   row rather than max-height, because max-height needs a guessed ceiling and
+   this needs none -- 1fr is exactly the content's own height, whatever that
+   turns out to be. */
+.quickstats__grow {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 240px;
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows var(--dur-mid) var(--ease-calm);
+}
+
+.quickstats--open .quickstats__grow {
+  grid-template-rows: 1fr;
+}
+
+.quickstats__panel {
+  /* A grid track will not shrink below its content's height unless the item
+     inside it is allowed to -- without this, 1fr collapsing to 0fr had
+     nowhere to go and the row never actually closed. */
+  min-height: 0;
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: var(--r-card);
+  background: var(--w-glass, var(--pink-cream));
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity var(--dur-fast) var(--ease-calm),
+    transform var(--dur-fast) var(--ease-calm);
+}
+
+/* Opening: the box leads, the words follow -- a short delay so the content
+   fades in once there is somewhere for it to land, rather than racing the
+   grow and appearing to overflow a still-shrinking box.
+
+   Closing drops this rule entirely, so the text fades out at once (dur-fast,
+   no delay) while the row is still on its own slower way shut -- the words
+   are gone well before the box finishes collapsing, never left stranded
+   against a shrinking edge. */
+.quickstats--open .quickstats__panel {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 90ms;
+}
+
+.quickstats__panel dt {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--w-ink, var(--terracotta-deep));
+}
+
+.quickstats__panel dd {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--w-ink, var(--terracotta-deep));
+}
+
+.quickstats__panel dd small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.2px;
+  opacity: 0.72;
+}
+
+.quickstats__panel hr {
+  height: 1px;
+  margin: 12px 0;
+  border: 0;
+  background: var(--w-line, rgba(156, 82, 54, 0.16));
+}
+
+/* Keep the open/closed states, drop the journey between them. */
+@media (prefers-reduced-motion: reduce) {
+  .quickstats__grow,
+  .quickstats__panel {
+    transition: none;
+  }
+}
+
