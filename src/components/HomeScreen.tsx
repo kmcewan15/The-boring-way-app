@@ -19,16 +19,33 @@ const DOCK_LEFT = 30;
 const DOCK_FONT = 44;
 const DOCK_SCALE = 20 / DOCK_FONT;
 
+/* Where the burger lands and how small it gets -- same idea as the title's
+   dock above, aimed at the sidebar's nav toggle instead of its brand text.
+   Top is the sidebar's own padding-top (34) plus the brand box's rendered
+   height (title line-height 24 + 4 gap + tagline line-height ~17.6 ≈ 46) plus
+   the toggle's own margin-top (22): 34 + 46 + 22 = 102. Left matches the
+   sidebar's own padding-left (20) rather than the brand text's further-
+   indented 30 -- the toggle lines up with the nav items below it, not the
+   title above it. */
+const BURGER_DOCK_TOP = 102;
+const BURGER_DOCK_LEFT = 20;
+const BURGER_SIZE = 88;
+const BURGER_DOCK_SIZE = 46;
+const BURGER_DOCK_SCALE = BURGER_DOCK_SIZE / BURGER_SIZE;
+
 /** The screen before the trail: the trailhead itself, dust already drifting
     through lantern-lit dawn air, and a hamburger that is the door rather than
     a decoration next to one. Tapping it slides the title up into the corner
-    it becomes on every other screen, morphs the hamburger into an arrow, and
-    dissolves the rest away to reveal the app underneath. */
+    it becomes on every other screen, sends the hamburger to the corner below
+    it -- where it becomes the sidebar's own nav toggle -- and fades the hint
+    text away to reveal the app underneath. */
 export default function HomeScreen({ onEnter }: { onEnter: () => void }) {
   const [entering, setEntering] = useState(false);
   const [sliding, setSliding] = useState(false);
   const [dockTransform, setDockTransform] = useState<string | null>(null);
+  const [burgerDockTransform, setBurgerDockTransform] = useState<string | null>(null);
   const brandRef = useRef<HTMLDivElement>(null);
+  const burgerRef = useRef<HTMLButtonElement>(null);
 
   const handleEnter = () => {
     if (entering) return;
@@ -50,6 +67,20 @@ export default function HomeScreen({ onEnter }: { onEnter: () => void }) {
       const targetCy = DOCK_TOP + (r.height * DOCK_SCALE) / 2;
       setDockTransform(
         `translate(${(targetCx - cx).toFixed(1)}px, ${(targetCy - cy).toFixed(1)}px) scale(${DOCK_SCALE})`,
+      );
+    }
+
+    /* Same measured landing for the burger, aimed at the nav toggle's spot
+       instead of the brand's. */
+    const burgerEl = burgerRef.current;
+    if (burgerEl) {
+      const r = burgerEl.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const targetCx = BURGER_DOCK_LEFT + (r.width * BURGER_DOCK_SCALE) / 2;
+      const targetCy = BURGER_DOCK_TOP + (r.height * BURGER_DOCK_SCALE) / 2;
+      setBurgerDockTransform(
+        `translate(${(targetCx - cx).toFixed(1)}px, ${(targetCy - cy).toFixed(1)}px) scale(${BURGER_DOCK_SCALE})`,
       );
     }
 
@@ -96,7 +127,18 @@ export default function HomeScreen({ onEnter }: { onEnter: () => void }) {
       </div>
 
       <div className="home__enter">
-        <button type="button" className="home__burger" onClick={handleEnter} aria-label="Start">
+        <button
+          ref={burgerRef}
+          type="button"
+          className="home__burger"
+          onClick={handleEnter}
+          aria-label="Start"
+          style={
+            sliding && burgerDockTransform
+              ? ({ transform: burgerDockTransform } as CSSProperties)
+              : undefined
+          }
+        >
           <i />
           <i />
           <i />

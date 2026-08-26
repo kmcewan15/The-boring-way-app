@@ -506,38 +506,6 @@
 }
 
 
-/* Small round control on the trail, out of the centred pill's way. Cleared
-   below the coursebar's own box (46px: 10+12 padding around its 24px-tall
-   slots) with a real gap, rather than the 30px that used to tuck it 16px
-   *under* the bar's own row -- see the matching gap on .quickstats, which
-   overlapped the bar's percentage label outright at that offset. */
-.trail__mapbtn {
-  position: absolute;
-  z-index: 41;
-  top: 58px;
-  right: 26px;
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--w-glass, var(--pink-cream));
-  color: var(--w-ink, var(--terracotta-deep));
-  box-shadow: var(--shadow-pill);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition:
-    transform var(--dur-fast) var(--ease-calm),
-    background var(--dur-slow) var(--ease-calm),
-    color var(--dur-slow) var(--ease-calm);
-}
-
-
-.trail__mapbtn:hover {
-  transform: scale(1.08);
-}
-
-
 /* ---------------------------------------------------------------- arrival ---
 
    The title card that marks walking into a new world. Sits above the cards and
@@ -934,9 +902,9 @@
   margin-left: 1px;
 }
 
-/* One world. Not clipped, so the cap's glow and the tooltip can leave the track.
-   The hit area is taller than the 8px track via padding, because an 8px target is
-   not a target. */
+/* One world. Not clipped, so the cap's glow, the pip and the tooltip can leave
+   the track. The hit area is taller than the 8px track via padding, because an
+   8px target is not a target. */
 .coursebar__slot {
   position: relative;
   flex-basis: 0;
@@ -991,7 +959,11 @@
   transform: scaleY(1.35);
 }
 
-/* The fill. */
+/* The fill. The same frosted-glass material as every other panel in the app
+   (the tooltip below, the sidebar, the cards) rather than a colour of its
+   own -- the bar's whole point is to sit quietly at the top of whichever
+   world you're looking at, not to introduce a second visual language on top
+   of it. */
 .coursebar__seg > i {
   position: absolute;
   inset: 0;
@@ -1052,6 +1024,46 @@
     inset 0 0 0 1px rgba(0, 0, 0, 0.16),
     0 0 10px 1px rgba(255, 255, 255, 0.6),
     0 0 22px 2px rgba(255, 255, 255, 0.26);
+}
+
+/* The world's own number, in a small white chip -- the same material as the
+   cap and the full-world bloom (white, glowing once finished), just carrying
+   a digit instead of being purely decorative. A flat number sitting directly
+   on the track was tried first and lost: the segment is either translucent
+   white over a photo or a photo-tinted glass fill, and neither is one fixed
+   colour to set reliable text against. The chip gives the number a constant
+   backdrop regardless of what's under or inside the bar at that point. */
+.coursebar__num {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
+  border-radius: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--w-ink, var(--terracotta-deep));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  transition:
+    background var(--dur-fast) var(--ease-calm),
+    box-shadow var(--dur-fast) var(--ease-calm),
+    color var(--dur-slow) var(--ease-calm);
+}
+
+.coursebar__slot--full .coursebar__num {
+  background: #fff;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 0 6px 1px rgba(255, 255, 255, 0.75);
 }
 
 /* The head of your progress. Sits exactly at the fill's edge and glows, so the eye
@@ -1173,16 +1185,15 @@
   background: var(--pink-bg);
 }
 
-/* The exit used to fade the whole screen at once. Now the title is the one
-   thing that doesn't fade -- it slides up to the corner instead, toward
-   roughly where the sidebar's own brand text sits once the app shell mounts
-   underneath, so the name reads as relocating rather than the page simply
-   dissolving. Everything else (art, motes, grain, the button) still fades
-   away beneath it. */
+/* The exit used to fade the whole screen at once. Now the title and the
+   burger are the two things that don't fade -- they slide to the corners
+   they become once the app shell mounts underneath (the brand text, the nav
+   toggle), so both read as relocating rather than the page simply
+   dissolving. Everything else (art, motes, grain, the hint text) still fades
+   away beneath them. */
 .home__art,
 .motes,
-.grade,
-.home__enter {
+.grade {
   transition: opacity var(--dur-slow) var(--ease-calm);
 }
 
@@ -1202,10 +1213,6 @@
    animates to -- see the comment in HomeScreen.tsx. */
 .home--entering .home__enter {
   animation: none;
-}
-
-.home--sliding .home__enter {
-  opacity: 0;
 }
 
 /* Softer and calmer than the trail's own full-strength art -- this is a
@@ -1314,7 +1321,9 @@
 /* A lantern rather than a plain button -- the trailhead's own light, echoed
    behind the one thing on screen worth touching. Sits behind the button in
    its stacking order (negative z-index, same box) so it breathes on the exact
-   same cycle without needing its own animation. */
+   same cycle without needing its own animation. Fades on its way to becoming
+   the sidebar's flat nav toggle -- a glowing lantern in that corner would
+   look like a stray light left on, not a docked control. */
 .home__burger::before {
   content: '';
   position: absolute;
@@ -1327,6 +1336,11 @@
     rgba(255, 205, 148, 0) 70%
   );
   filter: blur(3px);
+  transition: opacity var(--dur-mid) var(--ease-calm);
+}
+
+.home--sliding .home__burger::before {
+  opacity: 0;
 }
 
 .home__burger:hover,
@@ -1346,25 +1360,18 @@
     width var(--dur-mid) var(--ease-calm);
 }
 
-/* Tapped: the three bars resolve into a right-facing arrow -- top and bottom
-   become its two strokes, the middle one has no part in an arrow and empties
-   out rather than sitting there unexplained. */
+/* Tapped: stop breathing and hold still, the same freeze-then-transition
+   split the title uses (see HomeScreen.tsx) -- `entering` cancels the loop
+   in place, and `sliding`, a moment later, is what the slower docking
+   transition below actually has something to animate from. Stays three bars
+   the whole way: it's landing as the sidebar's nav toggle, not leaving the
+   screen, so there's nothing here for an arrow to mean. */
 .home--entering .home__burger {
   animation: none;
 }
 
-.home--entering .home__burger i:nth-child(1) {
-  width: 20px;
-  transform: translate(3px, 7px) rotate(45deg);
-}
-
-.home--entering .home__burger i:nth-child(2) {
-  opacity: 0;
-}
-
-.home--entering .home__burger i:nth-child(3) {
-  width: 20px;
-  transform: translate(3px, -7px) rotate(-45deg);
+.home--sliding .home__burger {
+  transition: transform 640ms var(--ease-calm);
 }
 
 @keyframes homebreathe {
@@ -1401,151 +1408,8 @@
   .home__art,
   .motes,
   .grade,
-  .home__enter {
-    transition: none;
-  }
-}
-
-/* ==========================================================================
-   Quick stats
-   ==========================================================================
-
-   A hamburger that lives above every tab, not just the trail, mirroring the
-   map button's spot on the opposite corner. Themed off the same --w-* set the
-   trail writes to the document, so it carries the current world's colours on
-   every screen exactly as the sidebar does. Anchored to .main -- see the
-   comment above <QuickStats /> in App.tsx for why it sits there and not
-   inside LearnScreen.
-
-   top matches .trail__mapbtn's own comment: cleared below the coursebar's
-   full 46px box rather than sitting inside it, where this used to land
-   directly under -- almost touching -- the bar's "0%" label on the Learn
-   tab. */
-
-.quickstats {
-  position: absolute;
-  z-index: 43;
-  top: 58px;
-  left: 26px;
-}
-
-.quickstats__toggle {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--w-glass, var(--pink-cream));
-  color: var(--w-ink, var(--terracotta-deep));
-  box-shadow: var(--shadow-pill);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition:
-    transform var(--dur-fast) var(--ease-calm),
-    background var(--dur-slow) var(--ease-calm),
-    color var(--dur-slow) var(--ease-calm);
-}
-
-.quickstats__toggle:hover {
-  transform: scale(1.08);
-}
-
-/* Open: pinned under the toggle rather than floating free, so the two read as
-   one control rather than a button and an unrelated card. */
-.quickstats--open .quickstats__toggle {
-  transform: scale(1.04);
-}
-
-/* The row that grows: always in the DOM so shrinking has somewhere to
-   transition back to, rather than the panel just vanishing on close. A grid
-   row rather than max-height, because max-height needs a guessed ceiling and
-   this needs none -- 1fr is exactly the content's own height, whatever that
-   turns out to be. */
-.quickstats__grow {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  width: 240px;
-  display: grid;
-  grid-template-rows: 0fr;
-  overflow: hidden;
-  transition: grid-template-rows var(--dur-mid) var(--ease-calm);
-}
-
-.quickstats--open .quickstats__grow {
-  grid-template-rows: 1fr;
-}
-
-.quickstats__panel {
-  /* A grid track will not shrink below its content's height unless the item
-     inside it is allowed to -- without this, 1fr collapsing to 0fr had
-     nowhere to go and the row never actually closed. */
-  min-height: 0;
-  margin: 0;
-  padding: 16px 18px;
-  border-radius: var(--r-card);
-  background: var(--w-glass, var(--pink-cream));
-  box-shadow: var(--shadow-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  opacity: 0;
-  transform: translateY(-6px);
-  transition:
-    opacity var(--dur-fast) var(--ease-calm),
-    transform var(--dur-fast) var(--ease-calm);
-}
-
-/* Opening: the box leads, the words follow -- a short delay so the content
-   fades in once there is somewhere for it to land, rather than racing the
-   grow and appearing to overflow a still-shrinking box.
-
-   Closing drops this rule entirely, so the text fades out at once (dur-fast,
-   no delay) while the row is still on its own slower way shut -- the words
-   are gone well before the box finishes collapsing, never left stranded
-   against a shrinking edge. */
-.quickstats--open .quickstats__panel {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 90ms;
-}
-
-.quickstats__panel dt {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--w-ink, var(--terracotta-deep));
-}
-
-.quickstats__panel dd {
-  margin: 4px 0 0;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--w-ink, var(--terracotta-deep));
-}
-
-.quickstats__panel dd small {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.2px;
-  opacity: 0.72;
-}
-
-.quickstats__panel hr {
-  height: 1px;
-  margin: 12px 0;
-  border: 0;
-  background: var(--w-line, rgba(156, 82, 54, 0.16));
-}
-
-/* Keep the open/closed states, drop the journey between them. */
-@media (prefers-reduced-motion: reduce) {
-  .quickstats__grow,
-  .quickstats__panel {
+  .home__burger,
+  .home__burger::before {
     transition: none;
   }
 }

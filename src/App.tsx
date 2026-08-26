@@ -6,7 +6,6 @@ import Modal from './components/Modal';
 import MyPathScreen, { type MyPathRoute } from './components/MyPathScreen';
 import { Notes, Timebox } from './components/MyPathDetails';
 import ProgressScreen from './components/ProgressScreen';
-import QuickStats from './components/QuickStats';
 import ResourcesScreen from './components/ResourcesScreen';
 import Sidebar from './components/Sidebar';
 import StepView from './components/StepView';
@@ -46,12 +45,6 @@ export default function App() {
       <Sidebar />
 
       <main className="main">
-        {/* Sits above every tab, not just the trail, so where you stand is
-            never more than one click away. Collapses itself the moment a step
-            or quiz opens -- entry !== null is "starting to learn" in this
-            app's terms. */}
-        <QuickStats collapseOn={entry !== null} />
-
         {tab === 'learn' && (
           <LearnScreen
             onOpenExplore={() => setExplore(true)}

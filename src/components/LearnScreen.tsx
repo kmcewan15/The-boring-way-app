@@ -23,7 +23,7 @@ import { setViewIndex } from '../state/viewStore';
 import JourneyMap from './JourneyMap';
 import QuizCard from './QuizCard';
 import StepCard from './StepCard';
-import { IconChevronDown, IconCompass } from './Icons';
+import { IconChevronDown } from './Icons';
 
 /* The trail is ONE continuous rail across all ten topics, not one rail per
    topic. Scrolling past the last step of a topic carries straight on into the
@@ -568,19 +568,6 @@ export default function LearnScreen({
           control. See .grade. */}
       <div className="grade" aria-hidden="true" />
 
-      {/* Opens the whole-journey map. Sits apart from the centred pill so the two
-          never collide, and carries its shortcut in the tooltip rather than on the
-          face -- the button is small on purpose. */}
-      <button
-        type="button"
-        className="trail__mapbtn"
-        onClick={() => setMapOpen(true)}
-        title="See the whole trail (M)"
-        aria-label="See the whole trail"
-      >
-        <IconCompass size={26} />
-      </button>
-
       {/* How far along the course you are. One segment per topic, each as wide as
           that topic has steps, so the filled length across the whole bar equals
           overall progress while the divisions still show the ten chapters.
@@ -644,6 +631,12 @@ export default function LearnScreen({
                 <i />
                 <b />
               </span>
+              {/* The world's own number, not just a mark -- so the bar reads as
+                  "ten worlds, here's which one" rather than ten identical beads
+                  you'd have to count. A small chip rather than bare text sitting
+                  on the track, so the number stays legible over the fill, the
+                  empty track and whatever photo shows through either. */}
+              <span className="coursebar__num">{topic.number}</span>
               <u />
               <span className="coursebar__tip">
                 <strong>

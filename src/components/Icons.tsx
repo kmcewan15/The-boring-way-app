@@ -27,7 +27,7 @@ export function IconCompass({ size = 26, className }: IconProps) {
   );
 }
 
-/** Three lines — the quick-stats menu, collapsed. */
+/** Three lines — the sidebar's own nav toggle, collapsed. */
 export function IconMenu({ size = 22, className }: IconProps) {
   return (
     <svg {...base(size)} className={className} aria-hidden="true">
@@ -217,6 +217,28 @@ export function IconPlay({ size = 34, className }: IconProps) {
         d="M8.4 5.4a1 1 0 0 1 1.5-.86l8.2 5.6a1 1 0 0 1 0 1.72l-8.2 5.6a1 1 0 0 1-1.5-.86Z"
         fill="currentColor"
       />
+    </svg>
+  );
+}
+
+/* Flame — the streak stat. Outline only at zero, so an unstarted streak
+   reads as "nothing lit yet" rather than a small orange fire sitting next to
+   a 0, which read as contradicting itself. */
+export function IconFlame({ size = 24, lit = false, className }: IconProps & { lit?: boolean }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden="true"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      fill={lit ? 'currentColor' : 'none'}
+    >
+      <path d="M12 2.6c1.7 2.6 5.3 6.4 5.3 10.6a5.3 5.3 0 1 1-10.6 0c0-1.8.7-3.2 1.5-4.4-.1 1.7.6 2.7 1.6 2.7-.3-3.1.9-5.2 2.2-8.9Z" />
     </svg>
   );
 }
