@@ -78,7 +78,7 @@ Notes on editing:
 | **All topics** | [ExploreTopics.tsx](src/components/ExploreTopics.tsx) | Dark-green world, 10 vertically-paged topics, one island each, with a pin per step (ticked once complete). |
 | **My Path** | [MyPathScreen.tsx](src/components/MyPathScreen.tsx) | Timebox / My progress / Completed steps / My notes. |
 | **My progress** | [ProgressScreen.tsx](src/components/ProgressScreen.tsx) | Overall completion bar, topic strip, topic + step dots. Click any island to jump to that topic. |
-| **Resources** | [ResourcesScreen.tsx](src/components/ResourcesScreen.tsx) | Reference material. **Link targets are placeholders** — point them at your own docs. |
+| **Resources** | [ResourcesScreen.tsx](src/components/ResourcesScreen.tsx) | The reference you come back to, not a second table of contents. One search box filters the whole page: the data rules, task fit, troubleshooting by symptom, the prompt kit per job, the two product glossaries, and every command. |
 | **End-of-world quiz** | [TopicQuiz.tsx](src/components/TopicQuiz.tsx) | The checkpoint at the end of each topic, reached on the trail. Card is [QuizCard.tsx](src/components/QuizCard.tsx). |
 
 ## How the trail works: one continuous journey

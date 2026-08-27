@@ -1204,13 +1204,13 @@ const STEPS: RawStep[][] = [
               t: 'term',
               word: 'Token',
               collapsed: true,
-              means: 'How desk space is counted. A million tokens is about half a million words.',
+              means: 'How desk space is counted. A million tokens is about three quarters of a million words.',
             },
             {
               t: 'term',
               word: 'Cost',
               collapsed: true,
-              means: 'The price of the paper. Writing costs about five times more than reading.',
+              means: 'What a turn takes out of your allowance. Writing costs about five times more than reading.',
             },
           ],
         },
@@ -1226,7 +1226,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'A connector reaches things Claude cannot, which is exactly why it takes room. One you switched on months ago and forgot has been paying rent on your desk ever since.',
+          text: 'A connector reaches things Claude cannot, which is exactly why it takes room. One you switched on months ago and forgot still leaves its name on the desk, even on the days you never use it.',
         },
         {
           t: 'why',
@@ -1234,7 +1234,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'Someone pays for the paper too — Claude re-reads the whole desk every time you press enter, so the bill follows the length of the chat, not the difficulty of the question.',
+          text: 'Your allowance pays for the paper, too. Claude re-reads the whole desk every time you press enter, so what you spend follows the length of the chat, not the difficulty of the question.',
         },
         {
           t: 'p',
@@ -1345,11 +1345,11 @@ const STEPS: RawStep[][] = [
             },
             {
               t: 'p',
-              text: 'Match the model to the job. A cheaper model is plenty for routine work; keep the expensive one for the work that needs it.',
+              text: 'Match the model to the job. A smaller model is plenty for routine work, and you keep the big one for the work that needs it.',
             },
             {
               t: 'p',
-              text: "Switch off the connectors you are not using this week. They sit on the desk every turn whether you use them or not.",
+              text: "Switch off the connectors you're not using this week. Each one still leaves its name on the desk whether you reach for it or not, and a cluttered desk makes the model reach for the wrong thing.",
             },
           ],
         },
