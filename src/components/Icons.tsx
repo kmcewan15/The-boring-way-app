@@ -100,6 +100,17 @@ export function IconNote({ size = 24, className }: IconProps) {
   );
 }
 
+/** Triangle with an exclamation — the "Careful" callout. */
+export function IconWarning({ size = 20, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M12 4.6a1.4 1.4 0 0 1 1.22.71l7.4 13.1a1.4 1.4 0 0 1-1.22 2.09H4.6a1.4 1.4 0 0 1-1.22-2.09l7.4-13.1A1.4 1.4 0 0 1 12 4.6Z" />
+      <path d="M12 10v4.1" strokeWidth={2} />
+      <path d="M12 17.1h.01" strokeWidth={2.2} />
+    </svg>
+  );
+}
+
 export function IconChevronDown({ size = 26, className }: IconProps) {
   return (
     <svg {...base(size)} className={className} aria-hidden="true">

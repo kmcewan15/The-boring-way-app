@@ -21,8 +21,10 @@ export type Block =
   | { t: 'p'; text: string }
   /** Why this matters to the reader. Use sparingly — once per step at most. */
   | { t: 'why'; text: string }
-  /** A word the reader may not know, defined in one line. */
-  | { t: 'term'; word: string; means: string }
+  /** A word the reader may not know, defined in one line. Pass
+      `collapsed: true` to fold the definition behind the word, for a run of
+      terms a reader can skip if they already know them. */
+  | { t: 'term'; word: string; means: string; collapsed?: boolean }
   /** Something to type, verbatim. `cmd` may be a command or a prompt. */
   | { t: 'do'; label: string; cmd: string }
   /** What appears on screen after the `do` above it. */
@@ -34,6 +36,12 @@ export type Block =
       t: 'table';
       rows: Array<{ dimension: string; doThis: string; notThis: string }>;
     }
+  /** A titled box grouping related blocks under a sub-header. Use for a run of
+      terms or steps that belong together. */
+  | { t: 'panel'; heading: string; blocks: Block[] }
+  /** A short bullet list. For a handful of few-word points, usually answering a
+      question posed in the `p` above it. Not for prose — keep items to a line. */
+  | { t: 'list'; items: string[] }
   /** A helpful aside: an extra route, a shortcut, an optional detail. Emits a
       fixed heading like `why` and `warn`, so keep it to one per step. */
   | { t: 'tip'; text: string }
@@ -97,42 +105,52 @@ const STEPS: RawStep[][] = [
       kind: 'read',
       minutes: 5,
       brief:
-        'Claude Code is an agent that runs in your terminal, not on a website. It runs on your machine, in a folder you choose, and it can read and change the files in it.',
+        'Claude Code is an agent that works in your system, not on a website. When given access, it can read and change the files in it.',
       body: [
         {
           t: 'p',
-          text: 'You have probably used Claude in a browser tab. You describe a problem, it writes something back, and you copy the answer into wherever it actually needed to go.',
+          text: 'When you want to give a file to Claude, you upload to the website. With Claude Code, the agent comes to your files to work on them.',
         },
         {
           t: 'p',
-          text: 'Claude Code is not that. It runs on your own machine, in one folder you choose, and it opens and changes the files in that folder itself. There is no copying back.',
+          text: 'Because Claude can read your files, its answers about your work are more accurate rather than a generic example',
         },
         {
-          t: 'term',
-          word: 'Terminal',
-          means: 'The text window on your computer where you type commands instead of clicking. Claude Code lives here.',
-        },
-        {
-          t: 'term',
-          word: 'Agent',
-          means: 'An AI model that can do more than just chat, it can read, write and run things.',
-        },
-        {
-          t: 'term',
-          word: 'Working directory',
-          means: 'The single folder you started Claude in. It is the whole of what Claude can see.',
+          t: 'panel',
+          heading: 'Some useful terms you might not know:',
+          blocks: [
+            {
+              t: 'term',
+              word: 'Terminal',
+              collapsed: true,
+              means: 'The text window on your computer where you type commands instead of clicking. Claude Code lives here.',
+            },
+            {
+              t: 'term',
+              word: 'Agent',
+              collapsed: true,
+              means: 'An AI model that can do more than just chat, it can read, write and run things.',
+            },
+            {
+              t: 'term',
+              word: 'Working directory',
+              collapsed: true,
+              means: 'The single folder you started Claude in. It is the whole of what Claude can see.',
+            },
+          ],
         },
         {
           t: 'p',
-          text: 'Nothing is uploaded. Your files stay where they are and Claude comes to them, which is the opposite of how a browser chat works. It is not a website, not a browser extension, and not a server you send your work to.',
+          text: 'So what can you do with Claude Code that you cannot do with Claude in a browser?',
         },
         {
-          t: 'why',
-          text: 'Every other topic rests on this one idea. Claude is standing in your folder looking at your real material, so its answers are about your work rather than a generic example. Its mistakes land on your real files for the same reason.',
-        },
-        {
-          t: 'warn',
-          text: 'Running on your machine is not the same as running unsupervised. Claude asks before it changes anything, and topic 3 is about keeping that habit rather than clicking through it.',
+          t: 'list',
+          items: [
+            'Create entire applications from scratch with one prompt',
+            'Search and understand a large codebase in just a few minutes.',
+            'Organise folders and scan for issues across many documents',
+            'Make changes for you without having to copy-and-paste or download a file',
+          ],
         },
       ],
       tasks: [

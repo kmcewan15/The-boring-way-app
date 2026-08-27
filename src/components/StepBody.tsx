@@ -2,7 +2,7 @@ import type { Block } from '../data/curriculum';
 import Rich from './Rich';
 import RequestBuilder from './RequestBuilder';
 import TokenCalc from './TokenCalc';
-import { IconChevronDown, IconPlay, IconTerminal } from './Icons';
+import { IconChevronDown, IconPlay, IconTerminal, IconWarning } from './Icons';
 
 /** A video that has not been recorded yet. Shows which video belongs here so the
     slot reads as deliberate rather than broken. */
@@ -49,7 +49,22 @@ function BlockView({ b }: { b: Block }) {
         </div>
       );
 
+    /* Folded, the word is the summary and the definition is the payload — a
+       reader who already knows the term skips it without scrolling past it. */
     case 'term':
+      if (b.collapsed) {
+        return (
+          <details className="term term--fold">
+            <summary className="term__sum">
+              <span className="term__word">{b.word}</span>
+              <IconChevronDown size={18} className="term__chev" />
+            </summary>
+            <p className="term__means">
+              <Rich text={b.means} />
+            </p>
+          </details>
+        );
+      }
       return (
         <dl className="term">
           <dt className="term__word">{b.word}</dt>
@@ -57,6 +72,33 @@ function BlockView({ b }: { b: Block }) {
             <Rich text={b.means} />
           </dd>
         </dl>
+      );
+
+    /* h2 rather than h3: the other callout headings are h2, and a body with no
+       why/warn ahead of it would otherwise jump h1 -> h3. */
+    case 'panel':
+      return (
+        <section className="groupbox">
+          <h2 className="groupbox__h">
+            <Rich text={b.heading} />
+          </h2>
+          <div className="groupbox__body">
+            {b.blocks.map((inner, i) => (
+              <BlockView b={inner} key={i} />
+            ))}
+          </div>
+        </section>
+      );
+
+    case 'list':
+      return (
+        <ul className="list">
+          {b.items.map((item, i) => (
+            <li className="list__item" key={i}>
+              <Rich text={item} />
+            </li>
+          ))}
+        </ul>
       );
 
     case 'do':
@@ -91,7 +133,10 @@ function BlockView({ b }: { b: Block }) {
     case 'warn':
       return (
         <div className="warn">
-          <h2 className="warn__h">Careful</h2>
+          <h2 className="warn__h">
+            <IconWarning size={19} className="warn__icon" />
+            Careful
+          </h2>
           <p className="warn__p">
             <Rich text={b.text} />
           </p>

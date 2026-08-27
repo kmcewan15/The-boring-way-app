@@ -1292,6 +1292,135 @@ button {
   line-height: 1.4;
 }
 
+/* Folded variant: the word alone until you open it. Same shell as the plain
+   term, so a mixed run of the two does not look like two different things. */
+.term--fold {
+  padding: 0;
+  overflow: hidden;
+}
+
+.term__sum {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Safari draws its own disclosure triangle without this. */
+.term__sum::-webkit-details-marker {
+  display: none;
+}
+
+.term__sum:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.term__sum:focus-visible {
+  outline: 2px solid var(--path-cream);
+  outline-offset: -2px;
+}
+
+.term__chev {
+  flex: none;
+  opacity: 0.6;
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.term--fold[open] .term__chev {
+  transform: rotate(180deg);
+}
+
+/* The definition carries the padding once open, since the shell gave it up. */
+.term--fold .term__means {
+  margin: 0;
+  padding: 0 20px 18px;
+}
+
+/* A titled box grouping related blocks. Darker than the blocks inside it, so a
+   nested term still reads as a card sitting on the panel rather than merging. */
+.panel {
+  margin: 0 0 18px;
+  padding: 18px 18px 4px;
+  border-radius: var(--r-sheet);
+  background: rgba(0, 0, 0, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.panel__h {
+  margin: 0 2px 14px;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.35;
+  opacity: 0.9;
+}
+
+/* The last child keeps its own margin, which the panel's short bottom padding
+   is sized to complete. */
+.panel__body > *:last-child {
+  margin-bottom: 14px;
+}
+
+/* A titled box grouping related blocks under a sub-header. Darker than the
+   blocks inside it, so a nested term still reads as a card sitting on the box
+   rather than merging into it. Named `groupbox`, not `panel` — that class is
+   already the light stat-card style used on My Path and My progress. */
+.groupbox {
+  margin: 0 0 18px;
+  padding: 18px 18px 4px;
+  border-radius: var(--r-sheet);
+  background: rgba(0, 0, 0, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.groupbox__h {
+  margin: 0 2px 14px;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.35;
+  opacity: 0.9;
+}
+
+/* The last child keeps its own margin, which the box's short bottom padding is
+   sized to complete. */
+.groupbox__body > *:last-child {
+  margin-bottom: 14px;
+}
+
+/* A short list of few-word points. Custom marker because the default bullet
+   sits too high against this type size. */
+.list {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.list__item {
+  position: relative;
+  padding: 0 0 0 26px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.list__item + .list__item {
+  margin-top: 9px;
+}
+
+.list__item::before {
+  content: '';
+  position: absolute;
+  top: 0.55em;
+  left: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
 /* Something to type, verbatim. */
 .do {
   margin: 0 0 14px;
@@ -1381,12 +1510,21 @@ button {
 }
 
 .warn__h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 1.3px;
   text-transform: uppercase;
   color: var(--rock-light);
+}
+
+/* The only callout with a symbol, which is the point: `why` and `tip` are worth
+   reading, this one is worth stopping for. */
+.warn__icon {
+  flex: none;
 }
 
 .warn__p {
