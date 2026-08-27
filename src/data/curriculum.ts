@@ -45,11 +45,10 @@ export type Block =
   /** A helpful aside: an extra route, a shortcut, an optional detail. Emits a
       fixed heading like `why` and `warn`, so keep it to one per step. */
   | { t: 'tip'; text: string }
-  /** A labelled collapsible holding nested blocks. Used for the same step done
-      two ways (terminal or extension), and for an optional aside worth folding
-      away — pass `open: false` for the latter. Keep `why` and `warn` outside a
-      track: they emit fixed headings, so one in each branch reads as a
-      duplicate. */
+  /** A labelled collapsible holding nested blocks. Closed by default — pass
+      `open: true` for a branch the reader should see without clicking. Keep
+      `why` and `warn` outside a track: they emit fixed headings, so one in
+      each branch reads as a duplicate. */
   | { t: 'track'; label: string; blocks: Block[]; open?: boolean }
   /** The interactive token and cost estimator. Takes no content of its own. */
   | { t: 'calc' }
@@ -271,11 +270,11 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'There is more than one way in: Claude Enterprise through your organisation, a personal subscription, or an API key. Use whichever your team actually issues you — the rest of the course is identical either way.',
+          text: 'There is more than one way in: Claude Enterprise through your organisation, a personal subscription, or an API key. Use whichever method your team issues',
         },
         {
           t: 'warn',
-          text: 'It is recommended to authenticate through Claude Enterprise if on your work device, never use Claude Code on a directory containing work files if authenticated with a personal subscription.',
+          text: 'Never use Claude Code on a directory containing work files if authenticated with a personal subscription.',
         },
         {
           t: 'track',
@@ -309,11 +308,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'Most people try a new tool somewhere simple first. Go for something you know in depth that is complex.',
-        },
-        {
-          t: 'p',
-          text: 'The working directory is the whole of what Claude can see. Start it somewhere real and its answers are about your actual work. Start it in an empty folder and it has nothing to go on, so you get the same generic advice a browser chat would have given you.',
+          text: 'Most people try a new tool somewhere simple first. Go for something you know well thats not easy to understand.',
         },
         {
           t: 'track',
@@ -348,7 +343,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'see',
-          text: 'A list of files that genuinely exist. Open one and check, because it is reading your folder rather than guessing at what a project like yours usually holds. If it names things you do not recognise, you are in the wrong folder.',
+          text: 'Claude lists files that genuinely exist in that folder. If it names things you do not recognise, it has access to the wrong folder.',
         },
         {
           t: 'why',
@@ -356,7 +351,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'warn',
-          text: 'Only do this on real work if you signed in through Claude Enterprise. On a personal subscription, point Claude at a folder with nothing confidential in it — topic 10 covers why that line matters.',
+          text: 'On work laptops and projects, use Claude Enterprise to authenticate where possible - topic 10 covers why this matters.',
         },
       ],
       tasks: [
@@ -364,7 +359,6 @@ const STEPS: RawStep[][] = [
         'Start `claude`',
         "Ask: 'What is in this folder?'",
       ],
-      verify: 'Claude lists files that genuinely exist in that folder.',
     },
   ],
 

@@ -145,7 +145,6 @@ const STEPS: RawStep[][] = [
           t: 'p',
           text: 'There are two main ways to run Claude Code and you only need one. Pick the terminal if you are comfortable there, otherwise install Visual Studio Code (a coding environment) for a friendlier interface where you can install Claude Code as an extension',
         },
-        // TODO: Add below paragraph as a tip and turn "here" into the correct clickable link for claude.ai official installation instructions
                {
           t: 'p',
           text: 'There are more ways to install and run it, click here',
@@ -212,7 +211,6 @@ const STEPS: RawStep[][] = [
           t: 'p',
           text: 'Signing in happens once on a machine. The videos cover the whole flow, so watch the one that matches how you installed it.',
         },
-        // TODO: Add the below paragraph as a tip and ensure "claude.ai" is a clickable link
         {
           t: 'p',
           text: 'Sign in at claude.ai, if you are using Claude Enterprise, you can sign in on the web through UKI Okta.',
@@ -247,13 +245,12 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'There is more than one way in: Claude Enterprise through your organisation, a personal subscription, or an API key. Use whichever your team actually issues you — the rest of the course is identical either way.',
+          text: 'There is more than one way in: Claude Enterprise through your organisation, a personal subscription, or an API key. Use whichever method your team issues.',
         },
         {
           t: 'warn',
-          text: 'It is recommended to authenticate through Claude Enterprise if on your work device, never use Claude Code on a directory containing work files if authenticated with a personal subscription.',
+          text: 'Never use Claude Code on a directory containing work files if authenticated with a personal subscription.',
         },
-        // TODO: Add below a collapsible tip showing title "Did you know if you have both installed, you can open the terminal from the visual studio code extension?" OR A "Did you know..." and when it expands have the full rhetorical. Then in the collapsible is claude_use_both.mp4, that is all."
       ],
       tasks: [
         'Open Claude — in the terminal, or from the Visual Studio Code panel',
@@ -271,11 +268,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'Most people try a new tool somewhere simple first. Go for something you know in depth that is complex.',
-        },
-        {
-          t: 'p',
-          text: 'The working directory is the whole of what Claude can see. Start it somewhere real and its answers are about your actual work. Start it in an empty folder and it has nothing to go on, so you get the same generic advice a browser chat would have given you.',
+          text: 'Most people try a new tool somewhere simple first. Go for something you know well thats not easy to understand.',
         },
         {
           t: 'track',
@@ -308,21 +301,14 @@ const STEPS: RawStep[][] = [
           label: 'Ask it something only that folder can answer',
           cmd: 'What is in this folder?',
         },
-        {
-          t: 'see',
-          text: 'A list of files that genuinely exist. Open one and check, because it is reading your folder rather than guessing at what a project like yours usually holds. If it names things you do not recognise, you are in the wrong folder.',
-        },
-        {
-          t: 'p',
-          text: 'None of this is enforced, by the way. An empty folder works, version control is not required, and Claude does not need you to explain the project before it can read it. It only has to be material you know well enough to check.',
-        },
+        // TODO move the "verify" just below 
         {
           t: 'why',
           text: 'You know your own project, so you are the one person who can catch Claude being confidently wrong about it. In a folder you have never seen, every answer looks plausible.',
         },
         {
           t: 'warn',
-          text: 'Pick a project you know, but not the one carrying this quarter. You will let Claude change files in topic 3, and you want your first mistake to be a cheap one.',
+          text: 'On work laptops and projects, use Claude Enterprise to authenticate where possible - topic 10 covers why this matters.',
         },
       ],
       tasks: [
@@ -330,7 +316,7 @@ const STEPS: RawStep[][] = [
         'Start `claude`',
         "Ask: 'What is in this folder?'",
       ],
-      verify: 'Claude lists files that genuinely exist in that folder.',
+      verify: 'Claude lists files that genuinely exist in that folder. If it names things you do not recognise, it has access to the wrong folder.',
     },
   ],
 

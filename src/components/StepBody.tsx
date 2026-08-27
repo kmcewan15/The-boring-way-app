@@ -1,16 +1,75 @@
+import { useEffect, useRef } from 'react';
 import type { Block } from '../data/curriculum';
 import Rich from './Rich';
 import RequestBuilder from './RequestBuilder';
 import TokenCalc from './TokenCalc';
 import { IconChevronDown, IconPlay, IconTerminal, IconWarning } from './Icons';
 
+type FullscreenVideo = HTMLVideoElement & {
+  webkitRequestFullscreen?: () => void;
+  webkitEnterFullscreen?: () => void;
+  webkitExitFullscreen?: () => void;
+};
+
+type FullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => void;
+};
+
+/* iOS Safari has no element-level Fullscreen API, only this video-only one, so
+   every path is tried in order and the rest is left to fail silently — a demo
+   that plays inline is a fine fallback, not an error. */
+function requestFullscreen(video: FullscreenVideo) {
+  try {
+    if (video.requestFullscreen) void video.requestFullscreen().catch(() => {});
+    else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+    else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+  } catch {
+    /* Fullscreen needs a user gesture; play already came from one, but a
+       browser can still refuse. Not worth surfacing. */
+  }
+}
+
+function exitFullscreen(video: FullscreenVideo) {
+  const doc = document as FullscreenDocument;
+  try {
+    if (document.fullscreenElement) void document.exitFullscreen?.().catch(() => {});
+    else if (doc.webkitFullscreenElement) doc.webkitExitFullscreen?.();
+    else video.webkitExitFullscreen?.();
+  } catch {
+    /* Already out of fullscreen, or it never entered — fine either way. */
+  }
+}
+
 /** A video that has not been recorded yet. Shows which video belongs here so the
     slot reads as deliberate rather than broken. */
 function VideoSlot({ title, src }: { title: string; src?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const exitTimer = useRef<number>();
+
+  useEffect(() => () => window.clearTimeout(exitTimer.current), []);
+
   if (src) {
     return (
       <figure className="vid">
-        <video className="vid__player" src={src} controls preload="metadata" />
+        <video
+          ref={videoRef}
+          className="vid__player"
+          src={src}
+          controls
+          preload="metadata"
+          onPlay={() => {
+            if (videoRef.current) requestFullscreen(videoRef.current);
+          }}
+          onEnded={() => {
+            window.clearTimeout(exitTimer.current);
+            /* A beat after the clip ends, not instantly — an abrupt cut back to
+               the lesson reads as the video having broken. */
+            exitTimer.current = window.setTimeout(() => {
+              if (videoRef.current) exitFullscreen(videoRef.current);
+            }, 1500);
+          }}
+        />
         <figcaption className="vid__cap">{title}</figcaption>
       </figure>
     );
@@ -181,11 +240,11 @@ function BlockView({ b }: { b: Block }) {
       );
 
     /* Two ways to do the same step. `details` is used rather than a hand-rolled
-       toggle so it is keyboard-reachable for free, and it stays open by default
-       so nobody misses content they did not know was hidden. */
+       toggle so it is keyboard-reachable for free. Closed by default: a reader
+       follows only their own path, not both branches at once. */
     case 'track':
       return (
-        <details className="track" open={b.open ?? true}>
+        <details className="track" open={b.open ?? false}>
           <summary className="track__sum">
             <span className="track__label">{b.label}</span>
             <IconChevronDown size={20} className="track__chev" />
