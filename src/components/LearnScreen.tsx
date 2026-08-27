@@ -16,14 +16,13 @@ import {
   WORLD_BOUNDARIES,
   entryKey,
   globalIndexOf,
-  pathForTopic,
 } from '../data/curriculum';
 import { useApp } from '../state/useApp';
 import { clearJump, setViewIndex, useJumpTarget } from '../state/viewStore';
 import JourneyMap from './JourneyMap';
 import QuizCard from './QuizCard';
 import StepCard from './StepCard';
-import { IconChevronDown } from './Icons';
+import { IconArrowRight, IconChevronDown } from './Icons';
 
 /* The trail is ONE continuous rail across all ten topics, not one rail per
    topic. Scrolling past the last step of a topic carries straight on into the
@@ -428,7 +427,6 @@ export default function LearnScreen({
 
   const focusEntry = JOURNEY[focus];
   const focusTopic = focusEntry.topic;
-  const focusPath = pathForTopic(focusTopic.number);
 
   /* ---- arriving in a new world -------------------------------------------
      Crossing a boundary is the most worked-on moment in the app -- two
@@ -747,22 +745,36 @@ export default function LearnScreen({
         type="button"
         className="sheet"
         /* Tinted from the same blended palette as the landscape, so the caption
-           banner belongs to whichever world you are currently walking through. */
+           banner belongs to whichever world you are currently walking through.
+           Starts at true 0 alpha now, not 0.8 -- opening already 80% opaque
+           right at the top edge, with nothing behind it to fade in from, was
+           the hard seam against the art above rather than a blend into it.
+           Ramps to 95% by 40% and solid by 100%, quick enough that the two
+           lines of text (which start around 19% into this now-shorter box)
+           still land on a legible backing. */
         style={{
-          background: `linear-gradient(180deg, ${withAlpha(palette.sky, 0.8)} 0%, ${withAlpha(
+          background: `linear-gradient(180deg, ${withAlpha(palette.sky, 0)} 0%, ${withAlpha(
             palette.sky,
-            0.95,
-          )} 46%, ${palette.sky} 100%)`,
+            0.7,
+          )} 18%, ${withAlpha(palette.sky, 0.95)} 40%, ${palette.sky} 100%)`,
           color: palette.foreDeep,
         }}
         onClick={onOpenExplore}
+        /* Used to also carry the topic/title line, then the path name -- both
+           dropped in turn once they stopped being something worth a permanent
+           spot on every step: the top bar already says the topic, and the
+           path only changes a few times across the whole journey, which
+           belongs to the drawer's own deliberate "where does this fit"
+           moment (its world list), not to chrome you see on every step. What
+           survived is the one thing here that's actually a link. The
+           aria-label still names the topic, since a screen reader benefits
+           from that context even with no visible text carrying it. */
         aria-label={`Topic ${focusTopic.number}, ${focusTopic.title}. Open all topics`}
       >
-        <div className="sheet__line">
-          <b>Topic {focusTopic.number}</b> {focusTopic.title}
+        <div className="sheet__hint">
+          All topics
+          <IconArrowRight size={14} />
         </div>
-        <div className="sheet__trail">The {focusPath.name} Path</div>
-        <div className="sheet__hint">All topics</div>
       </button>
 
       {mapOpen && <JourneyMap onClose={() => setMapOpen(false)} />}

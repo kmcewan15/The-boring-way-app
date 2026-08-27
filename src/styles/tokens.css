@@ -78,21 +78,32 @@
   /* --- Elevation -------------------------------------------------------- */
   --shadow-card: 0 14px 40px rgba(123, 58, 34, 0.22);
   --shadow-pill: 0 4px 14px rgba(123, 58, 34, 0.1);
-  --shadow-sheet: 0 -8px 30px rgba(123, 58, 34, 0.1);
 
   /* --- Layout ----------------------------------------------------------- */
   --read-w: 920px; /* max line length for text-heavy screens */
-  --sheet-h: 132px;
+  /* Still 84px from when this held two lines (.sheet__trail + .sheet__hint);
+     the path name that was .sheet__trail has since moved to the nav drawer's
+     own world list, leaving .sheet__hint on its own. Untouched rather than
+     shrunk again on the same guess this got sized on twice already -- worth
+     deciding on purpose whether a single link still wants a full-width fading
+     band at all, not just re-running the same ratio a third time. */
+  --sheet-h: 84px;
 
   /* Trail card geometry. The tiers place cards by percentage of the stage but the
      boxes are fixed px, so on a short window a full-height card reaches up past
      the one behind it -- these shrink at the breakpoints in global.css to keep the
      gaps. Type sizes scale with them, or the content simply overflows the box. */
   --card-w: 420px;
-  --card-h: 304px;
+  /* Was 304px -- brought down to match .card__index and .card__cta losing
+     8px of margin between them (see global.css), plus a slightly tighter
+     top/bottom pad below. min-height, not height, so a two-line title still
+     sets the real floor -- this just stops that floor being taller than the
+     tightened content actually needs, which used to leave dead air below the
+     button on every card. */
+  --card-h: 280px;
   --card-title: 27px;
   --card-index: 21px;
-  --card-pad: 18px 22px 22px;
+  --card-pad: 15px 22px 18px;
 
   --card-d1-w: 248px;
   --card-d1-h: 148px;

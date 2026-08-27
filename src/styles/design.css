@@ -786,7 +786,10 @@
 @media (max-width: 1500px), (max-height: 900px) {
   :root {
     --card-w: 356px;
-    --card-h: 244px;
+    /* Same 16px trim as the base --card-h, tracking .card__index/.card__cta
+       losing that much margin between them at every size, not just the
+       default breakpoint. */
+    --card-h: 228px;
     --card-title: 22px;
     --card-index: 17px;
     --card-pad: 14px 18px 18px;
@@ -797,7 +800,7 @@
     --card-d1-index: 12px;
 
     --card-d2-w: 128px;
-    --sheet-h: 112px;
+    --sheet-h: 72px;
 
     --map-node: 84px;
     --map-label: 212px;
@@ -811,7 +814,7 @@
 @media (max-width: 1150px), (max-height: 740px) {
   :root {
     --card-w: 300px;
-    --card-h: 202px;
+    --card-h: 186px;
     --card-title: 19px;
     --card-index: 15px;
     --card-pad: 11px 14px 14px;
@@ -822,7 +825,7 @@
     --card-d1-index: 11px;
 
     --card-d2-w: 112px;
-    --sheet-h: 96px;
+    --sheet-h: 60px;
 
     --map-node: 68px;
     --map-label: 186px;
@@ -876,10 +879,17 @@
      from the segments bubble up to it, so scrolling over the bar still works. */
   pointer-events: none;
   /* The bar sits over whatever the top of the photograph happens to be -- often
-     bright sky -- so it brings its own shading rather than trusting the picture. */
+     bright sky -- so it brings its own shading rather than trusting the picture.
+     Starts at 0, not straight at 0.34: the top bar's own solid background ends
+     exactly at this element's top:0, so opening already-dark there was a hard
+     snap from light chrome to shaded scrim on a single pixel row. Full strength
+     by 20% -- still comfortably inside the 10px top padding, before the track
+     or its numbers actually begin -- so the ease-in costs nothing in contrast
+     where it matters. */
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.34) 0%,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.34) 20%,
     rgba(0, 0, 0, 0.16) 60%,
     rgba(0, 0, 0, 0) 100%
   );

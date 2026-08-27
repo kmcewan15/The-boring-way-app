@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { TOPICS } from '../data/curriculum';
+import { JOURNEY, TOPICS } from '../data/curriculum';
 import { useApp, type Tab } from '../state/useApp';
+import { useViewIndex } from '../state/viewStore';
 import { IconMenu } from './Icons';
 import NavDrawer from './NavDrawer';
 
@@ -28,8 +29,15 @@ const SECTION_TITLE: Record<Tab, string | null> = {
     rail's own. */
 export default function TopBar() {
   const { tab, current } = useApp();
+  const viewIndex = useViewIndex();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const sectionTitle = SECTION_TITLE[tab];
+
+  /* Describes what's on screen, not where the learner left off -- see
+     viewStore.ts's own comment on why the two aren't the same thing.
+     current.topic (the cursor) is only the fallback, for tabs with no trail
+     of their own to report a view from. */
+  const topic = viewIndex === null ? current.topic : JOURNEY[viewIndex].topic;
 
   return (
     <header className="topbar">
@@ -62,8 +70,8 @@ export default function TopBar() {
           which world's finished, how long you've spent) is a drawer tap away
           rather than crammed into this one line too. */}
       <p className="topbar__stage">
-        World {current.topic.number} of {TOPICS.length}
-        <span>{current.topic.title}</span>
+        World {topic.number} of {TOPICS.length}
+        <span>{topic.title}</span>
       </p>
 
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />

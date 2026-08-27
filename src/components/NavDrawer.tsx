@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import FloatingIsland from '../art/FloatingIsland';
-import { TOPICS, globalIndexOf } from '../data/curriculum';
+import { PATHS, TOPICS, globalIndexOf } from '../data/curriculum';
 import { useApp, type Tab } from '../state/useApp';
 import { requestJump } from '../state/viewStore';
 import { IconBookmark, IconChevronLeft, IconCompass, IconFlame, IconResources } from './Icons';
@@ -129,44 +129,55 @@ export default function NavDrawer({ open, onClose }: { open: boolean; onClose: (
           </dl>
 
           <h2 className="drawer__worldsh">Your worlds</h2>
-          <div className="drawer__worlds">
-            {TOPICS.map((t) => {
-              const done = t.steps.filter((s) => isCompleted(s.id)).length;
-              const passed = topicQuizzes[t.number]?.passed ?? false;
-              const status = passed ? 'done' : done > 0 ? 'progress' : 'new';
-              const isCurrent = t.number === cursor.topic;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={[
-                    'drawer__world',
-                    `drawer__world--${status}`,
-                    isCurrent ? 'drawer__world--current' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  onClick={() => goWorld(t.number)}
-                >
-                  <span className="drawer__worldart" aria-hidden="true">
-                    <FloatingIsland biome={t.biome} />
-                  </span>
-                  <span className="drawer__worldtext">
-                    <strong>
-                      {t.number}. {t.title}
-                    </strong>
-                    <small>
-                      {passed
-                        ? 'Complete'
-                        : done > 0
-                          ? `${done}/${t.steps.length} steps`
-                          : 'Not started'}
-                    </small>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {/* Grouped by path rather than one flat 1-10 -- this is the one place
+              left that says which of the three paths a world belongs to, now
+              that the trail's own caption dropped the path name as something
+              worth a permanent spot on every step (see the comment on .sheet
+              in LearnScreen.tsx). A deliberate "how is this structured" moment
+              is exactly where that belongs. */}
+          {PATHS.map((path) => (
+            <div key={path.number}>
+              <h3 className="drawer__pathh">{path.name}</h3>
+              <div className="drawer__worlds">
+                {TOPICS.filter((t) => path.topicNumbers.includes(t.number)).map((t) => {
+                  const done = t.steps.filter((s) => isCompleted(s.id)).length;
+                  const passed = topicQuizzes[t.number]?.passed ?? false;
+                  const status = passed ? 'done' : done > 0 ? 'progress' : 'new';
+                  const isCurrent = t.number === cursor.topic;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className={[
+                        'drawer__world',
+                        `drawer__world--${status}`,
+                        isCurrent ? 'drawer__world--current' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      onClick={() => goWorld(t.number)}
+                    >
+                      <span className="drawer__worldart" aria-hidden="true">
+                        <FloatingIsland biome={t.biome} />
+                      </span>
+                      <span className="drawer__worldtext">
+                        <strong>
+                          {t.number}. {t.title}
+                        </strong>
+                        <small>
+                          {passed
+                            ? 'Complete'
+                            : done > 0
+                              ? `${done}/${t.steps.length} steps`
+                              : 'Not started'}
+                        </small>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
 
           <p className="drawer__totals">
             {completed.length}/{totalSteps} steps overall

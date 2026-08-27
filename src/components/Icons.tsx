@@ -127,6 +127,17 @@ export function IconChevronLeft({ size = 30, className }: IconProps) {
   );
 }
 
+/** Plain arrow, shaft and head -- "go" rather than "back" (IconChevronLeft)
+    or "down into" (IconChevronDown). The bottom sheet's "All topics" link. */
+export function IconArrowRight({ size = 22, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M4 12h15" strokeWidth={2.2} />
+      <path d="M13 6l6 6-6 6" strokeWidth={2.2} />
+    </svg>
+  );
+}
+
 export function IconClose({ size = 30, className }: IconProps) {
   return (
     <svg {...base(size)} className={className} aria-hidden="true">

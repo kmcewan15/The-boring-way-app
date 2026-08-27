@@ -330,6 +330,17 @@ button {
   color: var(--w-ink, var(--terracotta-deep));
 }
 
+/* One per path, above that path's own .drawer__worlds -- a proper heading,
+   not another small-caps label like .drawer__worldsh above it, so the two
+   levels ("Your worlds" the section, "Foundations" the group within it)
+   read as a hierarchy rather than two peers. */
+.drawer__pathh {
+  margin: 20px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--w-ink, var(--terracotta-deep));
+}
+
 .drawer__worlds {
   margin-top: 12px;
   display: flex;
@@ -710,8 +721,12 @@ button {
   letter-spacing: 0.4px;
 }
 
+/* Was 26px -- bigger than the gap .card__cta gives its own button below, for
+   no reason tied to the content. Part of trimming the focused card's overall
+   footprint so more of the world's art shows around it, rather than the card
+   just being generously spaced for its own sake. */
 .card__index {
-  margin-top: 26px;
+  margin-top: 14px;
   font-size: var(--card-index);
   font-weight: 600;
   line-height: 1.1;
@@ -725,7 +740,10 @@ button {
 }
 
 .card__cta {
-  margin-top: 18px;
+  margin-top: 14px;
+  /* Height and font untouched -- this is the one thing on the card that's a
+     real tap target, and trimming the card's footprint shouldn't come out of
+     that. */
   height: 54px;
   width: 100%;
   border-radius: var(--r-pill);
@@ -822,16 +840,17 @@ button {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  /* No radius, no shadow, no blur -- a raised, frosted card read as a UI
+     panel sitting on top of the scene, which is exactly what the top bar's
+     own "art runs edge to edge" move was getting away from. This is meant to
+     be the art's own fade into its caption, flush with the bottom edge, not
+     a sheet floating above it. */
   background: linear-gradient(
     180deg,
     rgba(250, 222, 216, 0.9) 0%,
     rgba(251, 229, 225, 0.98) 46%,
     var(--pink-bg) 100%
   );
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-sheet);
   /* background and color are set inline from the current world palette, so the
      banner stays part of the landscape instead of a pink strip under a green
      world. Hover therefore has to be a filter, not a background swap. */
@@ -842,28 +861,36 @@ button {
   filter: brightness(1.035);
 }
 
-.sheet__line {
-  font-size: 22px;
-  font-weight: 500;
-}
-
-.sheet__line b {
-  font-weight: 700;
-}
-
-.sheet__trail {
-  font-size: 25px;
-  font-weight: 700;
-}
-
+/* Raised from a muted 0.62 caption to something that actually reads as "tap
+   here": the whole sheet has always been the button, but at the old opacity
+   and with no link-like cue on it, this line looked like a secondary label
+   rather than the one thing worth pressing. The arrow and the hover
+   underline are the same "this goes somewhere" signal text links use
+   everywhere else on the web -- there was nothing here borrowing it before. */
 .sheet__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
   /* Inherits the palette-derived ink rather than a fixed terracotta. */
   color: currentColor;
-  opacity: 0.62;
+  opacity: 0.85;
+  transition: text-decoration-color var(--dur-fast) var(--ease-calm);
+}
+
+.sheet__hint svg {
+  flex: none;
+}
+
+.sheet:hover .sheet__hint,
+.sheet:focus-visible .sheet__hint {
+  text-decoration-color: currentColor;
 }
 
 /* ==========================================================================
