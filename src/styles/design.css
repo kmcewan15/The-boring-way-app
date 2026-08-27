@@ -1250,12 +1250,31 @@
   font-weight: 700;
   letter-spacing: -0.6px;
   line-height: 1.1;
-  color: var(--terracotta-deep);
+  /* Colour is inline, from HomeScreen.tsx's own W_INK -- the real desert
+     --w-ink value, not this rule's job to guess at with a fixed token. */
   text-shadow: 0 2px 20px rgba(253, 237, 232, 0.8);
   animation: home-rise var(--dur-slow) var(--ease-calm) both;
+  /* transform only -- text-shadow used to transition alongside it, but that
+     property can't be composited: the browser has to repaint the glow's blur
+     at every intermediate size as the box scales from 44px down to 20px,
+     and that per-frame repaint work is what was showing up as a jutter in
+     the slide itself rather than a clean glide. .home--sliding below still
+     turns the shadow off, just as a hard cut rather than an animated fade --
+     one frame of "gone" reads as nothing next to a title that's already
+     moving. will-change hints the browser to give the transform its own
+     compositor layer up front rather than promoting it mid-gesture, which is
+     the other half of a jump-free start. */
+  will-change: transform;
+  /* Opacity is the tail end, not the whole ride: a scaled-down 44px font
+     never renders pixel-identical to the sidebar's natively-sized 20px one
+     -- hinting and kerning both shift slightly at a different rendered size
+     -- so landing fully opaque at the exact instant the real sidebar swaps
+     in showed that mismatch as a small pop. Fading out over the last 140ms
+     (500ms delay + 140ms = the full 640ms) means nothing is visible right at
+     the handoff, so there is no seam left to notice. */
   transition:
     transform 640ms var(--ease-calm),
-    text-shadow 640ms var(--ease-calm);
+    opacity 140ms var(--ease-calm) 500ms;
 }
 
 /* animation: none clears home-rise's held transform, same reasoning as
@@ -1268,33 +1287,76 @@
    A fixed vw/vh guess was tried first and badly overshot (it doesn't know the
    title's actual box, so "roughly toward the corner" landed past the corner
    and off the edge of the screen); the real distance is measured off the
-   title's own getBoundingClientRect at the moment of the tap. This class
-   only drops the paper-glow text-shadow, which made sense sitting on top of
-   the busier trail art and doesn't once the title's making for the flat
-   sidebar-coloured corner. */
+   title's own getBoundingClientRect at the moment of the tap. text-shadow
+   drops instantly, not over the 640ms -- see the comment on .home__brand's
+   own transition list for why. opacity rides that same transition list down
+   to 0, for the same reason. */
 .home--sliding .home__brand {
   text-shadow: none;
+  opacity: 0;
 }
 
-.home__brand span {
-  display: block;
-  margin-top: 12px;
-  font-size: 15px;
+/* Groups the title with its own tagline for the gap between them, not for a
+   shared transform -- each docks on its own measured target (see
+   HomeScreen.tsx's TAG_DOCK_TOP comment for why), so this is layout only.
+   The 56px gap below still comes from .home itself, between this whole
+   group and .home__enter, exactly as it did when .home__brand was the only
+   thing above the button. */
+.home__lede {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Its own dock, its own size -- see TAG_FONT/TAG_DOCK_SIZE in HomeScreen.tsx.
+   Nested inside .home__brand's own transform, this could only ever have
+   scaled by the title's ratio, landing nowhere near the sidebar's real 13px
+   tagline. Colour is inline (W_INK_SOFT), same reasoning as the title. */
+.home__subtitle {
+  position: relative;
+  z-index: 30;
+  margin: 0;
+  text-align: center;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: 2px;
+  line-height: 1.4;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--rock-mid);
+  text-shadow: 0 2px 20px rgba(253, 237, 232, 0.8);
+  animation: home-rise var(--dur-slow) var(--ease-calm) 90ms both;
+  will-change: transform;
+  /* Same tail-end fade as the title, and the same reason: a scaled 17px→13px
+     font doesn't hint identically to the sidebar's natively-sized one, so
+     this goes invisible before the swap rather than at it. */
+  transition:
+    transform 640ms var(--ease-calm),
+    opacity 140ms var(--ease-calm) 500ms;
+}
+
+.home--entering .home__subtitle {
+  animation: none;
+}
+
+/* Same instant, uncomposited cut as the title's own text-shadow -- see the
+   comment on .home__brand's transition list. The real sidebar tagline never
+   had a glow to begin with. */
+.home--sliding .home__subtitle {
+  text-shadow: none;
+  opacity: 0;
 }
 
 /* Rises in after the title rather than alongside it, so the eye lands on the
-   name first and the way in second -- an order, not a pile. */
+   name first and the way in second -- an order, not a pile. One child now
+   (the "Start learning" pill, hamburger chip folded inside it), so the gap
+   and flex-direction are just inherited defaults from when this wrapped a
+   burger and a hint line as two. */
 .home__enter {
   position: relative;
   z-index: 30;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
   animation: home-rise var(--dur-slow) var(--ease-calm) 180ms both;
 }
 
@@ -1309,118 +1371,127 @@
   }
 }
 
-/* The button IS the icon: a big enough hit area that the three bars read as
-   the thing to press, not as a label floating near one. */
-.home__burger {
+/* One control: the hamburger chip, the label, and the pill's own fill are
+   three layers of one button rather than a button next to a button. Position
+   relative + no background of its own -- .home__start-fill carries that, on
+   its own layer, so it can fade out from under the chip and the label rather
+   than the whole rectangle fading as one flat piece. */
+.home__start {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  height: 56px;
+  padding: 0 26px 0 0;
+  border-radius: var(--r-pill);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.home__start:hover,
+.home__start:focus-visible {
+  transform: scale(1.03);
+}
+
+.home__start:active {
+  transform: scale(0.97);
+}
+
+/* The pill's own terracotta background and shadow, behind the chip and the
+   label (z-index: -1, same box) rather than on .home__start itself, so this
+   is the one thing that can fade to nothing while the chip on top of it
+   docks away instead of shrinking to match. */
+.home__start-fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--terracotta);
+  box-shadow: var(--shadow-pill);
+  transition: opacity var(--dur-mid) var(--ease-calm);
+}
+
+.home--entering .home__start-fill {
+  opacity: 0;
+}
+
+/* The hamburger, now this pill's own leading chip rather than a button of
+   its own -- same 56px cream-and-ink circle, same docked landing in the
+   sidebar's corner, just reached by tapping the pill around it instead of a
+   second control beside it. flex:none so the label's own width never
+   squeezes it. */
+.home__start-icon {
+  position: relative;
+  z-index: 30;
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  width: 88px;
-  height: 88px;
+  gap: 6px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--r-pill);
-  background: var(--pink-cream);
-  box-shadow: var(--shadow-card);
-  transition: transform var(--dur-fast) var(--ease-calm);
-  /* Invites the tap before it's taken: settles into a slow breath so the door
-     reads as waiting rather than static. */
-  animation: homebreathe 2600ms var(--ease-calm) infinite;
+  /* Background and colour (for the bars below, via currentColor) are inline
+     from HomeScreen.tsx's W_PANEL/W_INK -- the real desert --w-panel/--w-ink
+     the sidebar's own hamburger actually uses, not this rule's job to guess
+     at with fixed tokens. */
+  will-change: transform;
+  /* Same tail-fade as the title and tagline above -- rounds to sub-pixel
+     edges slightly differently at 56px than at the sidebar's real 46px, and
+     fading out first means that never gets a chance to read as a pop. */
+  transition:
+    transform 640ms var(--ease-calm),
+    opacity 140ms var(--ease-calm) 500ms;
 }
 
-/* A lantern rather than a plain button -- the trailhead's own light, echoed
-   behind the one thing on screen worth touching. Sits behind the button in
-   its stacking order (negative z-index, same box) so it breathes on the exact
-   same cycle without needing its own animation. Fades on its way to becoming
-   the sidebar's flat nav toggle -- a glowing lantern in that corner would
-   look like a stray light left on, not a docked control. */
-.home__burger::before {
-  content: '';
-  position: absolute;
-  inset: -30px;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 205, 148, 0.55) 0%,
-    rgba(255, 205, 148, 0) 70%
-  );
-  filter: blur(3px);
-  transition: opacity var(--dur-mid) var(--ease-calm);
-}
-
-.home--sliding .home__burger::before {
+.home--sliding .home__start-icon {
   opacity: 0;
 }
 
-.home__burger:hover,
-.home__burger:focus-visible {
-  transform: scale(1.06);
-}
-
-.home__burger i {
+.home__start-icon i {
   display: block;
-  width: 34px;
-  height: 3px;
+  width: 22px;
+  height: 2.4px;
   border-radius: var(--r-pill);
-  background: var(--terracotta);
-  transition:
-    transform var(--dur-mid) var(--ease-calm),
-    opacity var(--dur-mid) var(--ease-calm),
-    width var(--dur-mid) var(--ease-calm);
+  /* currentColor, not a fixed token -- rides the chip's own inline colour
+     (W_INK) for free, the same way IconMenu's stroke rides .side__hamburger's
+     colour in the real sidebar. */
+  background: currentColor;
 }
 
-/* Tapped: stop breathing and hold still, the same freeze-then-transition
-   split the title uses (see HomeScreen.tsx) -- `entering` cancels the loop
-   in place, and `sliding`, a moment later, is what the slower docking
-   transition below actually has something to animate from. Stays three bars
-   the whole way: it's landing as the sidebar's nav toggle, not leaving the
-   screen, so there's nothing here for an arrow to mean. */
-.home--entering .home__burger {
-  animation: none;
-}
-
-.home--sliding .home__burger {
-  transition: transform 640ms var(--ease-calm);
-}
-
-@keyframes homebreathe {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-.home__hint {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  color: var(--rock-mid);
+/* Fades immediately on tap rather than riding the chip's slower 640ms dock --
+   there's no equivalent label waiting for it in the sidebar, so it has
+   nothing to animate toward. Gone a beat before the chip and title even start
+   moving reads as "the words were only ever for here", not a race it lost. */
+.home__start-label {
+  position: relative;
+  z-index: 30;
   transition: opacity var(--dur-mid) var(--ease-calm);
 }
 
-.home--entering .home__hint {
+.home--entering .home__start-label {
   opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home__burger,
   .home__brand,
+  .home__subtitle,
   .home__enter {
     animation: none;
   }
 
   .home__brand,
+  .home__subtitle,
   .home__art,
   .motes,
   .grade,
-  .home__burger,
-  .home__burger::before {
+  .home__start,
+  .home__start-fill,
+  .home__start-icon,
+  .home__start-label {
     transition: none;
   }
 }

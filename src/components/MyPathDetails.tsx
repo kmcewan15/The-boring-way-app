@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { LANDSCAPES } from '../art/landscapes';
 import { TOPICS } from '../data/curriculum';
 import { useApp } from '../state/useApp';
 import { StepKindIcon } from './StepCard';
-import { IconCheckCircle, IconPause, IconPlay } from './Icons';
+import { IconCheckCircle, IconChevronDown, IconPause, IconPlay } from './Icons';
 
 /* ---------------------------------------------------------------- Completed
 
@@ -61,54 +62,149 @@ export function CompletedSteps() {
 
 /* -------------------------------------------------------------------- Notes */
 
+/** Formats a note's timestamp the same way in every section. */
+function noteDate(at: number): string {
+  return new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+}
+
 export function Notes() {
   const { notes, addNote } = useApp();
-  const [text, setText] = useState('');
+  /** Which sections are expanded, by topic id (plus the literal 'unsorted').
+      Independent toggles rather than one-open-at-a-time -- comparing notes
+      across two topics at once is a reasonable thing to want. */
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  /** One draft per section, kept outside any single note -- a half-written
+      note in topic 3 shouldn't vanish because topic 7 got expanded too. */
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  const toggle = (key: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  /* Before topic-level grouping existed, every note saved with stepId: 'free'.
+     Those predate any topic.id, so they never match one -- give them their own
+     heading instead of letting them quietly vanish from the list. */
+  const unsorted = notes.filter((n) => !TOPICS.some((t) => t.id === n.stepId));
+  const unsortedOpen = open.has('unsorted');
 
   return (
     <>
       <h1 className="prog__level">My notes</h1>
       <p className="prog__trail">What you worked out along the way</p>
 
-      <div className="panel">
-        <textarea
-          className="field"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Something you learned, or a mistake worth remembering…"
-          rows={4}
-        />
-        <button
-          type="button"
-          className="chip chip--solid"
-          disabled={text.trim().length === 0}
-          onClick={() => {
-            addNote({ stepId: 'free', stepTitle: 'General note', text: text.trim() });
-            setText('');
-          }}
-        >
-          Save note
-        </button>
-      </div>
+      <div className="notelist">
+        {TOPICS.map((topic) => {
+          /* topic.id is already `topic-${topic.number}` -- reusing it as the
+             note's stepId means a note's home is looked up the same way its
+             topic is, rather than a second copy of that convention living here. */
+          const topicNotes = notes.filter((n) => n.stepId === topic.id);
+          const isOpen = open.has(topic.id);
+          const draft = drafts[topic.id] ?? '';
 
-      {notes.length === 0 ? (
-        <p className="empty">Your notes will collect here.</p>
-      ) : (
-        <div className="list">
-          {notes.map((n) => (
-            <div className="list-card list-card--stack" key={n.id}>
-              <div className="list-card__s">
-                {n.stepTitle} ·{' '}
-                {new Date(n.at).toLocaleDateString(undefined, {
-                  day: 'numeric',
-                  month: 'long',
-                })}
+          return (
+            <section className="notesection" key={topic.id}>
+              <button
+                type="button"
+                className="notesection__head"
+                aria-expanded={isOpen}
+                onClick={() => toggle(topic.id)}
+              >
+                <span
+                  className="notesection__dot"
+                  style={{ background: LANDSCAPES[topic.biome].fore }}
+                />
+                <span className="notesection__title">
+                  Topic {topic.number} · {topic.title}
+                </span>
+                {topicNotes.length > 0 && (
+                  <span className="notesection__count">{topicNotes.length}</span>
+                )}
+                <IconChevronDown
+                  size={20}
+                  className={`notesection__chev${isOpen ? ' notesection__chev--open' : ''}`}
+                />
+              </button>
+
+              <div className={`notesection__body${isOpen ? ' notesection__body--open' : ''}`}>
+                <div className="notesection__inner">
+                  {topicNotes.length === 0 ? (
+                    <p className="empty empty--tight">
+                      Add a note below and it will appear here.
+                    </p>
+                  ) : (
+                    <div className="list">
+                      {topicNotes.map((n) => (
+                        <div className="list-card list-card--stack" key={n.id}>
+                          <div className="list-card__s">{noteDate(n.at)}</div>
+                          <div className="list-card__body">{n.text}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="panel notesection__compose">
+                    <textarea
+                      className="field"
+                      value={draft}
+                      onChange={(e) => setDrafts((d) => ({ ...d, [topic.id]: e.target.value }))}
+                      placeholder="Something you learned, or a mistake worth remembering…"
+                      rows={3}
+                    />
+                    <button
+                      type="button"
+                      className="chip chip--solid"
+                      disabled={draft.trim().length === 0}
+                      onClick={() => {
+                        addNote({ stepId: topic.id, stepTitle: topic.title, text: draft.trim() });
+                        setDrafts((d) => ({ ...d, [topic.id]: '' }));
+                      }}
+                    >
+                      Save note
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="list-card__body">{n.text}</div>
+            </section>
+          );
+        })}
+
+        {unsorted.length > 0 && (
+          <section className="notesection">
+            <button
+              type="button"
+              className="notesection__head"
+              aria-expanded={unsortedOpen}
+              onClick={() => toggle('unsorted')}
+            >
+              <span className="notesection__title">Unsorted</span>
+              <span className="notesection__count">{unsorted.length}</span>
+              <IconChevronDown
+                size={20}
+                className={`notesection__chev${unsortedOpen ? ' notesection__chev--open' : ''}`}
+              />
+            </button>
+
+            <div className={`notesection__body${unsortedOpen ? ' notesection__body--open' : ''}`}>
+              <div className="notesection__inner">
+                <div className="list">
+                  {unsorted.map((n) => (
+                    <div className="list-card list-card--stack" key={n.id}>
+                      <div className="list-card__s">
+                        {n.stepTitle} · {noteDate(n.at)}
+                      </div>
+                      <div className="list-card__body">{n.text}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      )}
+          </section>
+        )}
+      </div>
     </>
   );
 }
@@ -144,8 +240,8 @@ export function Timebox() {
     <>
       <h1 className="prog__level">Timebox</h1>
       <p className="prog__trail">
-        Give a hands-on step a fixed budget. When it runs out, stop and take stock rather than
-        pushing on.
+        Set some time aside for today's AI practice. When it runs out, log your learnings in
+        notes.
       </p>
 
       <div className="chiprow">

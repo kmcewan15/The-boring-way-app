@@ -9,41 +9,50 @@ export type MyPathRoute = 'timebox' | 'progress' | 'notes';
 
 export default function MyPathScreen({ onOpen }: { onOpen: (r: MyPathRoute) => void }) {
   return (
-    <div className="myway">
-      <button
-        type="button"
-        className="tile tile--pink tile--tall"
-        onClick={() => onOpen('timebox')}
-      >
-        <span className="tile__label">Timebox</span>
-        <span className="tile__art tile__art--timebox">
-          <IconStopwatch size={132} />
-        </span>
-      </button>
+    <>
+      {/* Reachable only by closing the nav drawer now rather than a single tap
+          on an always-visible tab, so landing here needs to look like arriving
+          somewhere -- a heading Resources already had and this screen never
+          needed when the sidebar's own highlighted tab said it for free. */}
+      <h1 className="res__h">My Path</h1>
+      <p className="prog__trail">Your timebox, your progress, your notes</p>
 
-      <button
-        type="button"
-        className="tile tile--brown tile--tall"
-        onClick={() => onOpen('progress')}
-      >
-        <span className="tile__label">My progress</span>
-        <span className="tile__art tile__art--progress">
-          <DesertTrailThumb />
-        </span>
-      </button>
+      <div className="myway">
+        <button
+          type="button"
+          className="tile tile--pink tile--tall"
+          onClick={() => onOpen('timebox')}
+        >
+          <span className="tile__label">Timebox</span>
+          <span className="tile__art tile__art--timebox">
+            <IconStopwatch size={132} />
+          </span>
+        </button>
 
-      <hr className="myway__rule" />
+        <button
+          type="button"
+          className="tile tile--brown tile--tall"
+          onClick={() => onOpen('progress')}
+        >
+          <span className="tile__label">My progress</span>
+          <span className="tile__art tile__art--progress">
+            <DesertTrailThumb />
+          </span>
+        </button>
 
-      <button
-        type="button"
-        className="tile tile--brown tile--row myway__wide"
-        onClick={() => onOpen('notes')}
-      >
-        <span className="tile__label">My notes</span>
-        <span className="tile__icon">
-          <IconSparkles size={42} />
-        </span>
-      </button>
-    </div>
+        <hr className="myway__rule" />
+
+        <button
+          type="button"
+          className="tile tile--brown tile--row myway__wide"
+          onClick={() => onOpen('notes')}
+        >
+          <span className="tile__label">My notes</span>
+          <span className="tile__icon">
+            <IconSparkles size={42} />
+          </span>
+        </button>
+      </div>
+    </>
   );
 }

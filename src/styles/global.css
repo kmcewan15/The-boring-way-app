@@ -108,10 +108,10 @@ button {
 }
 
 /* Sits flush with the sidebar's own left padding (20px) rather than the
-   brand text's further-indented 30px -- it lines up with the nav items below
+   brand text's further-indented 30px -- it lines up with .side__stage below
    it, not the title above it. top: 22px is the gap after the brand box; see
    HomeScreen.tsx's BURGER_DOCK_TOP for the arithmetic this has to match. */
-.side__navtoggle {
+.side__hamburger {
   flex: none;
   width: 46px;
   height: 46px;
@@ -120,12 +120,7 @@ button {
   place-items: center;
   border-radius: 50%;
   /* Same cream-and-ink pairing as .home__burger, which this button visually
-     *is* the moment the dock animation ends -- see HomeScreen.tsx. Open and
-     closed no longer swap to a solid, inverted fill for that reason: this is
-     one button landing mid-flight, not a toggle that happens to start
-     looking like it, and it can't hold the colour it lands in if opening it
-     immediately repaints it. Whether the nav is open is the nav's own job to
-     show, by actually being there. */
+     *is* the moment the dock animation ends -- see HomeScreen.tsx. */
   background: var(--w-panel, var(--pink-cream));
   color: var(--w-ink, var(--terracotta-deep));
   transition:
@@ -134,47 +129,45 @@ button {
     color var(--dur-slow) var(--ease-calm);
 }
 
-.side__navtoggle:hover {
+.side__hamburger:hover {
   transform: scale(1.06);
 }
 
-/* Grows the nav open rather than swapping it in and out: a grid row rather
-   than max-height, since max-height needs a guessed ceiling and this needs
-   none -- 1fr is exactly the content's own height, whatever that turns out
-   to be, and 0fr shrinks it back to nothing rather than the list vanishing
-   outright. */
-.side__navgrow {
-  display: grid;
-  grid-template-rows: 0fr;
-  overflow: hidden;
-  transition: grid-template-rows var(--dur-mid) var(--ease-calm);
+/* The one thing the rail says about where you are without opening the
+   drawer for it. Pinned to the bottom of the rail's own flex column rather
+   than following the hamburger immediately, so it reads as this column's
+   footer, not a fourth thing stacked under the third. */
+.side__stage {
+  margin: auto 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--w-line, rgba(156, 82, 54, 0.1));
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--w-ink, var(--terracotta-deep));
+  transition:
+    color var(--dur-slow) var(--ease-calm),
+    border-color var(--dur-slow) var(--ease-calm);
 }
 
-.side--navopen .side__navgrow {
-  grid-template-rows: 1fr;
+.side__stage span {
+  display: block;
+  margin-top: 3px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.25;
 }
 
-/* The grid row's one and only child (see the comment in Sidebar.tsx for why
-   the nav and the stats list are wrapped in this rather than sitting in
-   .side__navgrow directly). */
-.side__navcontent {
-  /* A grid track will not shrink below its content's height unless the item
-     inside it is allowed to -- without this, 1fr collapsing to 0fr had
-     nowhere to go and the nav never actually closed. */
-  min-height: 0;
-}
-
+/* Reused inside NavDrawer for its own nav list -- same column of pill
+   buttons the sidebar used to hold directly, now one tap further away. */
 .side__nav {
   margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .side__navgrow {
-    transition: none;
-  }
 }
 
 .navitem {
@@ -218,20 +211,14 @@ button {
 
 .side__foot {
   /* Used to be margin-top:auto, pinned to the bottom of the sidebar's own flex
-     column -- now it's nested inside the nav's collapsible reveal instead, so
-     it just takes the same 22px gap every other block in there gets. */
+     column -- now it's one card among several inside the nav drawer's own
+     already-scrollable sheet, so it just takes the same 22px gap every other
+     block in there gets rather than fighting for its own height. */
   margin-top: 22px;
   padding: 18px 16px;
   border-radius: var(--r-card);
   background: var(--w-panel, var(--pink-soft));
   transition: background var(--dur-slow) var(--ease-calm);
-  /* A short window plus a long "You left off" row could still ask for more
-     height than the sidebar has to give; min-height:0 lets this shrink
-     rather than refusing to, and the scroll makes every row reachable
-     rather than one getting silently sliced through. */
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
 }
 
 .side__foot dt,
@@ -261,10 +248,11 @@ button {
 }
 
 /* Time learning / streak -- used to live behind their own floating hamburger
-   over the stage; folded into the nav's own reveal instead, so there is one
+   over the stage; folded into the nav drawer instead, so there is one
    hamburger in the app, not two with different jobs. No panel background of
    its own: it sits in the same plain flow as the nav items above it, and
-   .side__foot below already owns this sidebar's one "boxed" surface. */
+   .side__foot's "Continue" card already carries this drawer's one "boxed"
+   surface. */
 .side__stats {
   margin-top: 22px;
 }
@@ -292,18 +280,119 @@ button {
   color: var(--w-ink, var(--terracotta-deep));
 }
 
-/* Where you left off, shown only while you are looking somewhere else. Lighter
-   than the live position above it so the two do not compete, but still full-ink
-   rather than a washed tone -- it was 3.5:1 when I tried that. */
-.side__foot dd.side__away {
-  font-weight: 600;
-}
-
 .side__stats hr {
   height: 1px;
   margin: 10px 0;
   border: 0;
   background: var(--w-line, rgba(156, 82, 54, 0.16));
+}
+
+/* ==========================================================================
+   Nav drawer -- Google-Drive style: a full-screen sheet the sidebar's
+   hamburger opens, not a column that grows in place. Fixed rather than
+   absolute, so it covers the sidebar too, not just .main -- the sidebar's
+   own hamburger is the one thing on screen that stays put while everything
+   else, itself included, is what the drawer is standing in for.
+   ========================================================================== */
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--w-chrome, var(--pink-cream));
+  transform: translateX(-100%);
+  pointer-events: none;
+  transition: transform var(--dur-mid) var(--ease-calm);
+}
+
+.drawer--open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    transition: none;
+  }
+}
+
+.drawer__worldsh {
+  margin: 34px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--w-ink, var(--terracotta-deep));
+}
+
+.drawer__worlds {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Same shape as .navitem -- a row that highlights on hover -- rather than a
+   new kind of thing, since a world is just another destination in this
+   drawer, the same as Learn or My Path above it. */
+.drawer__world {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: var(--r-pill);
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.drawer__world:hover {
+  background: var(--w-hover, rgba(156, 82, 54, 0.07));
+}
+
+.drawer__world--current {
+  background: var(--w-hover, rgba(156, 82, 54, 0.07));
+  box-shadow: inset 0 0 0 1.5px var(--w-accent, var(--terracotta));
+}
+
+.drawer__worldart {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--w-panel, var(--pink-soft));
+}
+
+.drawer__worldtext {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.drawer__worldtext strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--w-ink, var(--terracotta-deep));
+}
+
+.drawer__worldtext small {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--w-ink-soft, var(--rock-mid));
+}
+
+/* Gold rather than ink for the one line that means "done" -- the same
+   distinction .coursebar__slot--full draws on the trail itself. */
+.drawer__world--done .drawer__worldtext small {
+  color: var(--w-accent, var(--terracotta));
+}
+
+.drawer__totals {
+  margin: 22px 4px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--w-ink-soft, var(--rock-mid));
 }
 
 /* ==========================================================================
@@ -937,6 +1026,7 @@ button {
    ========================================================================== */
 
 .myway {
+  margin-top: 30px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
@@ -1204,7 +1294,8 @@ button {
 /* The island's landmass sits low and inset in its viewBox, so zoom past the
    margins and lift it to centre the land inside the circular crop. */
 .prog__orb > svg,
-.panel__orbs > span > svg {
+.panel__orbs > span > svg,
+.drawer__worldart > svg {
   transform: scale(1.9) translateY(-11%);
   transform-origin: 50% 50%;
 }
@@ -1947,6 +2038,19 @@ a.res__item:hover {
   outline: none;
 }
 
+/* .panel is --pink-soft, and .field was transparent -- the same colour on
+   both sides, so a textarea had no visible edge until you actually clicked
+   into it. --pink-cream is one step lighter than both .panel and the page
+   behind it, so this reads as an inset surface lifted out of the card rather
+   than a new colour introduced just for this box. Mirrors .field--onDark's
+   own padding/radius shape below, in light-mode colours. */
+.panel .field {
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: var(--r-card);
+  background: var(--pink-cream);
+}
+
 .field--onDark {
   margin-top: 10px;
   padding: 12px 14px;
@@ -1958,6 +2062,104 @@ a.res__item:hover {
 
 .field--onDark::placeholder {
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* Same muted single line as .empty, just without its 48px top/bottom padding
+   -- that spacing is tuned for "the only thing on an otherwise empty screen",
+   which one collapsed accordion section among ten is not. */
+.empty--tight {
+  padding: 4px 0 18px;
+}
+
+/* ==========================================================================
+   My notes -- one collapsible section per topic rather than a single
+   general-purpose textarea, so notes land next to the world they're about.
+   ========================================================================== */
+
+.notelist {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notesection {
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  overflow: hidden;
+}
+
+.notesection__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  text-align: left;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--terracotta-deep);
+}
+
+.notesection__dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.notesection__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.notesection__count {
+  flex: none;
+  padding: 3px 11px;
+  border-radius: var(--r-pill);
+  background: rgba(156, 82, 54, 0.14);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.notesection__chev {
+  flex: none;
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.notesection__chev--open {
+  transform: rotate(180deg);
+}
+
+/* The grid-template-rows 0fr/1fr trick: a height no other property can
+   express (0 to "however tall the notes and compose box turn out to be")
+   made transitionable by animating the row track instead of the box itself.
+   The inner wrapper is what actually clips -- see its own comment. */
+.notesection__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-mid) var(--ease-calm);
+}
+
+.notesection__body--open {
+  grid-template-rows: 1fr;
+}
+
+/* min-height: 0 overrides a grid item's default min-height: auto (== its own
+   content height), which would otherwise refuse to shrink below that no
+   matter how small the row track above asks it to be. */
+.notesection__inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 22px;
+}
+
+.notesection__inner > .list {
+  margin-top: 0;
+}
+
+.notesection__compose {
+  margin: 18px 0 22px;
 }
 
 @media (prefers-reduced-motion: reduce) {

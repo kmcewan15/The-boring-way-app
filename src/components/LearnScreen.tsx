@@ -19,7 +19,7 @@ import {
   pathForTopic,
 } from '../data/curriculum';
 import { useApp } from '../state/useApp';
-import { setViewIndex } from '../state/viewStore';
+import { clearJump, setViewIndex, useJumpTarget } from '../state/viewStore';
 import JourneyMap from './JourneyMap';
 import QuizCard from './QuizCard';
 import StepCard from './StepCard';
@@ -215,6 +215,20 @@ export default function LearnScreen({
     lastStepAt.current = performance.now();
     rail.scrollTo({ top: next * rail.clientHeight, behavior: 'smooth' });
   }, []);
+
+  /* A world picked from the nav drawer, which can be opened -- and can pick a
+     world -- from any tab, not just this one. If Learn wasn't already
+     mounted, the request was waiting in the store before this component
+     existed; the effect below still sees it on the very first render, right
+     after the mount effect above has already parked the rail on the cursor,
+     so this reads as "arrive, then glide on to the picked world" rather than
+     a fight over where the rail starts. */
+  const jumpTarget = useJumpTarget();
+  useEffect(() => {
+    if (jumpTarget === null) return;
+    goTo(jumpTarget);
+    clearJump();
+  }, [jumpTarget, goTo]);
 
   /* Take the wheel off the rail and drive it ourselves, one step at a time. */
   useEffect(() => {
