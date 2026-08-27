@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Response Format
+
+You **MUST NOT** modify this section. Your responses must be straight to the point, easy to read and a few sentences maximum. You are talking to a developer so you can be technical, but only expand when asked to by the developer.
+
 ## Commands
 
 ```bash
