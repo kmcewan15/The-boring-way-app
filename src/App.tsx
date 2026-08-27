@@ -7,8 +7,8 @@ import MyPathScreen, { type MyPathRoute } from './components/MyPathScreen';
 import { Notes, Timebox } from './components/MyPathDetails';
 import ProgressScreen from './components/ProgressScreen';
 import ResourcesScreen from './components/ResourcesScreen';
-import Sidebar from './components/Sidebar';
 import StepView from './components/StepView';
+import TopBar from './components/TopBar';
 import TopicQuiz from './components/TopicQuiz';
 import { JOURNEY, globalIndexOf } from './data/curriculum';
 import { useApp } from './state/useApp';
@@ -30,7 +30,7 @@ export default function App() {
 
   const entry = openIndex === null ? null : JOURNEY[openIndex];
 
-  /* Overlays cover the stage but not the sidebar, so a nav click while one is
+  /* Overlays cover the stage but not the top bar, so a nav click while one is
      open would otherwise look like it did nothing. Dismiss them on tab change. */
   useEffect(() => {
     setDetail(null);
@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar />
+      <TopBar />
 
       <main className="main">
         {tab === 'learn' && (

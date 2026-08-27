@@ -7,7 +7,7 @@
   /* --- Pinks: the resting state of the app ------------------------------- */
   --pink-bg: #fbe5e1; /* page background */
   --pink-soft: #f7d8d1; /* pills, secondary cards */
-  --pink-cream: #fdede8; /* primary button fill, sidebar */
+  --pink-cream: #fdede8; /* primary button fill, top bar */
   --pink-dim: #e6b8ae; /* inactive nav labels */
 
   /* --- Terracotta: the primary brand colour ----------------------------- */
@@ -81,7 +81,6 @@
   --shadow-sheet: 0 -8px 30px rgba(123, 58, 34, 0.1);
 
   /* --- Layout ----------------------------------------------------------- */
-  --side-w: 264px;
   --read-w: 920px; /* max line length for text-heavy screens */
   --sheet-h: 132px;
 

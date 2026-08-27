@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { IconChevronLeft } from './Icons';
 
-/** Detail sheet that covers the main stage, leaving the sidebar in place. */
+/** Detail sheet that covers the main stage, leaving the top bar in place. */
 export default function Modal({
   children,
   onClose,

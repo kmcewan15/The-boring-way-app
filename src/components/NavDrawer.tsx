@@ -18,11 +18,10 @@ function formatMinutes(total: number): string {
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
-/** The Google-Drive-style drawer the sidebar's hamburger opens: everything
-    that used to live in the sidebar itself, one full-screen sheet at a time
-    instead of a permanent column fighting the trail for width. Always
-    mounted -- see the comment on .side__navgrow's old job, which this one
-    inherits -- so the slide has a closed state to leave from and return to
+/** The Google-Drive-style drawer the top bar's hamburger opens: everything
+    that used to live in the old sidebar itself, one full-screen sheet at a
+    time instead of a permanent rail fighting the trail for width. Always
+    mounted -- so the slide has a closed state to leave from and return to
     rather than popping in and out with no transition to animate. */
 export default function NavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { tab, setTab, cursor, current, completed, totalSteps, topicQuizzes, isCompleted, streak } =

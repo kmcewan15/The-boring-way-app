@@ -27,7 +27,7 @@ export function IconCompass({ size = 26, className }: IconProps) {
   );
 }
 
-/** Three lines — the sidebar's own hamburger, opener of the nav drawer. */
+/** Three lines — the top bar's own hamburger, opener of the nav drawer. */
 export function IconMenu({ size = 22, className }: IconProps) {
   return (
     <svg {...base(size)} className={className} aria-hidden="true">

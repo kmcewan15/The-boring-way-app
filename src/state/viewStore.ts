@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 /* Which journey entry is currently on screen.
 
-   The trail writes it as you scroll; the sidebar reads it so it can describe what
+   The trail writes it as you scroll; the top bar reads it so it can describe what
    you are looking at rather than where you left off. Deliberately NOT part of
    useApp: that state belongs to the content stream, and this is a purely
    presentational concern that two sibling screens happen to share. A

@@ -11,33 +11,24 @@
    specificity.
    ========================================================================== */
 
-/* Not the default implicit `auto` row: an auto row has a min-content floor, so
-   on a short window the sidebar's own content height won the argument, the row
-   grew past 100dvh, and overflow:hidden sliced the bottom of the sidebar off
-   mid-row. minmax(0, 1fr) lets the row actually obey the height. */
+/* The bar's own row stays auto (it's a fixed 72px, not content-driven, so it
+   can never fight the viewport for height the way the old sidebar's flex
+   column could). The stage row keeps the guard that column used to need,
+   though: a plain `1fr` row still carries an implicit auto-minimum equal to
+   its content's height, and while every child of .main is absolutely
+   positioned today (contributing ~0), minmax(0, ...) is what stops a future
+   non-absolute child from reopening the same "row grows past 100dvh, gets
+   sliced by overflow:hidden" bug this once was. */
 .app {
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 /* The chrome belongs to whichever world you are looking at. Every colour below
    comes from a --w-* custom property that LearnScreen writes from the same blended
-   palette as the landscape, so the sidebar crosses from desert to jungle with the
+   palette as the landscape, so the bar crosses from desert to jungle with the
    scene instead of staying pink furniture in front of a green picture. The
    fallbacks are the original terracotta, used before the first paint and on
    screens that have no world of their own. */
-
-/* Same reason as .app's row: without this the column refuses to be shorter than
-   its content, and .side__foot's own min-height:0 never gets the chance to act.
-   The transition list merges into global.css's own .side transition (background,
-   border-color) rather than adding a second `transition` declaration, which would
-   otherwise clobber it and drop the border-color easing. */
-.side {
-  min-height: 0;
-  transition:
-    background var(--dur-slow) var(--ease-calm),
-    border-color var(--dur-slow) var(--ease-calm),
-    color var(--dur-slow) var(--ease-calm);
-}
 
 /* The trail's "Current step" pill floats over the world's own scenery, so it takes
    the world's colours like the cards and the caption banner. Kept off the base
@@ -831,7 +822,6 @@
     --card-d1-index: 11px;
 
     --card-d2-w: 112px;
-    --side-w: 220px;
     --sheet-h: 96px;
 
     --map-node: 68px;
@@ -971,7 +961,7 @@
 }
 
 /* The fill. The same frosted-glass material as every other panel in the app
-   (the tooltip below, the sidebar, the cards) rather than a colour of its
+   (the tooltip below, the top bar, the cards) rather than a colour of its
    own -- the bar's whole point is to sit quietly at the top of whichever
    world you're looking at, not to introduce a second visual language on top
    of it. */
@@ -1174,7 +1164,7 @@
    ==========================================================================
 
    The one screen that isn't the trail: brand, tagline, a hamburger that is
-   the way in rather than a menu. It covers the sidebar too, so it lives
+   the way in rather than a menu. It covers the top bar too, so it lives
    outside .app rather than inside .main -- App swaps it for the real shell
    wholesale rather than layering it on top.
    ========================================================================== */
@@ -1256,7 +1246,7 @@
   animation: home-rise var(--dur-slow) var(--ease-calm) both;
   /* transform only -- text-shadow used to transition alongside it, but that
      property can't be composited: the browser has to repaint the glow's blur
-     at every intermediate size as the box scales from 44px down to 20px,
+     at every intermediate size as the box scales from 44px down to 17px,
      and that per-frame repaint work is what was showing up as a jutter in
      the slide itself rather than a clean glide. .home--sliding below still
      turns the shadow off, just as a hard cut rather than an animated fade --
@@ -1266,10 +1256,10 @@
      the other half of a jump-free start. */
   will-change: transform;
   /* Opacity is the tail end, not the whole ride: a scaled-down 44px font
-     never renders pixel-identical to the sidebar's natively-sized 20px one
-     -- hinting and kerning both shift slightly at a different rendered size
-     -- so landing fully opaque at the exact instant the real sidebar swaps
-     in showed that mismatch as a small pop. Fading out over the last 140ms
+     never renders pixel-identical to the bar's natively-sized 17px one --
+     hinting and kerning both shift slightly at a different rendered size --
+     so landing fully opaque at the exact instant the real bar swaps in
+     showed that mismatch as a small pop. Fading out over the last 140ms
      (500ms delay + 140ms = the full 640ms) means nothing is visible right at
      the handoff, so there is no seam left to notice. */
   transition:
@@ -1311,12 +1301,16 @@
 
 /* Its own dock, its own size -- see TAG_FONT/TAG_DOCK_SIZE in HomeScreen.tsx.
    Nested inside .home__brand's own transform, this could only ever have
-   scaled by the title's ratio, landing nowhere near the sidebar's real 13px
+   scaled by the title's ratio, landing nowhere near the top bar's real 10px
    tagline. Colour is inline (W_INK_SOFT), same reasoning as the title. */
 .home__subtitle {
   position: relative;
   z-index: 30;
   margin: 0;
+  /* Centred, matching .topbar__brand span -- both are single lines now (the
+     bar is full-width, so its tagline never wraps the way it did in the old
+     264px-wide sidebar), so there is no "flush edge" for a two-line tagline
+     to match anymore. */
   text-align: center;
   font-size: 17px;
   font-weight: 600;
@@ -1326,9 +1320,9 @@
   text-shadow: 0 2px 20px rgba(253, 237, 232, 0.8);
   animation: home-rise var(--dur-slow) var(--ease-calm) 90ms both;
   will-change: transform;
-  /* Same tail-end fade as the title, and the same reason: a scaled 17px→13px
-     font doesn't hint identically to the sidebar's natively-sized one, so
-     this goes invisible before the swap rather than at it. */
+  /* Same tail-end fade as the title, and the same reason: a scaled 17px→10px
+     font doesn't hint identically to the bar's natively-sized one, so this
+     goes invisible before the swap rather than at it. */
   transition:
     transform 640ms var(--ease-calm),
     opacity 140ms var(--ease-calm) 500ms;
@@ -1339,8 +1333,8 @@
 }
 
 /* Same instant, uncomposited cut as the title's own text-shadow -- see the
-   comment on .home__brand's transition list. The real sidebar tagline never
-   had a glow to begin with. */
+   comment on .home__brand's transition list. The real bar tagline never had
+   a glow to begin with. */
 .home--sliding .home__subtitle {
   text-shadow: none;
   opacity: 0;
@@ -1418,8 +1412,8 @@
 }
 
 /* The hamburger, now this pill's own leading chip rather than a button of
-   its own -- same 56px cream-and-ink circle, same docked landing in the
-   sidebar's corner, just reached by tapping the pill around it instead of a
+   its own -- same 56px cream-and-ink circle, same docked landing in the top
+   bar's corner, just reached by tapping the pill around it instead of a
    second control beside it. flex:none so the label's own width never
    squeezes it. */
 .home__start-icon {
@@ -1436,11 +1430,11 @@
   border-radius: var(--r-pill);
   /* Background and colour (for the bars below, via currentColor) are inline
      from HomeScreen.tsx's W_PANEL/W_INK -- the real desert --w-panel/--w-ink
-     the sidebar's own hamburger actually uses, not this rule's job to guess
+     the top bar's own hamburger actually uses, not this rule's job to guess
      at with fixed tokens. */
   will-change: transform;
   /* Same tail-fade as the title and tagline above -- rounds to sub-pixel
-     edges slightly differently at 56px than at the sidebar's real 46px, and
+     edges slightly differently at 56px than at the bar's real 44px, and
      fading out first means that never gets a chance to read as a pop. */
   transition:
     transform 640ms var(--ease-calm),
@@ -1457,13 +1451,13 @@
   height: 2.4px;
   border-radius: var(--r-pill);
   /* currentColor, not a fixed token -- rides the chip's own inline colour
-     (W_INK) for free, the same way IconMenu's stroke rides .side__hamburger's
-     colour in the real sidebar. */
+     (W_INK) for free, the same way IconMenu's stroke rides .topbar__menu's
+     colour in the real bar. */
   background: currentColor;
 }
 
 /* Fades immediately on tap rather than riding the chip's slower 640ms dock --
-   there's no equivalent label waiting for it in the sidebar, so it has
+   there's no equivalent label waiting for it in the top bar, so it has
    nothing to animate toward. Gone a beat before the chip and title even start
    moving reads as "the words were only ever for here", not a race it lost. */
 .home__start-label {

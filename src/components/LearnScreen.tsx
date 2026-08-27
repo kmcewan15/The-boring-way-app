@@ -346,7 +346,7 @@ export default function LearnScreen({
     return 1 - p;
   };
 
-  /* Tell the rest of the app which entry is on screen, so the sidebar can describe
+  /* Tell the rest of the app which entry is on screen, so the top bar can describe
      what you are looking at rather than where you left off -- it was reading the
      saved cursor while wearing the viewed world's colours, which contradicted
      itself. Cleared on unmount so other tabs fall back to the cursor. */
@@ -357,9 +357,9 @@ export default function LearnScreen({
   useEffect(() => () => setViewIndex(null), [setViewIndex]);
 
   /* Hand the world's colours to the app chrome as CSS custom properties rather
-     than as React state. The sidebar sits outside this component, and putting a
+     than as React state. The top bar sits outside this component, and putting a
      per-frame palette into shared state would re-render the whole tree on every
-     scroll -- these are written straight to the document instead, so the sidebar
+     scroll -- these are written straight to the document instead, so the top bar
      recolours with no React work at all. Only fires when the blend actually
      changes, since `palette` is memoised on the quantised value. */
   useEffect(() => {
@@ -586,7 +586,7 @@ export default function LearnScreen({
           that topic has steps, so the filled length across the whole bar equals
           overall progress while the divisions still show the ten chapters.
 
-          Counts steps only, matching the sidebar's own Progress row -- passing a
+          Counts steps only, matching the top bar's own Progress row -- passing a
           quiz is not a 39th step. */}
       <div
         className="coursebar"
