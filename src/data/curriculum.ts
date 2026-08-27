@@ -373,11 +373,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'A chat window gives you advice. You then do the work of getting that advice to wherever it needed to go.',
-        },
-        {
-          t: 'p',
-          text: 'An agent does that work instead. It is the same model — not newer, not faster, not cheaper per message. It has just moved to where your files are.',
+          text: 'A chat gives you advice to act on yourself. An agent does the work directly — same model, just moved to where your files are.',
         },
         {
           t: 'table',
@@ -406,7 +402,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'warn',
-          text: 'An agent is less likely to be wrong because its answer is grounded within your files, but that carries greater risk as it can actually make changes to your files.',
+          text: 'An agent is less likely to be wrong, since its answers are grounded in your real files — but that also means it can actually change them.',
         },
       ],
       tasks: [
@@ -429,6 +425,13 @@ const STEPS: RawStep[][] = [
           t: 'do',
           label: 'Ask the agent to make it',
           cmd: 'Create a folder called handover with three\n  short meeting notes, week-1.md to week-3.md,\n  and a costs.csv of six expenses. Have one\n  note mention a vendor renewal.',
+        },
+        {
+          t: 'track',
+          label: 'See how to use Claude Code in Visual Studio Code',
+          blocks: [
+            { t: 'video', title: 'Using Claude Code in Visual Studio Code', src: '/demos/create_project.mp4' },
+          ],
         },
         {
           t: 'see',
@@ -490,19 +493,15 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'Almost every bad edit starts the same way: someone changed a file based on what they were sure was in it.',
+          text: 'Most bad edits start the same way: someone assumed what a file contained instead of checking. Claude does this too — confidently editing a file it never opened, based on a guess that happened to be wrong.',
         },
         {
           t: 'p',
-          text: 'Claude does this too, and fluently. Asked to change a setting, it can produce a confident edit to a file it never opened — one that would have been right, if the file had looked the way it assumed.',
-        },
-        {
-          t: 'p',
-          text: 'So: read, then write. It opens the file before changing it, and you look at what it found before you agree.',
+          text: 'So: read, then write. Claude opens the file before changing it, and you check what it found before agreeing.',
         },
         {
           t: 'warn',
-          text: 'Reading first is not about saving money, and it is not warming anything up. It is the only thing that makes the edit about the real file rather than a plausible one.',
+          text: 'Reading first is not about cost or warming up. It is what keeps the edit grounded in the real file, not an assumed one.',
         },
       ],
       tasks: ['Read the guidance on reading before editing'],
@@ -544,11 +543,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'Two things make a first edit safe, and neither is about clever prompting.',
-        },
-        {
-          t: 'p',
-          text: 'One: a way back. Copy the `handover` folder somewhere before you start. That is a complete backup and it takes two seconds.',
+          text: 'First, a way back: copy the `handover` folder before you start. A complete backup, and it takes two seconds.',
         },
         {
           t: 'term',
@@ -557,7 +552,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'Two: ask small. One specific change you can check at a glance. Not "improve this", and not a tidy-up while it is in there.',
+          text: 'Second, ask small — one specific change you can check at a glance. Not "improve this", and not a tidy-up while it is in there.',
         },
         {
           t: 'do',
@@ -570,7 +565,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'warn',
-          text: 'Asking it to explain its plan first is a fine habit, but a plan is not a way back. If you only do one of the two, keep the backup.',
+          text: 'Asking for a plan first is a fine habit, but it is not a way back. If you only do one thing, keep the backup.',
         },
         { t: 'video', title: 'Making one small edit and reading the diff' },
       ],
@@ -589,11 +584,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'Undoing is the actual skill here. Knowing you can get back is what makes you willing to try the next thing.',
-        },
-        {
-          t: 'p',
-          text: 'Copy your backup over the top. If the folder is in version control, `git checkout` does the same job.',
+          text: 'Undoing is the real skill — knowing you can get back is what makes you willing to try the next thing. Copy your backup over the top, or use `git checkout` if the folder is under version control.',
         },
         { t: 'do', label: 'Then check nothing is left', cmd: 'git status' },
         {
@@ -602,7 +593,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'warn',
-          text: 'Practise this while the stakes are zero. The first time you need to undo something in a hurry should not also be the first time you have tried.',
+          text: 'Practise this now, while the stakes are zero — not the first time you actually need it, in a hurry.',
         },
       ],
       tasks: ['Revert the edit', 'Confirm the note is back exactly where it started'],
@@ -630,7 +621,14 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'Two things that feel like checks are not. Asking again and getting the same answer tells you it is stable, not that it is right — it can be consistently wrong all day. And asking how confident it is just produces another confident sentence.',
+          text: 'Two things that feel like checks, but are not:',
+        },
+        {
+          t: 'list',
+          items: [
+            'Asking again — the same answer proves it is stable, not right',
+            'Asking how confident it is — that just produces another confident sentence',
+          ],
         },
         {
           t: 'warn',
@@ -661,11 +659,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'Right or wrong, ask something harder next: a single row, a date, the largest item. You are looking for the edge of what it actually knows, and harder questions find it. Asking the same question twice does not.',
-        },
-        {
-          t: 'p',
-          text: 'Then the claim people trust most — that something ran, and that it passed.',
+          text: 'Right or wrong, go harder next: a single row, a date, the largest item. That finds the edge of what it knows — asking the same question twice does not. Then check the claim people trust most: that something ran, and passed.',
         },
         {
           t: 'do',
@@ -697,11 +691,16 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'General caution does not survive a busy week. A short list of claim types you always check does.',
+          text: 'General caution does not survive a busy week. A short list of claim types you always check does — cheap to verify, expensive to get wrong.',
         },
         {
-          t: 'p',
-          text: 'They share a shape: cheap to verify, expensive to get wrong. Totals. Version numbers. Whether a test passed. Anything you are about to repeat to someone else as fact.',
+          t: 'list',
+          items: [
+            'Totals',
+            'Version numbers',
+            'Whether a test passed',
+            'Anything you are about to repeat as fact',
+          ],
         },
         {
           t: 'why',
@@ -728,18 +727,26 @@ const STEPS: RawStep[][] = [
           text: 'Every session starts from nothing. Close Claude, open it tomorrow, and it has forgotten the pack, your date format, all of it.',
         },
         {
-          t: 'term',
-          word: 'Session',
-          means: 'One run of Claude, from opening it to closing it. Nothing carries into the next one by itself.',
-        },
-        {
-          t: 'term',
-          word: 'CLAUDE.md',
-          means: 'A plain text file in your project. Standing instructions, read automatically at the start of every session.',
+          t: 'panel',
+          heading: 'Two words worth knowing:',
+          blocks: [
+            {
+              t: 'term',
+              word: 'Session',
+              collapsed: true,
+              means: 'One run of Claude, from opening it to closing it. Nothing carries into the next one by itself.',
+            },
+            {
+              t: 'term',
+              word: 'CLAUDE.md',
+              collapsed: true,
+              means: 'A plain text file in your project. Standing instructions, read automatically at the start of every session.',
+            },
+          ],
         },
         {
           t: 'p',
-          text: 'It is not a log of your prompts, not a changelog of what changed, and not documentation for colleagues. It is written for Claude, and that changes what belongs in it.',
+          text: 'It is not a prompt log, a changelog, or documentation for colleagues — it is written for Claude, and that is what decides what belongs in it.',
         },
         {
           t: 'warn',
@@ -844,11 +851,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'Read back what you wrote. Every line is read again at the start of every session, so every line should be earning that.',
-        },
-        {
-          t: 'p',
-          text: 'Cut anything Claude could read from the files, anything speculative, and anything you have never seen it act on. Unsure about a line? Delete it. You will notice soon enough if it mattered.',
+          text: 'Read back what you wrote — every line is read again each session, so it should be earning its place. Cut anything Claude could already read from the files, anything speculative, or anything you have never seen it act on. Unsure about a line? Delete it — you will notice if it mattered.',
         },
         {
           t: 'why',
@@ -870,11 +873,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'You have probably typed almost the same request to Claude more than once. Maybe you ask it to tidy the same report every Monday. Maybe you ask it for the same kind of summary every week.',
-        },
-        {
-          t: 'p',
-          text: 'Each time, you type the instructions again from memory. You leave out a detail. The answer comes back slightly different from last time.',
+          text: 'You have probably typed almost the same request to Claude more than once — the same weekly report, the same kind of summary. Each time you retype it from memory, leave out a detail, and the answer comes back slightly different.',
         },
         {
           t: 'term',
@@ -891,25 +890,33 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'You can apply a skill globally, so it works in every project you open. Or you can apply it to one project, when the task only comes up in the project you are working on. Either way, you can share the skill with your colleagues, so the whole team does the same task the same way.',
+          text: 'You can keep a skill to yourself, share it with one project, or with the whole team — more on how in step 4.',
         },
         {
           t: 'p',
-          text: 'A skill pays off when three things are true. You repeat the task. The task has a clear finish. You can write the steps down in plain words.',
+          text: 'A skill pays off when three things are true:',
+        },
+        {
+          t: 'list',
+          items: [
+            'You repeat the task',
+            'The task has a clear finish',
+            'You can write the steps down in plain words',
+          ],
         },
         {
           t: 'why',
-          text: 'Those three conditions are what make a skill effective. The instructions sit in a file instead of in your head, so the result comes back the same every time, you stop retyping it, and a colleague can run the same thing without asking you how.',
+          text: 'Those three conditions are what make a skill work: the result comes back the same every time, you stop retyping it, and a colleague can run it without asking you how.',
         },
         {
           t: 'warn',
-          text: 'A skill is the wrong tool for a one-off job, and for anything that needs a judgement you cannot write down. Writing the file costs you ten minutes, so it only pays back on work you repeat.',
+          text: 'A skill is the wrong tool for a one-off job, or anything needing a judgement you cannot write down. It costs ten minutes to write, so it only pays back on repeated work.',
         },
         {
           t: 'p',
           text: 'The rule is simple. If you have typed roughly the same request three times, stop retyping it and write a skill.',
         },
-        { t: 'video', title: 'What a skill is, in two minutes' },
+        { t: 'video', title: 'Using a skill in Claude', src: '/demos/use_skill.mp4' },
       ],
       tasks: ['Find something boring that needs a clear, defined finish'],
     },
@@ -926,7 +933,15 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'A good candidate passes three tests. You do it at least weekly. You already know what a good result looks like. You could explain the whole task to a new colleague in under a minute.',
+          text: 'A good candidate passes three tests:',
+        },
+        {
+          t: 'list',
+          items: [
+            'You do it at least weekly',
+            'You already know what a good result looks like',
+            'You could explain it to a new colleague in under a minute',
+          ],
         },
         {
           t: 'why',
@@ -934,7 +949,16 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'Here are the kinds of tasks that work. Turning your rough notes into the same weekly update. Turning a meeting transcript into a list of actions. Checking a spreadsheet for the same five mistakes. Renaming and filing a batch of files the same way every time.',
+          text: 'The kinds of tasks that work:',
+        },
+        {
+          t: 'list',
+          items: [
+            'Turning rough notes into the same weekly update',
+            'Turning a meeting transcript into a list of actions',
+            'Checking a spreadsheet for the same five mistakes',
+            'Renaming and filing a batch of files the same way',
+          ],
         },
         {
           t: 'p',
@@ -994,6 +1018,13 @@ const STEPS: RawStep[][] = [
           cmd: 'Create a skill called weekly-summary.\nUse it when I ask for my weekly update.\nSteps: read my notes, group them by project,\nthree bullets each, under 200 words.',
         },
         {
+          t: 'track',
+          label: 'See first hand how to write a skill with Claude Code',
+          blocks: [
+            { t: 'video', title: 'Creating your first skill in Claude Code', src: '/demos/create_skill.mp4' },
+          ],
+        },
+        {
           t: 'warn',
           text: 'Never write "make it good". Write what good means: the length, the order, the format.',
         },
@@ -1034,7 +1065,6 @@ const STEPS: RawStep[][] = [
             },
           ],
         },
-        { t: 'video', title: 'Writing a skill file from scratch' },
       ],
       tasks: [
         'Define your skill: the steps in order, and the answer you want back',
@@ -1060,7 +1090,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'This one follows you. It works in every project on your machine, and nobody else gets it. Use it for skills about the way you work.',
+          text: 'This one follows you — it works in every project on your machine, and nobody else gets it.',
         },
         {
           t: 'do',
@@ -1069,27 +1099,33 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'This one lives inside the project and goes into git with the code. Everyone on that project gets it, and it follows you nowhere else.',
+          text: 'This one lives inside the project and goes into git with the code — everyone on that project gets it, nobody else does.',
         },
         {
           t: 'p',
           text: 'One question decides between those two. Is this skill about how you work, or about how this project works?',
         },
         {
-          t: 'p',
-          text: 'Both of those folders are for Claude Code. If you use Claude in the browser or in the desktop app, there are no folders at all. You upload the skill instead.',
-        },
-        {
-          t: 'p',
-          text: 'In the browser, open Customize, then Skills, then Upload a skill. In the desktop app, open Settings, then Skills. Both take the skill folder as a .zip file.',
+          t: 'track',
+          label: 'Using the browser or desktop app instead',
+          blocks: [
+            {
+              t: 'p',
+              text: 'Both of those folders are for Claude Code. The browser and desktop apps have no folders at all — you upload the skill instead, as a `.zip`.',
+            },
+            {
+              t: 'p',
+              text: 'In the browser: Customize, then Skills, then Upload a skill. In the desktop app: Settings, then Skills.',
+            },
+          ],
         },
         {
           t: 'why',
-          text: 'The same `SKILL.md` works in all three homes. Better still, an owner can upload a skill once under Organization settings, and everyone in the company gets it. That is the fastest way to make a whole team do a task the same way.',
+          text: 'The same `SKILL.md` works in all three homes. An owner can also upload it once under Organization settings, so the whole company gets it — the fastest way to make a team work the same way.',
         },
         {
           t: 'warn',
-          text: 'Two traps. In the apps, someone has to switch on code execution and file creation for your organisation first, or an uploaded skill will not run. In Claude Code, if the same name sits in both folders, your personal one wins and the team version is ignored.',
+          text: 'Two traps: in the apps, code execution and file creation must be switched on for your organisation before an uploaded skill will run. In Claude Code, if the same name sits in both folders, your personal one wins and the team version is ignored.',
         },
       ],
       tasks: [
@@ -1116,7 +1152,7 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'Read every question and every wrong turn as a gap in your writing. A question means a missing sentence. A wrong turn means a vague one. Go back to the file and fix it.',
+          text: 'Read every question or wrong turn as a gap in your writing — a question means a missing sentence, a wrong turn means a vague one. Go back and fix it.',
         },
         {
           t: 'p',
@@ -1147,7 +1183,7 @@ const STEPS: RawStep[][] = [
       body: [
         {
           t: 'p',
-          text: 'Talk to Claude long enough and it starts losing the plot. It forgets what you agreed. It repeats itself. It makes silly mistakes it was not making an hour ago.',
+          text: 'Talk to Claude long enough and it starts losing the plot — forgetting what you agreed, repeating itself, making mistakes it was not making an hour ago.',
         },
         { t: 'p', text: 'Claude is not tired. The desk is full.' },
         {
@@ -1155,23 +1191,32 @@ const STEPS: RawStep[][] = [
           text: 'Claude works at a desk. Everything you say, every file it opens, and every answer it writes goes on as another sheet of paper. The desk has a size. When it fills, the oldest sheets slide off the edge, and the one you needed may be the one that fell.',
         },
         {
-          t: 'term',
-          word: 'Context window',
-          means: "The size of Claude's desk.",
-        },
-        {
-          t: 'term',
-          word: 'Token',
-          means: 'How desk space is counted. A million tokens is about half a million words.',
-        },
-        {
-          t: 'term',
-          word: 'Cost',
-          means: 'The price of the paper. Writing costs about five times more than reading.',
+          t: 'panel',
+          heading: 'Three words worth knowing:',
+          blocks: [
+            {
+              t: 'term',
+              word: 'Context window',
+              collapsed: true,
+              means: "The size of Claude's desk.",
+            },
+            {
+              t: 'term',
+              word: 'Token',
+              collapsed: true,
+              means: 'How desk space is counted. A million tokens is about half a million words.',
+            },
+            {
+              t: 'term',
+              word: 'Cost',
+              collapsed: true,
+              means: 'The price of the paper. Writing costs about five times more than reading.',
+            },
+          ],
         },
         {
           t: 'p',
-          text: 'More is on that desk than you put there: every file Claude opens, every command it runs, your `CLAUDE.md`, and every skill and connector you have switched on. Your questions are the smallest sheets on it.',
+          text: 'More is on that desk than you put there: every file Claude opens, every command it runs, your `CLAUDE.md`, and every skill or connector switched on. Your questions are the smallest sheets on it.',
         },
         {
           t: 'term',
@@ -1189,11 +1234,18 @@ const STEPS: RawStep[][] = [
         },
         {
           t: 'p',
-          text: 'Someone pays for the paper, too. Claude re-reads the whole desk every time you press enter, so the bill follows the length of the chat, not the difficulty of the question.',
+          text: 'Someone pays for the paper too — Claude re-reads the whole desk every time you press enter, so the bill follows the length of the chat, not the difficulty of the question.',
         },
         {
           t: 'p',
-          text: 'Two habits fall out of that. Name the file you mean, or Claude goes hunting and stacks the desk high on the way. And write your project a map once, so every session starts knowing where things live instead of asking you again.',
+          text: 'Two habits fall out of that:',
+        },
+        {
+          t: 'list',
+          items: [
+            'Name the file you mean — a vague question makes Claude go hunting',
+            'Write your project a map once, so every session starts knowing where things live',
+          ],
         },
         { t: 'do', label: 'If you use Claude Code', cmd: '/context' },
         {
@@ -1230,6 +1282,13 @@ const STEPS: RawStep[][] = [
         {
           t: 'see',
           text: 'The same grid, much fuller, and now you can see which sheets took the room. It is almost never your questions.',
+        },
+        {
+          t: 'track',
+          label: 'See how context fills up in this demo',
+          blocks: [
+            { t: 'video', title: 'Visualising your sessions context', src: '/demos/filling_context.mp4' },
+          ],
         },
         {
           t: 'p',
@@ -1273,20 +1332,26 @@ const STEPS: RawStep[][] = [
           text: 'Claude replaces the history with a summary and carries on. Use it inside one long job. Use `/clear` between two different ones.',
         },
         {
-          t: 'p',
-          text: 'Name the file or the folder you mean. A vague question makes Claude search, and searching is what fills the desk.',
-        },
-        {
-          t: 'p',
-          text: 'Index the project you are working in. Point Claude at the folder, and write the map of it once: what lives where, and how the thing is put together. Every session you open in that folder then starts knowing the layout, so you get better answers without repeating yourself.',
-        },
-        {
-          t: 'p',
-          text: 'Match the model to the job. A cheaper model is plenty for routine work, and you keep the expensive one for the work that needs it.',
-        },
-        {
-          t: 'p',
-          text: "Switch off the connectors you're not using this week. They sit on the desk every turn whether you use them or not, and a cluttered desk makes the model reach for the wrong thing.",
+          t: 'track',
+          label: 'Four more habits, no command needed',
+          blocks: [
+            {
+              t: 'p',
+              text: 'Name the file or the folder you mean. A vague question makes Claude search, and searching is what fills the desk.',
+            },
+            {
+              t: 'p',
+              text: 'Index the project you are working in. Write the map of it once — what lives where, and how it is put together — so every session in that folder starts knowing the layout.',
+            },
+            {
+              t: 'p',
+              text: 'Match the model to the job. A cheaper model is plenty for routine work; keep the expensive one for the work that needs it.',
+            },
+            {
+              t: 'p',
+              text: "Switch off the connectors you are not using this week. They sit on the desk every turn whether you use them or not.",
+            },
+          ],
         },
         {
           t: 'why',
