@@ -183,7 +183,7 @@ button {
   border-radius: var(--r-pill);
   font-size: 19px;
   font-weight: 600;
-  color: var(--w-ink-soft, var(--rock-mid));
+  color: var(--rock-mid);
   text-align: left;
   transition:
     background var(--dur-fast) var(--ease-calm),
@@ -199,18 +199,18 @@ button {
    longer duration is tuned for the colour crossing world palettes, and
    reusing it here made a hover feel like a lag rather than a response. */
 .navitem:hover {
-  color: var(--w-accent, var(--terracotta));
+  color: var(--terracotta);
   transition-duration: var(--dur-fast);
 }
 
 .navitem--active {
-  background: var(--w-accent, var(--terracotta));
+  background: var(--terracotta);
   color: #fff;
   font-weight: 700;
 }
 
 .navitem--active:hover {
-  background: var(--w-accent, var(--terracotta));
+  background: var(--terracotta);
   color: #fff;
 }
 
@@ -222,7 +222,7 @@ button {
   margin-top: 22px;
   padding: 18px 16px;
   border-radius: var(--r-card);
-  background: var(--w-panel, var(--pink-soft));
+  background: var(--pink-soft);
   transition: background var(--dur-slow) var(--ease-calm);
 }
 
@@ -231,14 +231,13 @@ button {
   font-size: 13px;
   /* Softened from the value's 700 to separate label from value by weight,
      not colour -- lowering this to the muted ink tone was the first thing
-     tried, and it measured 4.0-4.2:1 against the panel on the paler worlds,
-     under the 4.5:1 AA floor for text this size. Weight carries no
-     contrast-ratio cost, so this is the version of "quieter" that doesn't
-     also mean "fails AA on half the worlds". */
+     tried, and it measured 4.0-4.2:1 against this panel, under the 4.5:1 AA
+     floor for text this size. Weight carries no contrast-ratio cost, so this
+     is the version of "quieter" that doesn't also mean "fails AA". */
   font-weight: 600;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--w-ink, var(--terracotta-deep));
+  color: var(--terracotta-deep);
   transition: color var(--dur-slow) var(--ease-calm);
 }
 
@@ -248,7 +247,7 @@ button {
   font-size: 18px;
   font-weight: 700;
   line-height: 1.25;
-  color: var(--w-ink, var(--terracotta-deep));
+  color: var(--terracotta-deep);
   transition: color var(--dur-slow) var(--ease-calm);
 }
 
@@ -264,32 +263,32 @@ button {
 
 /* Flame + number instead of a sentence -- the icon carries "lit or not" and
    the number carries "how many", so there's nothing left for words to repeat.
-   Muted (--w-ink-soft) unlit, matching how an inactive nav item reads, so a
+   Muted (--rock-mid) unlit, matching how an inactive nav item reads, so a
    streak of zero looks dormant rather than like a colour that failed to
    load. */
 .side__stats dd.side__streak {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--w-ink-soft, var(--rock-mid));
+  color: var(--rock-mid);
 }
 
 .side__stats dd.side__streak--lit {
-  color: var(--w-accent, var(--terracotta));
+  color: var(--terracotta);
 }
 
 /* The count stays full-ink regardless of lit state -- it's the flame's job to
    carry "active or not", not the number's, so it never dims to match. */
 .side__streak span {
   font-size: 22px;
-  color: var(--w-ink, var(--terracotta-deep));
+  color: var(--terracotta-deep);
 }
 
 .side__stats hr {
   height: 1px;
   margin: 10px 0;
   border: 0;
-  background: var(--w-line, rgba(156, 82, 54, 0.16));
+  background: rgba(156, 82, 54, 0.16);
 }
 
 /* ==========================================================================
@@ -300,11 +299,19 @@ button {
    else, itself included, is what the drawer is standing in for.
    ========================================================================== */
 
+/* Fixed palette, not --w-chrome -- unlike the top bar (which is meant to
+   read as part of whichever world you're standing in), this is a menu you
+   leave the trail to open. Tinting it to the world you happened to click out
+   of made every world's own list of other worlds look like it belonged to
+   just that one, which it never did -- Learn/My Path/Resources and the world
+   list are the same neutral destination regardless of where the hamburger
+   was tapped from. Every --w-* colour below this rule (.navitem, .side__foot,
+   .side__stats, .drawer__*) is fixed for the same reason. */
 .drawer {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: var(--w-chrome, var(--pink-cream));
+  background: var(--pink-cream);
   transform: translateX(-100%);
   pointer-events: none;
   transition: transform var(--dur-mid) var(--ease-calm);
@@ -327,7 +334,7 @@ button {
   font-weight: 600;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--w-ink, var(--terracotta-deep));
+  color: var(--terracotta-deep);
 }
 
 /* One per path, above that path's own .drawer__worlds -- a proper heading,
@@ -338,7 +345,7 @@ button {
   margin: 20px 0 0;
   font-size: 17px;
   font-weight: 700;
-  color: var(--w-ink, var(--terracotta-deep));
+  color: var(--terracotta-deep);
 }
 
 .drawer__worlds {
@@ -362,12 +369,12 @@ button {
 }
 
 .drawer__world:hover {
-  background: var(--w-hover, rgba(156, 82, 54, 0.07));
+  background: rgba(156, 82, 54, 0.07);
 }
 
 .drawer__world--current {
-  background: var(--w-hover, rgba(156, 82, 54, 0.07));
-  box-shadow: inset 0 0 0 1.5px var(--w-accent, var(--terracotta));
+  background: rgba(156, 82, 54, 0.07);
+  box-shadow: inset 0 0 0 1.5px var(--terracotta);
 }
 
 .drawer__worldart {
@@ -376,7 +383,7 @@ button {
   height: 46px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--w-panel, var(--pink-soft));
+  background: var(--pink-soft);
 }
 
 .drawer__worldtext {
@@ -388,27 +395,27 @@ button {
 .drawer__worldtext strong {
   font-size: 17px;
   font-weight: 700;
-  color: var(--w-ink, var(--terracotta-deep));
+  color: var(--terracotta-deep);
 }
 
 .drawer__worldtext small {
   margin-top: 2px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--w-ink-soft, var(--rock-mid));
+  color: var(--rock-mid);
 }
 
 /* Gold rather than ink for the one line that means "done" -- the same
    distinction .coursebar__slot--full draws on the trail itself. */
 .drawer__world--done .drawer__worldtext small {
-  color: var(--w-accent, var(--terracotta));
+  color: var(--terracotta);
 }
 
 .drawer__totals {
   margin: 22px 4px 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--w-ink-soft, var(--rock-mid));
+  color: var(--rock-mid);
 }
 
 /* ==========================================================================
@@ -524,10 +531,24 @@ button {
 
 .trail__top {
   position: absolute;
-  inset: 30px 0 auto 0;
+  /* The left flank, level with the focused card -- not centred above the
+     stack, which is what the previous two attempts both got wrong.
+
+     The cards fan from left: 50% (focused) up to left: 76% (offset +2), so
+     the right half of the trail is occupied at one scroll position or
+     another, while the focused card is ~23% wide and therefore never brings
+     an edge in past ~38%. Everything left of that is open scenery at every
+     scroll position. Centring this chip put it in the mouth of that fan:
+     level with the faintest ghost card and sitting on the lantern, which is
+     the art's own focal point -- hence "floating in the landscape" rather
+     than belonging to anything.
+
+     Anchored here it clears the cards at any viewport size with no
+     card-height percentage to tune, stays off the focal point, and still
+     shares a row with the focused card so it reads as related to it. */
+  inset: auto auto 22% 30px;
   z-index: 40;
   display: flex;
-  justify-content: center;
   pointer-events: none;
 }
 
