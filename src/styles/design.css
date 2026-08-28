@@ -32,8 +32,19 @@
 
 /* The trail's "Current step" pill floats over the world's own scenery, so it takes
    the world's colours like the cards and the caption banner. Kept off the base
-   .pill so the All topics screen, which has its own fixed palette, is untouched. */
+   .pill so the All topics screen, which has its own fixed palette, is untouched.
+
+   Sized down from the base .pill (46px/18px/700) on purpose: this is a rare
+   "jump back to where you left off" link, not a primary action, and at full
+   pill size it was the boldest thing in the top band -- heavier than the
+   coursebar's own numbers and the quiz badge next to it. Smaller and lighter
+   reads as the quiet wayfinding hint it actually is. */
 .pill--world {
+  height: 32px;
+  padding: 0 14px;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--w-ink, var(--terracotta-deep));
   background: var(--w-glass, rgba(253, 237, 232, 0.76));
   transition:

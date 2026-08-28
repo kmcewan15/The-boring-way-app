@@ -670,7 +670,7 @@ export default function LearnScreen({
             className="pill pill--world fade-in"
             onClick={() => goTo(cursorIndex)}
           >
-            <IconChevronDown size={22} />
+            <IconChevronDown size={15} />
             Current step
           </button>
         )}
