@@ -81,6 +81,11 @@ export interface Topic {
   /** Bottom-panel + pin colour on the Explore topics screen. */
   accent: string;
   accentInk: string;
+  /* Optional photographic backdrop, served out of `images/` -- so `'/foo.webp'`
+     means `images/foo.webp`, via `publicDir` in vite.config.ts. Topics without one
+     fall back to the generated landscape, and the Learn screen cross-fades
+     between whichever of the two each side of a world boundary happens to be. */
+  photo?: string;
   steps: Step[];
 }
 
@@ -1671,6 +1676,8 @@ const TOPIC_META: Array<{
   biome: IslandBiome;
   accent: string;
   accentInk: string;
+  /** See `Topic.photo`. Add one per topic as the artwork arrives. */
+  photo?: string;
 }> = [
   {
     title: 'Bring Claude to Life',
@@ -1678,20 +1685,23 @@ const TOPIC_META: Array<{
     biome: 'desert',
     accent: '#FBE0DA',
     accentInk: '#8A4527',
+    photo: '/desertnew.webp',
   },
   {
     title: 'Leave the Chatbox',
     goal: 'Understand what actually changes when you move from a chat window to an agent inside your project',
-    biome: 'savanna',
-    accent: '#DCEF9C',
-    accentInk: '#2C4A16',
+    biome: 'jungle',
+    accent: '#CFE8CE',
+    accentInk: '#14453B',
+    photo: '/junglenew.webp',
   },
   {
     title: 'Give Claude Something Real',
     goal: 'Let Claude read and edit real files, safely, with a way back if it goes wrong',
-    biome: 'jungle',
-    accent: '#FBE0DA',
-    accentInk: '#14453B',
+    biome: 'ocean',
+    accent: '#D7EDF7',
+    accentInk: '#124459',
+    photo: '/oceannew.webp',
   },
   {
     title: "Don't Trust the Robot",
@@ -1752,6 +1762,7 @@ export const TOPICS: Topic[] = TOPIC_META.map((meta, i) => ({
   title: meta.title,
   goal: meta.goal,
   biome: meta.biome,
+  photo: meta.photo,
   accent: meta.accent,
   accentInk: meta.accentInk,
   steps: STEPS[i].map((s, j) => ({ ...s, id: `t${i + 1}s${j + 1}` })),

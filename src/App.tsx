@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import ExploreTopics from './components/ExploreTopics';
+import HomeScreen from './components/HomeScreen';
 import LearnScreen from './components/LearnScreen';
 import Modal from './components/Modal';
 import MyPathScreen, { type MyPathRoute } from './components/MyPathScreen';
-import { CompletedSteps, Notes, Timebox } from './components/MyPathDetails';
+import { Notes, Timebox } from './components/MyPathDetails';
 import ProgressScreen from './components/ProgressScreen';
 import ResourcesScreen from './components/ResourcesScreen';
-import Sidebar from './components/Sidebar';
 import StepView from './components/StepView';
+import TopBar from './components/TopBar';
 import TopicQuiz from './components/TopicQuiz';
 import { JOURNEY, globalIndexOf } from './data/curriculum';
 import { useApp } from './state/useApp';
@@ -15,7 +16,6 @@ import { useApp } from './state/useApp';
 const MODAL_LABELS: Record<MyPathRoute, string> = {
   timebox: 'Timebox',
   progress: 'My progress',
-  completed: 'Completed steps',
   notes: 'My notes',
 };
 
@@ -25,10 +25,16 @@ export default function App() {
   const [detail, setDetail] = useState<MyPathRoute | null>(null);
   /* Index into the flat journey, so a step from any topic can be opened. */
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  /* The trail waits behind the home screen until this flips, once, per visit. */
+  const [entered, setEntered] = useState(false);
+  /* Owned here, not in TopBar: the drawer covers the stage like any other
+     overlay, so the trail's key handlers have to stand down while it is up, and
+     only this component can tell them to. */
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const entry = openIndex === null ? null : JOURNEY[openIndex];
 
-  /* Overlays cover the stage but not the sidebar, so a nav click while one is
+  /* Overlays cover the stage but not the top bar, so a nav click while one is
      open would otherwise look like it did nothing. Dismiss them on tab change. */
   useEffect(() => {
     setDetail(null);
@@ -36,15 +42,41 @@ export default function App() {
     setOpenIndex(null);
   }, [tab]);
 
+  /* Every overlay below declares `aria-modal`, but the stage behind it stayed in
+     the tab order, so six tabs out of an open step landed on the course bar
+     nobody could see. Mark whatever is behind the overlay `inert` for as long as
+     one is up. The top bar is deliberately left reachable -- see the comment
+     above -- so it is not included.
+
+     Applied to the nodes rather than as a prop: `inert` only became a React prop
+     in 19, and this is React 18. Read off `[role=dialog]` so a new overlay is
+     covered by having a dialog role, with nothing to register here. */
+  const overlayOpen = entry !== null || detail !== null || explore || drawerOpen;
+  useEffect(() => {
+    if (!overlayOpen) return;
+    const main = document.querySelector('.main');
+    if (!main) return;
+    /* Matched on the child itself and deliberately not on its descendants: the
+       journey map is a dialog rendered *inside* `.trail`, so testing descendants
+       excused the whole trail from going inert whenever the map was open. Every
+       overlay that sits at this level carries the role on its own root. */
+    const behind = [...main.children].filter((el) => !el.matches('[role="dialog"]'));
+    behind.forEach((el) => el.toggleAttribute('inert', true));
+    return () => behind.forEach((el) => el.toggleAttribute('inert', false));
+  }, [overlayOpen]);
+
+  if (!entered) return <HomeScreen onEnter={() => setEntered(true)} />;
+
   return (
     <div className="app">
-      <Sidebar />
+      <TopBar open={drawerOpen} onOpenChange={setDrawerOpen} />
 
       <main className="main">
         {tab === 'learn' && (
           <LearnScreen
             onOpenExplore={() => setExplore(true)}
             onOpenEntry={(globalIndex) => setOpenIndex(globalIndex)}
+            blocked={overlayOpen}
           />
         )}
 
@@ -74,7 +106,6 @@ export default function App() {
                 }}
               />
             )}
-            {detail === 'completed' && <CompletedSteps />}
             {detail === 'notes' && <Notes />}
             {detail === 'timebox' && <Timebox />}
           </Modal>

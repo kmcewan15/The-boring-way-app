@@ -7,7 +7,7 @@
   /* --- Pinks: the resting state of the app ------------------------------- */
   --pink-bg: #fbe5e1; /* page background */
   --pink-soft: #f7d8d1; /* pills, secondary cards */
-  --pink-cream: #fdede8; /* primary button fill, sidebar */
+  --pink-cream: #fdede8; /* primary button fill, top bar */
   --pink-dim: #e6b8ae; /* inactive nav labels */
 
   /* --- Terracotta: the primary brand colour ----------------------------- */
@@ -35,16 +35,82 @@
   --r-card: 18px;
   --r-sheet: 30px;
 
+  /* Aspect ratio of the world photographs. The pan works by translating a layer
+     that is exactly the picture's shape, so this has to match the files in
+     images/ -- all three are 793x1983. Regenerating them at 1600x4000 keeps the
+     same 0.4 ratio and needs no change here. */
+  --photo-ar: 793 / 1983;
+
+  /* Journey map. Ten labelled nodes have to fit the stage without a label
+     crossing a neighbouring island, and the vertical gaps are percentages of the
+     window -- so on a short window these all come down together. Verified by
+     measuring every label box against every island box. */
+  --map-node: 104px;
+  --map-label: 250px;
+  --map-title: 20px;
+  --map-no: 13px;
+  --map-state: 15px;
+
+  /* --- Grade -----------------------------------------------------------
+     One pass over the artwork that every world shares. Three of the ten worlds
+     are photographs and seven are drawn, and without this they read as two
+     different apps sitting next to each other. Grain gives the drawn worlds a
+     texture they do not have and pulls the photographs back from looking like
+     stock; the vignette frames both. Tuned by eye -- these two numbers are the
+     only thing worth touching. */
+  /* 0.07 measures as a standard deviation of ~1.6 levels over a flat area of sky,
+     which is a texture you can see without it looking dirty. 0.03 is ~0.8 and is
+     close to pointless on the drawn worlds; 0.10 is ~2.3 and starts to look like
+     a dirty screen. Grain is a per-pixel effect -- judge it in the running app,
+     not in a scaled screenshot, where it cannot survive the resampling. */
+  --grade-grain: 0.07;
+  /* 0.42 measures as a 10% luminance drop in the corners with the centre of frame
+     untouched (0.0%), which is about where a vignette stops reading as "darker"
+     and starts reading as "framed". 0.30 is a 7% drop, 0.55 is 13%. */
+  --grade-vignette: 0.42;
+
+  /* Haze on the receding trail cards: how far a card at each depth is pulled
+     toward the world's own sky colour. Distance should read as air, not as a
+     blur filter. */
+  --haze-d1: 0.1;
+  --haze-d2: 0.22;
+
   /* --- Elevation -------------------------------------------------------- */
   --shadow-card: 0 14px 40px rgba(123, 58, 34, 0.22);
   --shadow-pill: 0 4px 14px rgba(123, 58, 34, 0.1);
-  --shadow-sheet: 0 -8px 30px rgba(123, 58, 34, 0.1);
 
   /* --- Layout ----------------------------------------------------------- */
-  --side-w: 264px;
-  --card-w: 420px;
   --read-w: 920px; /* max line length for text-heavy screens */
-  --sheet-h: 132px;
+  /* Still 84px from when this held two lines (.sheet__trail + .sheet__hint);
+     the path name that was .sheet__trail has since moved to the nav drawer's
+     own world list, leaving .sheet__hint on its own. Untouched rather than
+     shrunk again on the same guess this got sized on twice already -- worth
+     deciding on purpose whether a single link still wants a full-width fading
+     band at all, not just re-running the same ratio a third time. */
+  --sheet-h: 84px;
+
+  /* Trail card geometry. The tiers place cards by percentage of the stage but the
+     boxes are fixed px, so on a short window a full-height card reaches up past
+     the one behind it -- these shrink at the breakpoints in global.css to keep the
+     gaps. Type sizes scale with them, or the content simply overflows the box. */
+  --card-w: 420px;
+  /* Was 304px -- brought down to match .card__index and .card__cta losing
+     8px of margin between them (see global.css), plus a slightly tighter
+     top/bottom pad below. min-height, not height, so a two-line title still
+     sets the real floor -- this just stops that floor being taller than the
+     tightened content actually needs, which used to leave dead air below the
+     button on every card. */
+  --card-h: 280px;
+  --card-title: 27px;
+  --card-index: 21px;
+  --card-pad: 15px 22px 18px;
+
+  --card-d1-w: 248px;
+  --card-d1-h: 148px;
+  --card-d1-title: 17px;
+  --card-d1-index: 13px;
+
+  --card-d2-w: 150px;
 
   /* --- Motion: slow and calm, never snappy ------------------------------ */
   --ease-calm: cubic-bezier(0.33, 0.02, 0.24, 1);

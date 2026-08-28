@@ -432,7 +432,9 @@ export default function ResourcesScreen() {
                   {s.kind === 'command' && <IconTerminal size={26} />}
                   {s.kind === 'link' && <IconLink size={26} />}
                   <span>
-                    <h4>{s.title}</h4>
+                    {/* h3, not h4: the section heading above is an h2, and a
+                        skipped level is a real problem for a screen reader. */}
+                    <h3>{s.title}</h3>
                     <p>{s.detail}</p>
                     <code className="gloss__cmd">{s.handle}</code>
                   </span>

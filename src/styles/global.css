@@ -42,12 +42,16 @@ button {
 }
 
 /* ==========================================================================
-   Desktop shell: persistent left rail + a single stage for the active screen
+   Desktop shell: full-width top bar + a single stage for the active screen
    ========================================================================== */
 
 .app {
   display: grid;
-  grid-template-columns: var(--side-w) 1fr;
+  /* Was a two-column grid (a 264px rail beside the stage); the rail turned
+     into a bar on top of the stage instead, so this is one column, two rows
+     -- the bar takes only the height its own content needs (auto), the
+     stage takes the rest. */
+  grid-template-rows: auto 1fr;
   height: 100dvh;
   overflow: hidden;
 }
@@ -59,38 +63,113 @@ button {
   isolation: isolate;
 }
 
-/* ------------------------------------------------------------- sidebar ---- */
+/* ------------------------------------------------------------- top bar ---- */
 
-.side {
+/* Three-column grid, not flex + space-between: the menu button and the
+   status text are different widths, so space-between would centre the brand
+   in whatever room is left over rather than in the bar -- it would drift
+   toward the narrower side. Two equal 1fr edge columns keep the centre
+   column mathematically centred regardless of what's in the other two. */
+.topbar {
+  height: 72px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 26px;
+  background: var(--w-chrome, var(--pink-cream));
+  border-bottom: 1px solid var(--w-line, rgba(156, 82, 54, 0.1));
+  /* Slower than the palette's own morph, so the chrome feels like it is settling
+     into the new world rather than flickering through the quantised blend steps. */
+  transition:
+    background var(--dur-slow) var(--ease-calm),
+    border-color var(--dur-slow) var(--ease-calm);
+}
+
+/* Flush with the bar's own left padding (26px) and vertically centred by the
+   bar's own grid (align-items: center) -- see HomeScreen.tsx's
+   BURGER_DOCK_TOP/LEFT for the arithmetic this has to match. */
+.topbar__menu {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  justify-self: start;
+  /* Same cream-and-ink pairing as .home__start-icon, which this button visually
+     *is* the moment the dock animation ends -- see HomeScreen.tsx. */
+  background: var(--w-panel, var(--pink-cream));
+  color: var(--w-ink, var(--terracotta-deep));
+  transition:
+    transform var(--dur-fast) var(--ease-calm),
+    background var(--dur-slow) var(--ease-calm),
+    color var(--dur-slow) var(--ease-calm);
+}
+
+.topbar__menu:hover {
+  transform: scale(1.06);
+}
+
+/* Centred in the bar's own middle column. line-height is set in px rather
+   than the usual unitless multiplier so the brand block's total height (20
+   title + 4 gap + 12 tagline = 36) is an exact number -- HomeScreen.tsx's
+   DOCK_TOP/TAG_DOCK_TOP divide the bar's 72px height around that same sum,
+   and a fuzzy line-height would only make that arithmetic approximate for
+   no reason. */
+.topbar__brand {
   display: flex;
   flex-direction: column;
-  padding: 34px 20px 26px;
-  background: var(--pink-cream);
-  border-right: 1px solid rgba(156, 82, 54, 0.1);
-}
-
-.side__brand {
-  padding: 0 14px;
-  font-size: 23px;
+  align-items: center;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: -0.3px;
-  line-height: 1.2;
-  color: var(--terracotta-deep);
+  letter-spacing: -0.2px;
+  line-height: 20px;
+  color: var(--w-ink, var(--terracotta-deep));
+  transition: color var(--dur-slow) var(--ease-calm);
 }
 
-.side__brand span {
+.topbar__brand span {
   display: block;
   margin-top: 4px;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 1.2px;
-  line-height: 1.35;
+  letter-spacing: 1.1px;
+  line-height: 12px;
   text-transform: uppercase;
-  color: var(--rock-mid);
+  color: var(--w-ink-soft, var(--rock-mid));
+  transition: color var(--dur-slow) var(--ease-calm);
 }
 
+/* The one thing the bar says about where you are without opening the drawer
+   for it. Right-aligned in the bar's own trailing column rather than pinned
+   to the bottom of a column the way it was in the rail -- there's no
+   "bottom" left to pin to in a single 72px-tall row. */
+.topbar__stage {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  justify-self: end;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--w-ink, var(--terracotta-deep));
+  transition: color var(--dur-slow) var(--ease-calm);
+}
+
+.topbar__stage span {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* Reused inside NavDrawer for its own nav list -- same column of pill
+   buttons the sidebar used to hold directly, now one tap further away. */
 .side__nav {
-  margin-top: 40px;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -108,16 +187,20 @@ button {
   text-align: left;
   transition:
     background var(--dur-fast) var(--ease-calm),
-    color var(--dur-fast) var(--ease-calm);
+    color var(--dur-slow) var(--ease-calm);
 }
 
 .navitem svg {
   flex: none;
 }
 
+/* A colour swap, not a background fill -- the icon rides along for free since
+   it draws in currentColor. dur-fast, not the base rule's dur-slow: that
+   longer duration is tuned for the colour crossing world palettes, and
+   reusing it here made a hover feel like a lag rather than a response. */
 .navitem:hover {
-  background: rgba(156, 82, 54, 0.07);
-  color: var(--terracotta-deep);
+  color: var(--terracotta);
+  transition-duration: var(--dur-fast);
 }
 
 .navitem--active {
@@ -132,33 +215,230 @@ button {
 }
 
 .side__foot {
-  margin-top: auto;
+  /* Used to be margin-top:auto, pinned to the bottom of the sidebar's own flex
+     column -- now it's one card among several inside the nav drawer's own
+     already-scrollable sheet, so it just takes the same 22px gap every other
+     block in there gets rather than fighting for its own height. */
+  margin-top: 22px;
   padding: 18px 16px;
   border-radius: var(--r-card);
   background: var(--pink-soft);
+  transition: background var(--dur-slow) var(--ease-calm);
 }
 
-.side__foot dt {
+.side__foot dt,
+.side__stats dt {
   font-size: 13px;
-  font-weight: 700;
+  /* Softened from the value's 700 to separate label from value by weight,
+     not colour -- lowering this to the muted ink tone was the first thing
+     tried, and it measured 4.0-4.2:1 against this panel, under the 4.5:1 AA
+     floor for text this size. Weight carries no contrast-ratio cost, so this
+     is the version of "quieter" that doesn't also mean "fails AA". */
+  font-weight: 600;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--rock-mid);
+  color: var(--terracotta-deep);
+  transition: color var(--dur-slow) var(--ease-calm);
 }
 
-.side__foot dd {
-  margin: 4px 0 0;
+.side__foot dd,
+.side__stats dd {
+  margin: 3px 0 0;
   font-size: 18px;
   font-weight: 700;
   line-height: 1.25;
   color: var(--terracotta-deep);
+  transition: color var(--dur-slow) var(--ease-calm);
 }
 
-.side__foot hr {
+/* Time learning / streak -- used to live behind their own floating hamburger
+   over the stage; folded into the nav drawer instead, so there is one
+   hamburger in the app, not two with different jobs. No panel background of
+   its own: it sits in the same plain flow as the nav items above it, and
+   .side__foot's "Continue" card already carries this drawer's one "boxed"
+   surface. */
+.side__stats {
+  margin-top: 22px;
+}
+
+/* Flame + number instead of a sentence -- the icon carries "lit or not" and
+   the number carries "how many", so there's nothing left for words to repeat.
+   Muted (--rock-mid) unlit, matching how an inactive nav item reads, so a
+   streak of zero looks dormant rather than like a colour that failed to
+   load. */
+.side__stats dd.side__streak {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rock-mid);
+}
+
+.side__stats dd.side__streak--lit {
+  color: var(--terracotta);
+}
+
+/* The count stays full-ink regardless of lit state -- it's the flame's job to
+   carry "active or not", not the number's, so it never dims to match. */
+.side__streak span {
+  font-size: 22px;
+  color: var(--terracotta-deep);
+}
+
+.side__stats hr {
   height: 1px;
-  margin: 14px 0;
+  margin: 10px 0;
   border: 0;
   background: rgba(156, 82, 54, 0.16);
+}
+
+/* ==========================================================================
+   Nav drawer -- Google-Drive style: a full-screen sheet the top bar's
+   hamburger opens, not a column that grows in place. Fixed rather than
+   absolute, so it covers the top bar too, not just .main -- the bar's own
+   hamburger is the one thing on screen that stays put while everything
+   else, itself included, is what the drawer is standing in for.
+   ========================================================================== */
+
+/* Fixed palette, not --w-chrome -- unlike the top bar (which is meant to
+   read as part of whichever world you're standing in), this is a menu you
+   leave the trail to open. Tinting it to the world you happened to click out
+   of made every world's own list of other worlds look like it belonged to
+   just that one, which it never did -- Learn/My Path/Resources and the world
+   list are the same neutral destination regardless of where the hamburger
+   was tapped from. Every --w-* colour below this rule (.navitem, .side__foot,
+   .side__stats, .drawer__*) is fixed for the same reason. */
+/* Present for a screen reader, absent for everyone else. Not `display: none`,
+   which would take it out of the accessibility tree along with the layout. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--pink-cream);
+  transform: translateX(-100%);
+  pointer-events: none;
+  /* `visibility` and not just the transform: a translated-away panel is still
+     laid out and still focusable, so Tab walked off the trail into fifteen
+     controls nobody could see. Hiding it also keeps the DOM honest against the
+     `aria-hidden` the component sets. Transitioned, so it stays visible for the
+     length of the slide out and only then goes. */
+  visibility: hidden;
+  transition:
+    transform var(--dur-mid) var(--ease-calm),
+    visibility var(--dur-mid) var(--ease-calm);
+}
+
+.drawer--open {
+  transform: translateX(0);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    transition: none;
+  }
+}
+
+.drawer__worldsh {
+  margin: 34px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--terracotta-deep);
+}
+
+/* One per path, above that path's own .drawer__worlds -- a proper heading,
+   not another small-caps label like .drawer__worldsh above it, so the two
+   levels ("Your worlds" the section, "Foundations" the group within it)
+   read as a hierarchy rather than two peers. */
+.drawer__pathh {
+  margin: 20px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--terracotta-deep);
+}
+
+.drawer__worlds {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Same shape as .navitem -- a row that highlights on hover -- rather than a
+   new kind of thing, since a world is just another destination in this
+   drawer, the same as Learn or My Path above it. */
+.drawer__world {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: var(--r-pill);
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-calm);
+}
+
+.drawer__world:hover {
+  background: rgba(156, 82, 54, 0.07);
+}
+
+.drawer__world--current {
+  background: rgba(156, 82, 54, 0.07);
+  box-shadow: inset 0 0 0 1.5px var(--terracotta);
+}
+
+.drawer__worldart {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--pink-soft);
+}
+
+.drawer__worldtext {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.drawer__worldtext strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--terracotta-deep);
+}
+
+.drawer__worldtext small {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rock-mid);
+}
+
+/* Gold rather than ink for the one line that means "done" -- the same
+   distinction .coursebar__slot--full draws on the trail itself. */
+.drawer__world--done .drawer__worldtext small {
+  color: var(--terracotta);
+}
+
+.drawer__totals {
+  margin: 22px 4px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rock-mid);
 }
 
 /* ==========================================================================
@@ -274,10 +554,24 @@ button {
 
 .trail__top {
   position: absolute;
-  inset: 30px 0 auto 0;
+  /* The left flank, level with the focused card -- not centred above the
+     stack, which is what the previous two attempts both got wrong.
+
+     The cards fan from left: 50% (focused) up to left: 76% (offset +2), so
+     the right half of the trail is occupied at one scroll position or
+     another, while the focused card is ~23% wide and therefore never brings
+     an edge in past ~38%. Everything left of that is open scenery at every
+     scroll position. Centring this chip put it in the mouth of that fan:
+     level with the faintest ghost card and sitting on the lantern, which is
+     the art's own focal point -- hence "floating in the landscape" rather
+     than belonging to anything.
+
+     Anchored here it clears the cards at any viewport size with no
+     card-height percentage to tune, stays off the focal point, and still
+     shares a row with the focused card so it reads as related to it. */
+  inset: auto auto 22% 30px;
   z-index: 40;
   display: flex;
-  justify-content: center;
   pointer-events: none;
 }
 
@@ -292,10 +586,10 @@ button {
   z-index: 20;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  /* Proximity rather than mandatory: mandatory snapping yanks a whole step per
-     wheel tick, which turns the world-to-world colour morph into a jump. This
-     lets the scroll run freely and only settles when you stop near a step. */
-  scroll-snap-type: y proximity;
+  /* No CSS snapping. LearnScreen takes the wheel off this element and snaps to a
+     neighbouring step itself, always exactly one page, so snapping has nothing
+     left to correct. */
+  scroll-snap-type: none;
   scrollbar-width: none;
 }
 
@@ -305,7 +599,6 @@ button {
 
 .trail__page {
   height: 100%;
-  scroll-snap-align: start;
 }
 
 /* Cards are placed along the trail, not in the scroll flow */
@@ -333,9 +626,65 @@ button {
   left: 50%;
   width: var(--card-w);
   transition:
-    transform var(--dur-slow) var(--ease-calm),
+    bottom var(--dur-slow) var(--ease-calm),
+    left var(--dur-slow) var(--ease-calm),
+    filter var(--dur-slow) var(--ease-calm),
     opacity var(--dur-slow) var(--ease-calm);
-  will-change: transform, opacity;
+  will-change: bottom, left, opacity;
+}
+
+/* Real widths, so type and strokes stay crisp at distance. */
+.trailcard--d1 {
+  width: var(--card-d1-w);
+}
+
+.trailcard--d2 {
+  width: var(--card-d2-w);
+}
+
+/* Atmospheric perspective. The tiers already blur and shrink a distant card,
+   which reads as a filter rather than as distance -- what sells depth is the card
+   losing contrast toward the colour of the air between you and it. That colour is
+   the world's own sky, so this works on a photograph and on a drawn landscape
+   alike. Painted above the card's own content (the card is the only child, so
+   inset:0 matches its box) and inside the same rounded corners. */
+.trailcard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: var(--r-card);
+  background: var(--w-chrome, var(--pink-cream));
+  opacity: var(--haze, 0);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-slow) var(--ease-calm),
+    background var(--dur-slow) var(--ease-calm);
+}
+
+.trailcard--d1 {
+  --haze: var(--haze-d1);
+}
+
+.trailcard--d2 {
+  --haze: var(--haze-d2);
+}
+
+/* Plants the card in the scene. Over the generated art the drawn path did this
+   implicitly; a photograph gives it nothing to stand on, so cards further up the
+   trail were floating in mid-air. */
+.trailcard--d1::after,
+.trailcard--d2::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 74%;
+  height: 13px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0));
+  pointer-events: none;
 }
 
 /* Only the controls take pointer events. The card body stays transparent to
@@ -361,7 +710,7 @@ button {
 }
 
 .card__body {
-  padding: 18px 22px 22px;
+  padding: var(--card-pad);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -416,22 +765,29 @@ button {
   letter-spacing: 0.4px;
 }
 
+/* Was 26px -- bigger than the gap .card__cta gives its own button below, for
+   no reason tied to the content. Part of trimming the focused card's overall
+   footprint so more of the world's art shows around it, rather than the card
+   just being generously spaced for its own sake. */
 .card__index {
-  margin-top: 26px;
-  font-size: 21px;
+  margin-top: 14px;
+  font-size: var(--card-index);
   font-weight: 600;
   line-height: 1.1;
 }
 
 .card__title {
-  font-size: 27px;
+  font-size: var(--card-title);
   font-weight: 600;
   line-height: 1.18;
   letter-spacing: -0.4px;
 }
 
 .card__cta {
-  margin-top: 18px;
+  margin-top: 14px;
+  /* Height and font untouched -- this is the one thing on the card that's a
+     real tap target, and trimming the card's footprint shouldn't come out of
+     that. */
   height: 54px;
   width: 100%;
   border-radius: var(--r-pill);
@@ -454,8 +810,64 @@ button {
 
 /* Upcoming steps further up the trail. Type is NOT reduced here — the whole
    card is transform-scaled by the trail tier, which shrinks the type with it. */
-.card--mini {
-  box-shadow: 0 8px 20px rgba(123, 58, 34, 0.16);
+/* Cards are anchored by their bottom edge, so a title wrapping onto a second line
+   used to shove the top edge up by 32px the moment you arrived on it. These hold
+   the box at its two-line height whatever the title does, at both depths. */
+.trailcard--d0 .card {
+  min-height: var(--card-h);
+}
+
+.trailcard--d1 .card {
+  min-height: var(--card-d1-h);
+}
+
+/* ---- the two receding depths ----------------------------------------------
+   Each is its own design, not the focused card at a smaller scale. Type sizes are
+   chosen for the width they actually render at. */
+.card--d1 .card__body {
+  padding: 13px 16px 15px;
+}
+
+.card--d1 .card__meta {
+  gap: 7px;
+}
+
+.card--d1 .card__duration {
+  font-size: 13px;
+}
+
+.card--d1 .card__index {
+  margin-top: 12px;
+  font-size: var(--card-d1-index);
+}
+
+.card--d1 .card__title {
+  font-size: var(--card-d1-title);
+  letter-spacing: -0.2px;
+  /* Two lines then ellipsis: a wrapped six-line title at this width reads as a
+     block of grey, not as a heading. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card--d1 .card__badge {
+  font-size: 12px;
+  padding: 3px 9px;
+}
+
+.card--d2 .card__body {
+  padding: 9px 12px;
+}
+
+.card--d2 .card__meta {
+  gap: 6px;
+}
+
+.card--d2 .card__index {
+  margin-top: 0;
+  font-size: var(--card-d1-index);
 }
 
 /* ==========================================================================
@@ -472,16 +884,17 @@ button {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  /* No radius, no shadow, no blur -- a raised, frosted card read as a UI
+     panel sitting on top of the scene, which is exactly what the top bar's
+     own "art runs edge to edge" move was getting away from. This is meant to
+     be the art's own fade into its caption, flush with the bottom edge, not
+     a sheet floating above it. */
   background: linear-gradient(
     180deg,
     rgba(250, 222, 216, 0.9) 0%,
     rgba(251, 229, 225, 0.98) 46%,
     var(--pink-bg) 100%
   );
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-sheet);
   /* background and color are set inline from the current world palette, so the
      banner stays part of the landscape instead of a pink strip under a green
      world. Hover therefore has to be a filter, not a background swap. */
@@ -492,28 +905,36 @@ button {
   filter: brightness(1.035);
 }
 
-.sheet__line {
-  font-size: 22px;
-  font-weight: 500;
-}
-
-.sheet__line b {
-  font-weight: 700;
-}
-
-.sheet__trail {
-  font-size: 25px;
-  font-weight: 700;
-}
-
+/* Raised from a muted 0.62 caption to something that actually reads as "tap
+   here": the whole sheet has always been the button, but at the old opacity
+   and with no link-like cue on it, this line looked like a secondary label
+   rather than the one thing worth pressing. The arrow and the hover
+   underline are the same "this goes somewhere" signal text links use
+   everywhere else on the web -- there was nothing here borrowing it before. */
 .sheet__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
   /* Inherits the palette-derived ink rather than a fixed terracotta. */
   color: currentColor;
-  opacity: 0.62;
+  opacity: 0.85;
+  transition: text-decoration-color var(--dur-fast) var(--ease-calm);
+}
+
+.sheet__hint svg {
+  flex: none;
+}
+
+.sheet:hover .sheet__hint,
+.sheet:focus-visible .sheet__hint {
+  text-decoration-color: currentColor;
 }
 
 /* ==========================================================================
@@ -681,6 +1102,7 @@ button {
    ========================================================================== */
 
 .myway {
+  margin-top: 30px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
@@ -935,12 +1357,84 @@ button {
   transform: scale(1.06);
 }
 
+/* The one currently on offer below, not yet confirmed. A ring rather than
+   just full opacity -- "on" already means full opacity for a topic you've
+   reached, and picking an untouched one needed to look different from that,
+   not like it had secretly been visited. */
+.prog__orb--picked {
+  opacity: 1;
+  transform: scale(1.06);
+  box-shadow: 0 0 0 3px var(--terracotta);
+}
+
 /* The island's landmass sits low and inset in its viewBox, so zoom past the
    margins and lift it to centre the land inside the circular crop. */
 .prog__orb > svg,
-.panel__orbs > span > svg {
+.panel__orbs > span > svg,
+.drawer__worldart > svg {
   transform: scale(1.9) translateY(-11%);
   transform-origin: 50% 50%;
+}
+
+/* The choice a tap on an orb opens -- see the comment in ProgressScreen.tsx.
+   Same panel language as the rest of this screen, but with its own CTA
+   rather than being tappable as a whole: "cancel" and "go" both need to be
+   deliberate, unlike the single-purpose panels around it. */
+.orbconfirm {
+  margin-top: 18px;
+  padding: 18px 22px;
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: home-rise var(--dur-mid) var(--ease-calm) both;
+}
+
+.orbconfirm__art {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.orbconfirm__art svg {
+  transform: scale(1.9) translateY(-11%);
+  transform-origin: 50% 50%;
+}
+
+.orbconfirm__text {
+  min-width: 0;
+  flex: 1;
+}
+
+.orbconfirm__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.orbconfirm__title {
+  display: block;
+  margin-top: 2px;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .orbconfirm {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbconfirm {
+    animation: none;
+  }
 }
 
 .prog__cols {
@@ -1046,7 +1540,10 @@ button {
   position: absolute;
   inset: 0;
   z-index: 90;
-  background: var(--terracotta);
+  /* The base colour under the artwork and the scrim. Hardcoded terracotta here is
+     what kept every step page brown even after the scrim was world-tinted -- with
+     the art at 16% opacity, this and the scrim are what you actually see. */
+  background: var(--step-base, var(--terracotta));
   color: #fff;
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -1061,7 +1558,30 @@ button {
   filter: saturate(0.5) blur(4px);
 }
 
-/* Scrim over the art so the brief and checklist stay clearly legible. */
+/* On a screen whose copy carries its own backing (.photopanel), the artwork does
+   not need to be dimmed to 16% to stay out of the text's way -- so let the world's
+   photograph actually be seen. The header sits outside the panel, so it gets the
+   gradient scrim below instead. */
+.step__art--photo {
+  opacity: 1;
+  filter: none;
+}
+
+.step--photo::before {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.12) 22%,
+    rgba(0, 0, 0, 0.12) 78%,
+    rgba(0, 0, 0, 0.34) 100%
+  );
+}
+
+/* Scrim over the art so the brief and checklist stay clearly legible. Its colours
+   come from custom properties the screen sets inline from its own world's palette
+   -- hardcoded terracotta here meant every step page was brown regardless of which
+   world it belonged to, and since this sits over artwork dimmed to 16% it was the
+   thing actually setting the page's colour. Fallbacks keep the original tone. */
 .step::before {
   content: '';
   position: absolute;
@@ -1070,9 +1590,9 @@ button {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(123, 58, 34, 0.5) 0%,
-    rgba(138, 69, 39, 0.32) 40%,
-    rgba(123, 58, 34, 0.6) 100%
+    var(--step-wash-a, rgba(123, 58, 34, 0.5)) 0%,
+    var(--step-wash-b, rgba(138, 69, 39, 0.32)) 40%,
+    var(--step-wash-c, rgba(123, 58, 34, 0.6)) 100%
   );
 }
 
@@ -2228,7 +2748,14 @@ button {
     box-shadow var(--dur-fast) var(--ease-calm);
 }
 
-.res__item:hover {
+/* Rendered as <a> when the item has an href and as a plain <div> when it does
+   not, so neither may rely on the button reset. */
+.res__item {
+  text-decoration: none;
+  font: inherit;
+}
+
+a.res__item:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 26px rgba(123, 58, 34, 0.14);
 }
@@ -2250,7 +2777,7 @@ a.res__item {
 
 /* The support cards carry a handle chip under the two text lines. `code` is
    inline by default, so it needs a block box to take a top margin. */
-.res__grid .res__item span > h4 + p + code {
+.res__grid .res__item span > :is(h3, h4) + p + code {
   display: inline-block;
   margin-top: 8px;
 }
@@ -2259,6 +2786,7 @@ a.res__item {
   flex: none;
 }
 
+.res__item h3,
 .res__item h4 {
   font-size: 21px;
   font-weight: 700;
@@ -2388,6 +2916,19 @@ a.res__item {
   outline: none;
 }
 
+/* .panel is --pink-soft, and .field was transparent -- the same colour on
+   both sides, so a textarea had no visible edge until you actually clicked
+   into it. --pink-cream is one step lighter than both .panel and the page
+   behind it, so this reads as an inset surface lifted out of the card rather
+   than a new colour introduced just for this box. Mirrors .field--onDark's
+   own padding/radius shape below, in light-mode colours. */
+.panel .field {
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: var(--r-card);
+  background: var(--pink-cream);
+}
+
 .field--onDark {
   margin-top: 10px;
   padding: 12px 14px;
@@ -2399,6 +2940,104 @@ a.res__item {
 
 .field--onDark::placeholder {
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* Same muted single line as .empty, just without its 48px top/bottom padding
+   -- that spacing is tuned for "the only thing on an otherwise empty screen",
+   which one collapsed accordion section among ten is not. */
+.empty--tight {
+  padding: 4px 0 18px;
+}
+
+/* ==========================================================================
+   My notes -- one collapsible section per topic rather than a single
+   general-purpose textarea, so notes land next to the world they're about.
+   ========================================================================== */
+
+.notelist {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notesection {
+  border-radius: var(--r-card);
+  background: var(--pink-soft);
+  overflow: hidden;
+}
+
+.notesection__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  text-align: left;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--terracotta-deep);
+}
+
+.notesection__dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.notesection__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.notesection__count {
+  flex: none;
+  padding: 3px 11px;
+  border-radius: var(--r-pill);
+  background: rgba(156, 82, 54, 0.14);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.notesection__chev {
+  flex: none;
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.notesection__chev--open {
+  transform: rotate(180deg);
+}
+
+/* The grid-template-rows 0fr/1fr trick: a height no other property can
+   express (0 to "however tall the notes and compose box turn out to be")
+   made transitionable by animating the row track instead of the box itself.
+   The inner wrapper is what actually clips -- see its own comment. */
+.notesection__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-mid) var(--ease-calm);
+}
+
+.notesection__body--open {
+  grid-template-rows: 1fr;
+}
+
+/* min-height: 0 overrides a grid item's default min-height: auto (== its own
+   content height), which would otherwise refuse to shrink below that no
+   matter how small the row track above asks it to be. */
+.notesection__inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 22px;
+}
+
+.notesection__inner > .list {
+  margin-top: 0;
+}
+
+.notesection__compose {
+  margin: 18px 0 22px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2438,7 +3077,11 @@ a.res__item {
   position: absolute;
   inset: 0;
   z-index: 1;
-  opacity: 0.72;
+  /* Only a light tint now, to settle the photograph into the world's colour.
+     Legibility is handled by .photopanel instead: washing the whole screen hard
+     enough for white text (0.75 measured) flattened the picture into a plain
+     brown rectangle, which defeated the point of having a photo at all. */
+  opacity: 0.28;
   pointer-events: none;
 }
 

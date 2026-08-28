@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Landscape } from './landscapes';
 
 /* Hand-painted-style canyon backdrop for the Learn screen, composed for a wide
@@ -180,7 +181,7 @@ const AGAVE_BLADES = [-74, -52, -30, -8, 14, 36, 58];
 
 /* -------------------------------------------------------------------------- */
 
-export default function TrailScape({
+function TrailScape({
   palette: p,
   className,
 }: {
@@ -410,3 +411,8 @@ export default function TrailScape({
     </svg>
   );
 }
+
+/* Several hundred SVG paths. The Learn screen re-renders on every animation
+   frame while scrolling but only hands over a new `palette` when the blend
+   quantum changes, so memo skips nearly all of that repaint work. */
+export default memo(TrailScape);

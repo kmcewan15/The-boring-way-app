@@ -94,8 +94,89 @@ and `WORLD_BOUNDARIES` marks the global indices where a new world begins. Becaus
 the quiz is the last entry of each topic, a boundary always falls **just after a
 quiz**, which is what makes the checkpoint close out the world.
 
+### One step per scroll
+
+The rail's own wheel scrolling is switched off. `LearnScreen` listens for `wheel`
+on the whole stage (`passive: false`), reads only the **direction**, and snaps to
+the neighbouring step with native smooth scrolling. One scroll moves one step, and
+nothing moves when you are not scrolling.
+
+**One scroll, one step.** The unit is the *gesture*, not the event and not the
+distance: a gesture yields exactly one step however many events it contains or how
+far they add up to, and the next step needs a new gesture.
+
+| Gate | Job |
+| --- | --- |
+| `IDLE_MS` (180ms) | Silence this long ends a gesture, so the next event starts a fresh one. |
+| `NEW_PUSH_DELTA` (90px) | Momentum decays, so a late event still this large is not momentum — it is another push. Without it, spinning a mouse wheel reads as one long gesture and stalls on one step. |
+| `SNAP_PAUSE_MS` (220ms) | The wheel is ignored outright after a step. Long enough to outlast the loud part of a flick, so a hard one is still a single scroll. Also caps a spun mouse wheel at ~4 steps/second. |
+| `RESYNC_IDLE_MS` (900ms) | How long the rail must be untouched before its position is believed over `parked`. |
+
+Order matters in that handler: **the settle check must come before re-arming.** With
+it the other way round, the big events still arriving from the burst that just
+stepped re-armed the gesture that had already spent itself, and one hard flick
+stepped twice.
+
+Getting here took several wrong turns, all the same mistake — trying to identify a
+gesture from one signal:
+
+- Gating on *elapsed time* alone: a flick's momentum walked off down the trail on
+  its own, well after the fingers had left.
+- Gating on the *gap* between events: a sustained drag never goes quiet, so it
+  stuck on a single step.
+- Gating on *accumulated distance*: a hard flick travelled several steps, because
+  momentum really does cover that distance.
+
+A gesture needs both a quiet-period test and a magnitude test to be pinned down.
+
+Known behaviour: a **sustained, gentle, unbroken drag** advances one step and then
+holds until you let up for `IDLE_MS`. That is the same rule working as intended —
+one scroll, one step — not a stall.
+
+`RESYNC_IDLE_MS` exists only to recover if something outside this component ever
+scrolls the rail. It must not be eager: during a run of quick steps the rail
+deliberately trails the target, and reading it then **walked the trail backwards**
+(`…15, 16, 15, 16`).
+
+Other details:
+
+- Targets are always `parked.current ± 1`, so a skip is impossible by
+  construction rather than by tuning. `parked` is re-synced from the rail in the
+  scroll read whenever the rail has come to rest on a page and no snap is in
+  flight, so anything that moves it behind our back self-corrects.
+- **Both gates are timestamps, not flags or pending callbacks.** Nothing has to
+  fire to clear them; time passing is enough. Two earlier versions froze
+  permanently because clearing the lock depended on something running — first an
+  animation frame, then a timer — and when that something didn't run, the trail
+  was dead until a reload. A timestamp cannot wedge.
+- A one-step move is native `scrollTo({ behavior: 'smooth' })`. It still emits
+  scroll events the whole way, which is what keeps the palette morph continuous,
+  and there is no tween of ours left to stall.
+- A move that lands in a **different world** uses `behavior: 'auto'` instead, so
+  it cuts rather than glides. Picking topic 8 from topic 1 used to slide through
+  33 pages and six world crossings, firing an arrival banner and rebuilding the
+  landscape at each one. There is only one scroll event, and it lands exactly on
+  the target, so `scrollT` and `parked` agree without the intermediate stream.
+- `ctrl`+wheel is left alone so browser pinch-zoom still works, and
+  sideways-dominant events are ignored.
+- The listener is on the whole `.trail` section, not the rail: the caption banner
+  and the focused card's button sit above the rail and would otherwise swallow the
+  wheel. Overlays (step view, quiz, all-topics) are siblings of `.trail`, so they
+  keep their own native scrolling.
+
+**The scroll read must reschedule, not bail out.** It coalesces to one read per
+frame by cancelling the pending frame and queueing a fresh one. An earlier version
+returned early while a read was pending, which dropped the *final* events of a
+snap — and since no further event was coming, `scrollT` stayed stuck on a halfway
+value for good. The rail was in the right place but the cards, palette and
+parallax were frozen. The last event must always win. For the same reason its
+cleanup nulls the frame handle rather than only cancelling it: StrictMode mounts,
+cleans up, then mounts again, and a stale handle made every later scroll look like
+one was already pending.
+
 Everything visual is driven off `scrollT` — the *fractional* scroll position in
-steps — so the transitions move with the scroll rather than snapping per step:
+steps — so the transitions still move continuously *during* that glide rather
+than cutting between steps:
 
 | Effect | How it is driven |
 | --- | --- |
@@ -117,9 +198,9 @@ Things worth knowing if you edit this:
 - Card bodies must stay `pointer-events: none` (only the buttons opt back in), or
   the card — which covers most of the stage — swallows wheel events and the trail
   stops scrolling.
-- The rail uses `scroll-snap-type: y proximity`, **not** `mandatory`. Mandatory
-  snapping yanks a whole step per wheel tick, which turns the colour morph into a
-  jump.
+- The rail has `scroll-snap-type: none`. Stepping is owned by the JS tween, which
+  always lands exactly on a page, so CSS snapping has nothing left to correct —
+  and it would fight the tween, re-snapping on every frame the tween writes.
 - The blend is quantised to 5% steps and memoised. Without that, every scroll
   event rebuilds the palette and repaints several hundred SVG paths.
 - The palette pair is taken from either side of the boundary, not from
@@ -153,16 +234,30 @@ for real images if you have them.
 - [FloatingIsland.tsx](src/art/FloatingIsland.tsx) — isometric island in seven
   biomes, with `BIOME_PALETTES` exported so the UI can tint itself to match.
 
+### images/
+
+[images/](images/) is the static root: `publicDir: 'images'` in
+[vite.config.ts](vite.config.ts) points Vite at it, so a file there is served at
+`/its-name` with no import. It holds the three world backdrops the trail loads as
+`photo` (`*.webp`) and the step demo videos in `images/demos/`, served at
+`/demos/<name>.mp4`. Drop new static assets here.
+
+There is no `public/` folder. Vite reads only one static root, and this is it, so
+a file left in `public/` is silently never served. The full-size masters the webp
+files are exported from live in [art-source/](art-source/), which is not served.
+
+The artwork *in* the UI is separate: the components above draw it inline as SVG.
+
 ## State
 
 Progress lives in [useApp.tsx](src/state/useApp.tsx) and persists to
-`localStorage` under `boring-way:v2` — completed step ids, bookmarks, notes, and a
+`localStorage` under `boring-way:v4` — completed step ids, bookmarks, notes, and a
 cursor of `{ topic, step }`. There is no backend, so progress is per-browser.
 
 Clear your progress from the browser console:
 
 ```js
-localStorage.removeItem('boring-way:v2');
+localStorage.removeItem('boring-way:v4');
 ```
 
 ## End-of-world quizzes

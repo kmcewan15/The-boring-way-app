@@ -59,6 +59,12 @@ interface AppState {
   topicQuizzes: Record<number, TopicQuizResult>;
   saveTopicQuiz: (topicNumber: number, r: Omit<TopicQuizResult, 'at'>) => void;
 
+  /** Consecutive days (today or yesterday back through an unbroken run) with at
+      least one step completed. Stays alive through "today" even before today
+      has any activity of its own, so it survives the whole day rather than
+      dropping to zero the moment the calendar rolls over. */
+  streak: number;
+
   /** Derived view of where the learner currently is. */
   current: {
     topic: ReturnType<typeof topicByNumber>;
@@ -83,6 +89,11 @@ interface Persisted {
   bookmarks: string[];
   notes: Note[];
   topicQuizzes: Record<number, TopicQuizResult>;
+  /** One entry per calendar day (local, "YYYY-MM-DD") that had a completed
+      step, deduplicated. The streak is derived from this rather than stored
+      as its own number, so it can't drift out of sync with the days it's
+      supposedly counting. */
+  activeDays: string[];
 }
 
 const DEFAULTS: Persisted = {
@@ -91,7 +102,32 @@ const DEFAULTS: Persisted = {
   bookmarks: [],
   notes: [],
   topicQuizzes: {},
+  activeDays: [],
 };
+
+/** Local calendar day, not UTC -- a streak that flips at UTC midnight would
+    break mid-evening for anyone west of Greenwich. */
+function dayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+    d.getDate(),
+  ).padStart(2, '0')}`;
+}
+
+/** Walks back from today one day at a time counting hits. Today itself is
+    allowed to be a miss without breaking the streak -- the day isn't over --
+    so the walk starts at yesterday if today has nothing yet. */
+function computeStreak(activeDays: string[]): number {
+  if (activeDays.length === 0) return 0;
+  const set = new Set(activeDays);
+  const cursor = new Date();
+  if (!set.has(dayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  let streak = 0;
+  while (set.has(dayKey(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
 
 function load(): Persisted {
   try {
@@ -132,7 +168,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const complete = useCallback((id: string) => {
-    setState((s) => (s.completed.includes(id) ? s : { ...s, completed: [...s.completed, id] }));
+    setState((s) => {
+      if (s.completed.includes(id)) return s;
+      const today = dayKey(new Date());
+      const activeDays = s.activeDays.includes(today) ? s.activeDays : [...s.activeDays, today];
+      return { ...s, completed: [...s.completed, id], activeDays };
+    });
   }, []);
 
   const toggleBookmark = useCallback((id: string) => {
@@ -193,6 +234,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addNote,
       topicQuizzes: state.topicQuizzes,
       saveTopicQuiz,
+      streak: computeStreak(state.activeDays),
       current: {
         topic,
         steps: topic.steps,

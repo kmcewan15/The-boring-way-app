@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import FloatingIsland from '../art/FloatingIsland';
+import Particles from '../art/Particles';
 import TrailScape from '../art/TrailScape';
-import { LANDSCAPES } from '../art/landscapes';
-import { TOTAL_TOPICS, type Topic } from '../data/curriculum';
+import { LANDSCAPES, withAlpha } from '../art/landscapes';
+import { TOPICS, TOTAL_TOPICS, type Topic } from '../data/curriculum';
 import { quizForTopic, scoreTopicQuiz, type TopicQuizOutcome } from '../data/quiz';
 import { useApp } from '../state/useApp';
 import Confetti from './Confetti';
@@ -26,8 +28,21 @@ export default function TopicQuiz({
 }) {
   const { topicQuizzes } = useApp();
   const previous = topicQuizzes[topic.number];
+  /* Counted from the results rather than passed in, so the number is right the
+     moment this render happens -- saveTopicQuiz and setOutcome land in the same
+     batch, so by the time the result screen paints this topic is already in. */
+  const worldsDone = Object.values(topicQuizzes).filter((r) => r.passed).length;
+  const nextTopic = TOPICS.find((t) => t.number === topic.number + 1) ?? null;
   const questions = quizForTopic(topic.number);
   const palette = LANDSCAPES[topic.biome];
+  /* The page's colour actually comes from the scrim over the artwork, so hand it
+     this world's tones as custom properties -- see .step::before. */
+  const wash = {
+    '--step-wash-a': withAlpha(palette.foreDeep, 0.5),
+    '--step-wash-b': withAlpha(palette.fore, 0.32),
+    '--step-wash-c': withAlpha(palette.foreDeep, 0.6),
+    '--step-base': palette.fore,
+  } as CSSProperties;
 
   const [started, setStarted] = useState(false);
   const [at, setAt] = useState(0);
@@ -64,9 +79,26 @@ export default function TopicQuiz({
   const finished = outcome !== null && topic.number === TOTAL_TOPICS;
 
   return (
-    <div className="step" role="dialog" aria-modal="true" aria-label={`Topic ${topic.number} quiz`}>
-      <div className="step__art" aria-hidden="true">
+    <div
+      className={`step${topic.photo ? ' step--photo' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Topic ${topic.number} quiz`}
+      style={wash}
+    >
+      <div className={`step__art${topic.photo ? ' step__art--photo' : ''}`} aria-hidden="true">
         <TrailScape palette={palette} />
+        {/* Same photo as its world on the trail, so arriving at the checkpoint
+            does not change scenery. */}
+        {topic.photo && (
+          <div
+            className="trail__photo trail__photo--soft"
+          >
+            {/* Top of the picture: the quiz is the world's last entry, so it stands
+                where the trail's pan has already arrived -- at the waterfall. */}
+            <i style={{ backgroundImage: `url(${topic.photo})`, '--pan': 0 } as CSSProperties} />
+          </div>
+        )}
       </div>
       <div
         className="step__wash"
@@ -74,7 +106,15 @@ export default function TopicQuiz({
         style={{ background: palette.foreDeep }}
       />
 
-      {finished && <Confetti />}
+      <div className="grade grade--step" aria-hidden="true" />
+
+      {finished && outcome?.passed && <Confetti />}
+
+      {/* The world only comes alive once you've actually cleared it -- ambient
+          motes sit out during the questions themselves, same as a regular
+          reading step, and only join once there's something worth
+          celebrating. */}
+      {outcome?.passed && <Particles biome={topic.biome} palette={palette} />}
 
       <header className="step__top">
         <button type="button" className="card__action" onClick={onClose} aria-label="Close quiz">
@@ -86,7 +126,7 @@ export default function TopicQuiz({
       </header>
 
       <div className="step__scroll">
-        <div className="step__inner">
+        <div className={`step__inner${topic.photo ? ' photopanel' : ''}`}>
           {/* ------------------------------------------------------- intro */}
           {!started && !outcome && (
             <>
@@ -191,16 +231,27 @@ export default function TopicQuiz({
             </>
           )}
 
-          {/* ---------------------------------------------------- result */}
-          {outcome && (
-            <>
+          {/* ------------------------------------------- result: passed */}
+          {outcome && outcome.passed && (
+            <div className="worldcomplete">
+              {/* A lantern-glow beat behind the one line that matters, same
+                  language as the button on the trailhead screen -- this is
+                  the other bookend of that gesture. */}
+              <div
+                className="worldcomplete__glow"
+                aria-hidden="true"
+                style={{ '--wc-glow': withAlpha(palette.plantLit, 0.6) } as CSSProperties}
+              />
+              {/* Clearing the last world closes the course, so it gets the
+                  finish line before the per-topic wrap-up. Only on a pass:
+                  "You are AI ready" over a failed checkpoint reads as mockery. */}
               {finished && (
                 <div className="finale">
                   <span className="finale__badge" aria-hidden="true">
                     <IconSparkles size={44} />
                   </span>
-                  {/* Not a heading: the score below is this view's h1, and a
-                      heading here would put an h2 above it. */}
+                  {/* Not a heading: the topic title below is this view's h1, and
+                      a heading here would put an h2 above it. */}
                   <p className="finale__h">Congratulations</p>
                   <p className="finale__p">You are AI ready.</p>
                 </div>
@@ -208,15 +259,93 @@ export default function TopicQuiz({
 
               <div className="step__kind">
                 <IconVerify size={22} />
-                {outcome.passed ? 'Passed' : 'Worth another look'}
+                Topic {topic.number} complete
+              </div>
+              <h1 className="step__title">{topic.title}</h1>
+              <p className="step__brief">
+                {outcome.score} out of {outcome.total}
+                {outcome.missed.length === 0 ? '. ' : ', with one to look at again. '}
+                {worldsDone === TOPICS.length
+                  ? 'That is the whole trail walked.'
+                  : `${worldsDone} of ${TOPICS.length} worlds behind you.`}
+              </p>
+
+              {/* The payoff for closing a world: the next one, named and drawn.
+                  Ten of these are what give a five-hour curriculum chapters.
+                  Coloured from the world just finished, not a fixed green --
+                  it used to always be jungle-tinted no matter which of the
+                  eight biomes you'd actually just walked out of. */}
+              {nextTopic ? (
+                <div
+                  className="sealed"
+                  style={
+                    {
+                      '--seal-bg': withAlpha(palette.foreDeep, 0.36),
+                      '--seal-ring': withAlpha(palette.plantLit, 0.32),
+                      '--seal-label': palette.plantLit,
+                    } as CSSProperties
+                  }
+                >
+                  <div className="sealed__art" aria-hidden="true">
+                    <FloatingIsland biome={nextTopic.biome} />
+                  </div>
+                  <div className="sealed__text">
+                    <span className="sealed__label">Next</span>
+                    <strong className="sealed__title">
+                      Topic {nextTopic.number} · {nextTopic.title}
+                    </strong>
+                    <p className="sealed__goal">{nextTopic.goal}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="verify">
+                  <h3 className="verify__h">The end of the trail</h3>
+                  <p className="verify__p">
+                    Every world walked and every checkpoint passed. Nothing left but the
+                    doing.
+                  </p>
+                </div>
+              )}
+
+              {outcome.missed.map(({ q, given }) => (
+                <div className="verify" key={q.id}>
+                  <h3 className="verify__h">{q.question}</h3>
+                  {given !== null && (
+                    <p className="qreview__given">You chose: {q.options[given]}</p>
+                  )}
+                  <p className="verify__p">Correct: {q.options[q.answer]}</p>
+                  <p className="verify__hint">{q.why}</p>
+                </div>
+              ))}
+
+              <div className="quiz__nav">
+                <button type="button" className="step__done step__done--ghost" onClick={begin}>
+                  Take it again
+                </button>
+                <button
+                  type="button"
+                  className="step__done"
+                  style={{ background: palette.sky, color: palette.foreDeep }}
+                  onClick={onNext ?? onClose}
+                >
+                  {nextTopic ? `On to Topic ${nextTopic.number}` : 'Back to the trail'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ------------------------------------------- result: not yet */}
+          {outcome && !outcome.passed && (
+            <>
+              <div className="step__kind">
+                <IconVerify size={22} />
+                Worth another look
               </div>
               <h1 className="step__title">
                 {outcome.score} out of {outcome.total}
               </h1>
               <p className="step__brief">
-                {outcome.missed.length === 0
-                  ? 'All correct. Carry on up the trail.'
-                  : `${outcome.missed.length} to look at again. The steps for this topic are still there if you want another pass.`}
+                {`${outcome.missed.length} to look at again. The steps for this topic are still there if you want another pass.`}
               </p>
 
               {outcome.missed.map(({ q, given }) => (

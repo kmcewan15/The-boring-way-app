@@ -27,7 +27,7 @@ check, and `tsconfig.json` is strict with `noUnusedLocals` and
 ## What this is
 
 A React 18 + TypeScript + Vite single-page app. No router, no backend, no state
-library, no CSS framework — one React context for state, two hand-written
+library, no CSS framework — one React context for state, three hand-written
 stylesheets, and hand-drawn SVG artwork. It is a learning app: ten topics of
 hands-on Claude Code practice, presented as a walk up a trail.
 
@@ -93,7 +93,7 @@ It deliberately does **not** index the topics — Learn already does that.
 out of bounds.** `jumpTo` deliberately clamps to `steps.length` rather than
 `length - 1`, and `advance()` walks last-step → quiz → next topic. Any code
 reading `steps[cursor.step]` must handle `undefined` — see the existing guards in
-`ProgressScreen` and `Sidebar`, which both branch on `cursor.step >= steps.length`
+`ProgressScreen` and `NavDrawer`, which both branch on `cursor.step >= steps.length`
 before using the step.
 
 **Step ids are positional** (`t3s2` = topic 3, step 2), so inserting or
@@ -102,7 +102,7 @@ reordering a step re-points every id after it and orphans saved progress. Bump
 what changed.
 
 **Biomes must differ between adjacent topics.** `TOPIC_META.biome` picks both the
-island and the landscape palette, and there are 7 biomes for 10 topics. Two in a
+island and the landscape palette, and there are 8 biomes for 10 topics. Two in a
 row with the same biome makes the world crossing invisible.
 
 ## Authoring content
@@ -138,10 +138,15 @@ surfaces the question's `why`, so keep `why` genuinely explanatory.
 
 ## Styling
 
-Plain CSS, two files, no preprocessor and no CSS modules. `tokens.css` holds the
+Plain CSS, three files, no preprocessor and no CSS modules. `tokens.css` holds the
 custom properties (palette sampled from the reference app, type scale, radii,
-motion); `global.css` is a single 2,300-line sheet in BEM-ish blocks
+motion); `global.css` is a single ~3,900-line sheet in BEM-ish blocks
 (`.side__brand`, `.navitem--active`) with section-banner comments.
+
+`design.css` (~1,500 lines) is imported **after** `global.css` in `main.tsx`, so it
+wins on equal specificity. It is the design pass's own layer: keep restyling there
+and leave `global.css` as the structural sheet, which is the split that let the
+design and content branches be worked on at the same time.
 
 Colours that change per world are set **inline** from the blended palette, not in
 the stylesheet — a stylesheet `:hover` rule cannot override an inline background,
@@ -150,7 +155,14 @@ which is why hover states on those surfaces use a `brightness` filter instead.
 Contrast targets are documented per surface in the README and are load-bearing;
 if you retune a palette, recheck them.
 
-## assets/
+## Static files
 
-Reference screenshots and working PNGs. Nothing in `src/` imports from it — all
-artwork in the app is inline SVG in `src/art/`.
+`images/` is the static root — `publicDir: 'images'` in `vite.config.ts`, so a
+file there is served at `/its-name`. It holds the three world backdrops
+(`*.webp`, referenced as `photo` in `curriculum.ts`) and the step demo videos in
+`images/demos/`. There is no `public/`; Vite ignores it while `publicDir` points
+elsewhere.
+
+`art-source/` holds the full-size masters the webp files are exported from.
+Nothing in `src/` imports either folder — all in-app artwork is inline SVG in
+`src/art/`.

@@ -132,6 +132,27 @@ export const LANDSCAPES: Record<IslandBiome, Landscape> = {
     plantLit: '#58A0B0',
     bloom: '#E4F6FA',
   },
+  /* The ocean world: turquoise shallows, deep blue water, a sun-bleached timber
+     walkway and warm lantern light. Its ink and card tones are deliberately deeper
+     than glacier's so white type clears AA on them by a comfortable margin. */
+  ocean: {
+    sky: '#E4F3FB',
+    mesaFar: '#9FD3E8',
+    mesaFarShade: '#7FBFDA',
+    mesaMid: '#4E9EC4',
+    mesaMidShade: '#3B87AD',
+    ridge: '#4592B8',
+    basin: '#D7EDF7',
+    wallLeft: '#2F7DA0',
+    wallRight: '#267093',
+    fore: '#1C5A7A',
+    foreDeep: '#124459',
+    path: '#F5E2BC',
+    pathShade: '#CBA875',
+    plant: '#2E7D5B',
+    plantLit: '#5FB58A',
+    bloom: '#FCE7B8',
+  },
   blossom: {
     sky: '#FBEDF0',
     mesaFar: '#F0B3C6',
@@ -162,7 +183,7 @@ function channels(hex: string): [number, number, number] {
   ];
 }
 
-function mixHex(a: string, b: string, t: number): string {
+export function mixHex(a: string, b: string, t: number): string {
   const [ar, ag, ab] = channels(a);
   const [br, bg, bb] = channels(b);
   const to = (x: number, y: number) =>

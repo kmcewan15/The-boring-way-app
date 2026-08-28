@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import type { IslandBiome } from '../art/FloatingIsland';
 import TrailScape from '../art/TrailScape';
-import { LANDSCAPES } from '../art/landscapes';
+import type { Landscape } from '../art/landscapes';
+import { LANDSCAPES, withAlpha } from '../art/landscapes';
 import type { Step } from '../data/curriculum';
+import { topicByNumber } from '../data/curriculum';
 import { useApp } from '../state/useApp';
 import { StepKindIcon } from './StepCard';
 import Rich from './Rich';
@@ -24,7 +26,7 @@ function clock(total: number) {
 }
 
 /** Compact timebox for the step's suggested duration. */
-function Timebox({ minutes }: { minutes: number }) {
+function Timebox({ minutes, palette }: { minutes: number; palette: Landscape }) {
   const [left, setLeft] = useState(minutes * 60);
   const [running, setRunning] = useState(false);
 
@@ -50,13 +52,14 @@ function Timebox({ minutes }: { minutes: number }) {
       <button
         type="button"
         className="timebox__btn"
+        style={{ background: palette.sky, color: palette.foreDeep }}
         onClick={() => setRunning((r) => !r)}
         aria-label={running ? 'Pause timebox' : 'Start timebox'}
       >
         {running ? <IconPause size={22} /> : <IconPlay size={22} />}
       </button>
       <div className="timebox__meter" aria-hidden="true">
-        <i style={{ width: `${pct}%` }} />
+        <i style={{ width: `${pct}%`, background: palette.sky }} />
       </div>
       <span className="timebox__time">{clock(left)}</span>
     </div>
@@ -83,6 +86,22 @@ export default function StepView({
   const { isCompleted } = useApp();
   const done = isCompleted(step.id);
 
+  const palette = LANDSCAPES[biome];
+  const photo = topicByNumber(topicNumber).photo;
+
+  /* Show the same stretch of path this step occupies on the trail, so opening a
+     step feels like stopping where you were standing rather than cutting to a
+     different view of the world. 0 at the first step, 1 at the last. */
+  const pan = 1 - index / Math.max(1, total);
+  /* The page's colour actually comes from the scrim over the artwork, so hand it
+     this world's tones as custom properties -- see .step::before. */
+  const wash = {
+    '--step-wash-a': withAlpha(palette.foreDeep, 0.5),
+    '--step-wash-b': withAlpha(palette.fore, 0.32),
+    '--step-wash-c': withAlpha(palette.foreDeep, 0.6),
+    '--step-base': palette.fore,
+  } as CSSProperties;
+
   const [ticked, setTicked] = useState<boolean[]>(() => step.tasks.map(() => false));
   const [note, setNote] = useState('');
 
@@ -100,10 +119,25 @@ export default function StepView({
   }, [onClose]);
 
   return (
-    <div className="step" role="dialog" aria-modal="true" aria-label={step.title}>
-      <div className="step__art" aria-hidden="true">
-        <TrailScape palette={LANDSCAPES[biome]} />
+    <div
+      className={`step${photo ? ' step--photo' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={step.title}
+      style={wash}
+    >
+      <div className={`step__art${photo ? ' step__art--photo' : ''}`} aria-hidden="true">
+        <TrailScape palette={palette} />
+        {photo && (
+          <div
+            className="trail__photo trail__photo--soft"
+          >
+            <i style={{ backgroundImage: `url(${photo})`, '--pan': pan } as CSSProperties} />
+          </div>
+        )}
       </div>
+
+      <div className="grade grade--step" aria-hidden="true" />
 
       <header className="step__top">
         <button
@@ -117,11 +151,11 @@ export default function StepView({
         <span className="step__eyebrow">
           Topic {topicNumber} · Step {index + 1} of {total}
         </span>
-        <Timebox minutes={step.minutes} />
+        <Timebox minutes={step.minutes} palette={palette} />
       </header>
 
       <div className="step__scroll">
-        <div className="step__inner">
+        <div className={`step__inner${photo ? ' photopanel' : ''}`}>
           <div className="step__kind">
             <StepKindIcon kind={step.kind} size={22} />
             {KIND_LABEL[step.kind]}
@@ -188,7 +222,9 @@ export default function StepView({
 
       <CommandHints key={step.id} topicNumber={topicNumber} stepId={step.id} />
 
-      <footer className="step__foot">
+      {/* The footer colour is set inline so it tracks the current world, which a
+          stylesheet rule cannot do -- see the fixed fallback in global.css. */}
+      <footer className="step__foot" style={{ background: withAlpha(palette.foreDeep, 0.62) }}>
         {/* Omitted entirely, not left empty: an empty flex item still takes the
             footer gap and pushes the button off centre. */}
         {step.tasks.length > 0 && (
@@ -199,6 +235,7 @@ export default function StepView({
         <button
           type="button"
           className="step__done"
+          style={{ background: palette.sky, color: palette.foreDeep }}
           onClick={() => onComplete(note.trim() || undefined)}
         >
           {done ? 'Next step' : 'Mark complete and continue'}
