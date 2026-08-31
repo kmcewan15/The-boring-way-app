@@ -541,6 +541,21 @@ export default function LearnScreen({
     return fn;
   };
 
+  /* Same caching, for "take me to that one". A card further up the trail scrolls
+     the rail to itself rather than opening straight away: arriving is what the
+     click asked for, and the card's own button is then right there to open it.
+     Going through goTo rather than jumping the rail keeps `parked` honest, so
+     the next scroll still moves one step from where you actually are. */
+  const jumpers = useRef(new Map<number, () => void>());
+  const jumpFor = (i: number) => {
+    let fn = jumpers.current.get(i);
+    if (!fn) {
+      fn = () => goTo(i);
+      jumpers.current.set(i, fn);
+    }
+    return fn;
+  };
+
   const from = Math.max(0, focus - WINDOW);
   const to = Math.min(LAST, focus + WINDOW);
   const visible = JOURNEY.slice(from, to + 1);
@@ -749,12 +764,16 @@ export default function LearnScreen({
           const offset = j.globalIndex - focus;
           const tier = tierFor(offset);
           const isFocused = offset === 0;
+          /* Tiers -2, -1 and 3 are mounted at opacity 0, so they are on the trail
+             but not on screen. Only a card you can actually see is worth offering
+             as somewhere to go. */
+          const navigable = !isFocused && tier.opacity > 0;
           return (
             <div
               key={entryKey(j)}
               className={`trailcard trailcard--d${tier.depth}${
                 isFocused ? ' trailcard--active' : ''
-              }`}
+              }${tier.opacity === 0 ? ' trailcard--gone' : ''}`}
               style={{
                 bottom: `${tier.bottom}%`,
                 left: `${tier.left}%`,
@@ -765,8 +784,24 @@ export default function LearnScreen({
                 filter: tier.blur ? `blur(${tier.blur}px) saturate(0.85)` : undefined,
                 zIndex: 100 - j.globalIndex,
               }}
-              aria-hidden={!isFocused}
             >
+              {/* Over the card, not around it: the focused card's own controls
+                  live inside it, and wrapping the whole thing in a button would
+                  nest the bookmark and the CTA inside another button. Receded
+                  cards already mark their own <article> aria-hidden, so this is
+                  the only thing here a screen reader is offered. */}
+              {navigable && (
+                <button
+                  type="button"
+                  className="trailcard__goto"
+                  onClick={jumpFor(j.globalIndex)}
+                  aria-label={
+                    j.kind === 'step'
+                      ? `Go to step ${j.indexInTopic + 1} of ${j.topic.steps.length}, ${j.step.title}`
+                      : `Go to the end-of-topic quiz for topic ${j.topic.number}, ${j.topic.title}`
+                  }
+                />
+              )}
               {j.kind === 'step' ? (
                 <StepCard
                   step={j.step}

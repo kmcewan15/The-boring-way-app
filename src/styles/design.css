@@ -1184,7 +1184,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 56px;
   /* Base colour under the art, not just a fallback for a load failure -- the
      art is generated SVG and always paints, but its own sky is this same
      tone, so there is never a seam between "behind the picture" and "the
@@ -1192,12 +1191,31 @@
   background: var(--pink-bg);
 }
 
-/* The exit used to fade the whole screen at once. Now the title and the
-   burger are the two things that don't fade -- they slide to the corners
-   they become once the app shell mounts underneath (the brand text, the nav
-   toggle), so both read as relocating rather than the page simply
-   dissolving. Everything else (art, motes, grain, the hint text) still fades
-   away beneath them. */
+/* The stack. Held here rather than on .home so the art, motes and grain stay
+   absolutely positioned siblings outside the flow, and so one gap scale
+   governs five blocks instead of the single 56px that suited two. */
+.home__col {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 24px;
+  /* Both, and in this order: as a flex item of a centred column this box is
+     fit-content by default, so max-width alone never applied and the whole
+     stack changed width with the length of whichever step title the cursor
+     happened to point at. */
+  width: 100%;
+  max-width: 560px;
+}
+
+/* The exit used to fade the whole screen at once. Now the title and the tagline
+   are the two things that don't fade -- they slide to the places they become
+   once the app shell mounts underneath (the bar's brand text and its tagline),
+   so both read as relocating rather than the page simply dissolving. Everything
+   else -- art, motes, grain, the ring, the card, the stats -- fades away
+   beneath them. */
 .home__art,
 .motes,
 .grade {
@@ -1241,6 +1259,10 @@
      reason. */
   position: relative;
   z-index: 30;
+  /* An h1 now, so the UA's own heading margin has to go: it is the page's
+     title, and the trail and every other screen already have one. The dock
+     measures a live box, so a stray margin would have shifted the landing. */
+  margin: 0;
   text-align: center;
   font-size: 44px;
   font-weight: 700;
@@ -1295,9 +1317,8 @@
 /* Groups the title with its own tagline for the gap between them, not for a
    shared transform -- each docks on its own measured target (see
    HomeScreen.tsx's TAG_DOCK_TOP comment for why), so this is layout only.
-   The 56px gap below still comes from .home itself, between this whole
-   group and .home__enter, exactly as it did when .home__brand was the only
-   thing above the button. */
+   The gap below comes from .home__col, which owns the one gap scale for all
+   five blocks in the stack. */
 .home__lede {
   display: flex;
   flex-direction: column;
@@ -1381,8 +1402,10 @@
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  height: 56px;
-  padding: 0 26px 0 0;
+  height: 58px;
+  /* Even padding again: the 56px hamburger chip used to supply the left inset,
+     so this rule only ever set the right one. */
+  padding: 0 30px;
   border-radius: var(--r-pill);
   font-size: 18px;
   font-weight: 700;
@@ -1417,59 +1440,298 @@
   opacity: 0;
 }
 
-/* The hamburger, now this pill's own leading chip rather than a button of
-   its own -- same 56px cream-and-ink circle, same docked landing in the top
-   bar's corner, just reached by tapping the pill around it instead of a
-   second control beside it. flex:none so the label's own width never
-   squeezes it. */
-.home__start-icon {
+/* Progress, as an arc. The hamburger used to sit in the pill here and did
+   nothing the labelled button did not already do; this says something the
+   button cannot -- how far in you already are -- and is the first thing you
+   read coming back. */
+.home__ring {
   position: relative;
-  z-index: 30;
-  flex: none;
+  display: grid;
+  place-items: center;
+}
+
+.home__ring svg {
+  display: block;
+  /* The arc grows rather than snapping in, once, on arrival. Long and eased,
+     because it is the one number on this screen worth watching arrive. */
+  animation: home-ring var(--dur-slow) var(--ease-calm) 120ms both;
+}
+
+@keyframes home-ring {
+  from {
+    opacity: 0;
+    transform: rotate(-14deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
+/* Absolutely centred over the ring rather than a flex child of it: the SVG is
+   the only thing establishing the box's size, so taking the number out of the
+   flow keeps the ring perfectly round whatever the digits do. */
+.home__ringpct {
+  position: absolute;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Smaller and lighter than the number it follows -- a unit, not a second
+   figure competing with the first. */
+.home__ringpct i {
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.home__status {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--r-pill);
-  /* Background and colour (for the bars below, via currentColor) are inline
-     from HomeScreen.tsx's W_PANEL/W_INK -- the real desert --w-panel/--w-ink
-     the top bar's own hamburger actually uses, not this rule's job to guess
-     at with fixed tokens. */
-  will-change: transform;
-  /* Same tail-fade as the title and tagline above -- rounds to sub-pixel
-     edges slightly differently at 56px than at the bar's real 44px, and
-     fading out first means that never gets a chance to read as a pop. */
-  transition:
-    transform 640ms var(--ease-calm),
-    opacity 140ms var(--ease-calm) 500ms;
+  gap: 12px;
 }
 
-.home--sliding .home__start-icon {
-  opacity: 0;
+.home__statusline {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 
-.home__start-icon i {
-  display: block;
-  width: 22px;
-  height: 2.4px;
-  border-radius: var(--r-pill);
-  /* currentColor, not a fixed token -- rides the chip's own inline colour
-     (W_INK) for free, the same way IconMenu's stroke rides .topbar__menu's
-     colour in the real bar. */
+/* What the course costs, for a first visit, standing where the ring stands
+   for a returning one. Dotted separators between the three figures rather
+   than punctuation in the markup, so a screen reader reads three facts and
+   not one run-on sentence. */
+.home__facts,
+.home__stats {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  animation: home-rise var(--dur-slow) var(--ease-calm) 120ms both;
+}
+
+.home__facts span,
+.home__stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.home__facts span + span::before,
+.home__stats span + span::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  margin-right: 11px;
+  border-radius: 50%;
   background: currentColor;
+  opacity: 0.42;
 }
 
-/* Fades immediately on tap rather than riding the chip's slower 640ms dock --
-   there's no equivalent label waiting for it in the top bar, so it has
-   nothing to animate toward. Gone a beat before the chip and title even start
-   moving reads as "the words were only ever for here", not a race it lost. */
+.home__stats {
+  animation-delay: 380ms;
+}
+
+/* The next thing to do, as a card rather than a line of text: it carries three
+   ranks of information (where, what, how long) and a flat sentence makes the
+   reader pick them apart. Glass over the artwork, matching the reading panes
+   on the trail, so it belongs to this world rather than floating above it. */
+.home__next {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 22px 30px 24px;
+  /* --r-sheet, matching the trail's own reading panes. There is no --r-lg in
+     tokens.css, and an undefined custom property in a shorthand silently
+     leaves the corners square. */
+  border-radius: var(--r-sheet);
+  text-align: center;
+  /* Background is inline, from the desert palette -- see W_PANEL in
+     HomeScreen.tsx for why it cannot come from --w-panel here. */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 14px 34px rgba(60, 25, 15, 0.11);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  animation: home-rise var(--dur-slow) var(--ease-calm) 260ms both;
+}
+
+.home__nextlabel {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--terracotta);
+}
+
+/* Middots live in their own <i>, hidden from the accessibility tree by
+   aria-hidden on the element itself, so a screen reader reads "Next up, topic 7
+   of 10" rather than announcing a dot between each part. */
+.home__nextlabel i,
+.home__nextmeta i {
+  font-style: normal;
+  margin: 0 8px;
+  opacity: 0.5;
+}
+
+.home__nexttitle {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+.home__nextmeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.home__nextmeta svg {
+  flex: none;
+  opacity: 0.85;
+}
+
+/* Short windows. .home has no scroll of its own, so the stack has to fit or it
+   clips: a 1366x768 laptop leaves roughly 640px of viewport once browser chrome
+   is out, against a full-size stack of 588px. Type shrinks here and the dock
+   still lands correctly, because HomeScreen measures the rendered font size
+   rather than assuming 44px -- see scaleFor. */
+@media (max-height: 740px) {
+  .home__col {
+    gap: 22px;
+  }
+
+  /* viewBox is set, so the SVG scales cleanly from CSS alone. */
+  .home__ring svg {
+    width: 76px;
+    height: 76px;
+  }
+
+  .home__ringpct {
+    font-size: 23px;
+  }
+
+  .home__brand {
+    font-size: 38px;
+  }
+
+  .home__next {
+    padding: 18px 26px 20px;
+  }
+
+  .home__nexttitle {
+    font-size: 23px;
+  }
+}
+
+@media (max-height: 620px) {
+  .home__col {
+    gap: 15px;
+  }
+
+  .home__ring svg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .home__ringpct {
+    font-size: 18px;
+  }
+
+  .home__ringpct i {
+    font-size: 11px;
+  }
+
+  .home__brand {
+    font-size: 31px;
+  }
+
+  .home__nexttitle {
+    font-size: 21px;
+  }
+
+  /* First to go: the step count and the streak are a reward for coming back,
+     not something needed to decide what to do next. The ring still carries the
+     same number, and the card still says where you are. */
+  .home__statusline,
+  .home__stats,
+  .home__facts {
+    display: none;
+  }
+}
+
+/* Everything that belongs only to this screen goes at once when you tap
+   through. The title and tagline are the exception -- they dock.
+
+   Two phases, for the same reason .home__enter, .home__brand and .home__subtitle
+   need them (see the comment above .home--entering .home__enter): these blocks
+   arrive on a fill:both animation, which keeps holding opacity:1 forever once
+   finished, and a held animation value outranks a plain declaration. Setting
+   opacity:0 in the same update that cancels the animation is a no-op, so
+   `--entering` only cancels and freezes, and `--sliding` -- a separate commit a
+   frame later -- is what the transition has something to animate from. */
+.home--entering .home__status,
+.home--entering .home__facts,
+.home--entering .home__next,
+.home--entering .home__stats,
+.home--entering .home__ring svg {
+  animation: none;
+}
+
+.home__status,
+.home__facts,
+.home__next,
+.home__stats {
+  transition:
+    opacity var(--dur-mid) var(--ease-calm),
+    transform var(--dur-mid) var(--ease-calm);
+}
+
+.home--sliding .home__status,
+.home--sliding .home__facts,
+.home--sliding .home__next,
+.home--sliding .home__stats {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
 .home__start-label {
   position: relative;
   z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   transition: opacity var(--dur-mid) var(--ease-calm);
+}
+
+/* Nudges forward on hover -- the pill's own scale already says "pressable", so
+   this says which way it takes you. */
+.home__start-label svg {
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.home__start:hover .home__start-label svg,
+.home__start:focus-visible .home__start-label svg {
+  transform: translateX(3px);
 }
 
 .home--entering .home__start-label {
@@ -1479,7 +1741,11 @@
 @media (prefers-reduced-motion: reduce) {
   .home__brand,
   .home__subtitle,
-  .home__enter {
+  .home__enter,
+  .home__ring svg,
+  .home__facts,
+  .home__stats,
+  .home__next {
     animation: none;
   }
 
@@ -1490,8 +1756,12 @@
   .grade,
   .home__start,
   .home__start-fill,
-  .home__start-icon,
-  .home__start-label {
+  .home__start-label,
+  .home__start-label svg,
+  .home--entering .home__status,
+  .home--entering .home__facts,
+  .home--entering .home__next,
+  .home--entering .home__stats {
     transition: none;
   }
 }

@@ -31,6 +31,11 @@
     sans-serif;
 
   /* --- Radii: everything in this app is very round ---------------------- */
+  /* Referenced by the step footer and its scroll inset, and previously defined
+     nowhere, so both silently fell back to 0. index.html sets viewport-fit=cover,
+     which is what makes the env() meaningful on a notched device. */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
   --r-pill: 999px;
   --r-card: 18px;
   --r-sheet: 30px;

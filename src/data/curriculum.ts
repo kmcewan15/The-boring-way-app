@@ -54,8 +54,11 @@ export type Block =
   | { t: 'calc' }
   /** The interactive four-part request builder. Takes no content of its own. */
   | { t: 'builder' }
-  /** A video slot. Renders as a labelled placeholder until `src` is filled in. */
-  | { t: 'video'; title: string; src?: string };
+  /** A recorded demo. `src` is required: a slot with no clip used to render a
+      "coming soon" stub, and dropping the stub would otherwise have made the
+      same block render nothing at all, silently. Requiring it turns an unfilled
+      slot into a build error instead. */
+  | { t: 'video'; title: string; src: string };
 
 export interface Step {
   id: string;
@@ -572,7 +575,6 @@ const STEPS: RawStep[][] = [
           t: 'warn',
           text: 'Asking for a plan first is a fine habit, but it is not a way back. If you only do one thing, keep the backup.',
         },
-        { t: 'video', title: 'Making one small edit and reading the diff' },
       ],
       tasks: [
         'Copy the `handover` folder somewhere as a backup',
@@ -679,7 +681,6 @@ const STEPS: RawStep[][] = [
           t: 'why',
           text: 'Whether something passed is the highest-stakes cheap check there is. Most likely to be taken on trust, most expensive to get wrong, and the fix is nothing more than looking.',
         },
-        { t: 'video', title: 'Catching a confident wrong answer in the costs file' },
       ],
       tasks: [
         'Ask for the total in `costs.csv`, then add it up yourself',
@@ -839,7 +840,6 @@ const STEPS: RawStep[][] = [
           t: 'warn',
           text: 'Claude saying it has read CLAUDE.md is not evidence. That is a claim, and topic 4 was about claims. The evidence is behaviour you did not ask for.',
         },
-        { t: 'video', title: 'Proving a CLAUDE.md rule from a fresh session' },
       ],
       tasks: [
         'Start a completely fresh session',
@@ -1308,7 +1308,6 @@ const STEPS: RawStep[][] = [
           t: 'warn',
           text: 'No terminal? You can still do this. Work in one long chat until Claude forgets something you told it near the start, and note how far in that happened. That moment is the desk overflowing.',
         },
-        { t: 'video', title: 'Watching the context fill in one session' },
       ],
       tasks: [
         'Run `/context` before you start, and note how full the desk already is',

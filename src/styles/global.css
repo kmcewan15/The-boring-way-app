@@ -86,8 +86,10 @@ button {
 }
 
 /* Flush with the bar's own left padding (26px) and vertically centred by the
-   bar's own grid (align-items: center) -- see HomeScreen.tsx's
-   BURGER_DOCK_TOP/LEFT for the arithmetic this has to match. */
+   bar's own grid (align-items: center). The home screen used to slide its own
+   hamburger into this exact spot, which is what those numbers were matched to;
+   that screen now opens with a progress ring and no hamburger, so nothing is
+   aiming at this box anymore and the padding is free to change. */
 .topbar__menu {
   width: 44px;
   height: 44px;
@@ -95,8 +97,8 @@ button {
   place-items: center;
   border-radius: 50%;
   justify-self: start;
-  /* Same cream-and-ink pairing as .home__start-icon, which this button visually
-     *is* the moment the dock animation ends -- see HomeScreen.tsx. */
+  /* Cream-and-ink from the current world, falling back to the app's fixed
+     tokens before the trail has mounted and written them. */
   background: var(--w-panel, var(--pink-cream));
   color: var(--w-ink, var(--terracotta-deep));
   transition:
@@ -693,6 +695,47 @@ button {
 .trailcard--active .card__cta,
 .trailcard--active .card__action {
   pointer-events: auto;
+}
+
+/* A card further up the trail is somewhere you can go, so it gets a hit target
+   of its own. Transparent and laid over the whole card: the visuals underneath
+   stay exactly as they were, and there is no second thing on screen to explain.
+   Wheel events still bubble from here to the stage listener that drives the
+   trail, so scrolling with the pointer over a card keeps working. */
+.trailcard__goto {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: auto;
+  border-radius: var(--r-card);
+  cursor: pointer;
+  background: none;
+  /* Lifts slightly toward the reader on hover -- the only affordance it needs,
+     since the card it sits on is already legible as a destination. */
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.trailcard__goto:hover {
+  transform: scale(1.04);
+}
+
+.trailcard__goto:focus-visible {
+  outline: 3px solid var(--w-panel, #fff);
+  outline-offset: 3px;
+}
+
+/* Tiers held at opacity 0 are on the trail but off screen. `visibility` and not
+   opacity alone, so their contents leave the tab order too -- the near tiers are
+   full cards with a bookmark button, which was reachable by keyboard while
+   invisible. Transitioned so it holds through the fade rather than popping. */
+.trailcard--gone {
+  visibility: hidden;
+  transition:
+    bottom var(--dur-slow) var(--ease-calm),
+    left var(--dur-slow) var(--ease-calm),
+    filter var(--dur-slow) var(--ease-calm),
+    opacity var(--dur-slow) var(--ease-calm),
+    visibility var(--dur-slow) var(--ease-calm);
 }
 
 /* ==========================================================================
@@ -1537,7 +1580,12 @@ button {
    ========================================================================== */
 
 .step {
-  position: absolute;
+  /* Fixed, not absolute: absolute made this a box inside .main, which is the
+     grid row *below* the top bar, so a step page opened with 72px of app chrome
+     still on screen above it. Between that bar, this page's own header and its
+     footer, 260px of an 800px window was chrome and the reading column got 540px.
+     The page declares aria-modal; covering the bar is what that already claims. */
+  position: fixed;
   inset: 0;
   z-index: 90;
   /* The base colour under the artwork and the scrim. Hardcoded terracotta here is
@@ -1546,7 +1594,11 @@ button {
   background: var(--step-base, var(--terracotta));
   color: #fff;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  /* Two rows, not three: the footer is taken out of the flow below so the
+     reading column runs the full height behind it. Text used to be cut off
+     mid-sentence at the footer's hard edge, which reads as content being
+     withheld rather than scrolled. */
+  grid-template-rows: auto minmax(0, 1fr);
   animation: fade-in var(--dur-mid) var(--ease-calm) both;
   overflow: hidden;
 }
@@ -1599,7 +1651,9 @@ button {
 .step__top {
   position: relative;
   z-index: 2;
-  padding: 24px 34px;
+  /* 94px for one line and a timebox was the second largest piece of chrome on
+     the page. */
+  padding: 15px 30px;
   display: flex;
   align-items: center;
   gap: 22px;
@@ -1618,6 +1672,19 @@ button {
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.32) transparent;
+}
+
+/* Clears the floating footer, so the last line of a step can always be scrolled
+   out from behind it. On the scroller and not on .step__inner because
+   .photopanel sets the whole `padding` shorthand from design.css, which silently
+   replaced any inset put there.
+
+   A modifier rather than the base class: the quiz shares .step and .step__scroll
+   but has no footer -- its buttons are inside the panel -- so an unconditional
+   inset gave every quiz screen 110px of empty scroll and a scrollbar over
+   nothing. */
+.step__scroll--foot {
+  padding-bottom: calc(110px + var(--safe-bottom, 0px));
 }
 
 .step__scroll::-webkit-scrollbar {
@@ -2500,7 +2567,8 @@ button {
   }
 }
 
-/* Video, and the placeholder that stands in until one is recorded. */
+/* Video. A block with no clip yet renders nothing, so there is no placeholder
+   state to style -- .vid--empty, .vid__badge and .vid__soon went with it. */
 .vid {
   margin: 0 0 20px;
 }
@@ -2512,35 +2580,6 @@ button {
   background: rgba(0, 0, 0, 0.4);
 }
 
-.vid--empty {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 22px;
-  border-radius: var(--r-card);
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.vid__badge {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 50px;
-  height: 50px;
-  border-radius: var(--r-pill);
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.vid__soon {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  opacity: 0.66;
-}
-
 .vid__cap {
   margin: 4px 0 0;
   font-size: 19px;
@@ -2549,7 +2588,13 @@ button {
 }
 
 .step__foot {
-  position: relative;
+  /* Over the reading column, not beside it. Frosted, so text stays legible as it
+     passes underneath and can always be scrolled out from behind it -- see
+     .step__scroll--foot for the matching inset. */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 2;
   padding: 20px 40px calc(20px + var(--safe-bottom, 0px));
   display: flex;
@@ -3207,7 +3252,7 @@ a.res__item {
    Command hints — the lightbulb in the corner of a step
    ========================================================================== */
 
-/* Anchored to `.step`, which is `position: absolute; inset: 0`. Sits above the
+/* Anchored to `.step`, which is `position: fixed; inset: 0`. Sits above the
    step content (z 2) and below the confetti burst (z 4). The bottom offset
    clears `.step__foot`, which is roughly 94px tall. */
 .hints {

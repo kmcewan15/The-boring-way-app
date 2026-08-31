@@ -10,8 +10,12 @@ import ResourcesScreen from './components/ResourcesScreen';
 import StepView from './components/StepView';
 import TopBar from './components/TopBar';
 import TopicQuiz from './components/TopicQuiz';
-import { JOURNEY, globalIndexOf } from './data/curriculum';
+import { JOURNEY, TOPICS, globalIndexOf } from './data/curriculum';
 import { useApp } from './state/useApp';
+
+/* Decoded world photographs, held for the life of the page. See the effect in
+   App that fills this. */
+const WARM: HTMLImageElement[] = [];
 
 const MODAL_LABELS: Record<MyPathRoute, string> = {
   timebox: 'Timebox',
@@ -33,6 +37,33 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const entry = openIndex === null ? null : JOURNEY[openIndex];
+
+  /* Decode the world photographs before the trail needs them. They are CSS
+     background-images, so the browser defers decoding each one until the world
+     it belongs to first scrolls into view -- which lands mid-scroll, on the main
+     thread, at the exact moment the rail is animating. Measured: the first
+     crossing from topic 1 into topic 2 blocked for 487ms, against 12-23ms for an
+     ordinary step, and 72ms once the images were already warm.
+
+     Runs from App rather than the trail so it starts at boot, while the home
+     screen is still on screen -- three files, roughly 2MB, and by the time
+     anyone has read the trailhead and walked four steps it is long done. */
+  useEffect(() => {
+    const photos = [...new Set(TOPICS.map((t) => t.photo).filter(Boolean))] as string[];
+    for (const src of photos) {
+      const img = new Image();
+      img.src = src;
+      /* Kept alive deliberately. Without a reference the Image is collectable
+         the moment decode() settles, and the decoded frame can be evicted before
+         the trail ever asks for it as a background-image. */
+      WARM.push(img);
+      /* decode() rather than just assigning src: the fetch alone leaves the
+         decode to happen lazily at first paint, which is the cost being
+         avoided. Rejection is not worth handling -- a photo that fails to
+         decode here simply falls back to decoding on demand, as before. */
+      void img.decode?.().catch(() => {});
+    }
+  }, []);
 
   /* Overlays cover the stage but not the top bar, so a nav click while one is
      open would otherwise look like it did nothing. Dismiss them on tab change. */
@@ -61,9 +92,18 @@ export default function App() {
        excused the whole trail from going inert whenever the map was open. Every
        overlay that sits at this level carries the role on its own root. */
     const behind = [...main.children].filter((el) => !el.matches('[role="dialog"]'));
-    behind.forEach((el) => el.toggleAttribute('inert', true));
-    return () => behind.forEach((el) => el.toggleAttribute('inert', false));
-  }, [overlayOpen]);
+    /* The step and quiz pages are `position: fixed` and cover the top bar, which
+       is a sibling of .main and so outside the list above. Left alone, its menu
+       button stayed in the tab order underneath the overlay: one Shift+Tab from
+       the close button put focus on a control nobody could see, and Enter there
+       opened the drawer on top of the step. The other overlays are absolute
+       inside .main and do not cover the bar, so they leave it alone -- see the
+       note above about a nav click still working. */
+    const bar = entry !== null ? document.querySelector('.topbar') : null;
+    const nodes = bar ? [...behind, bar] : behind;
+    nodes.forEach((el) => el.toggleAttribute('inert', true));
+    return () => nodes.forEach((el) => el.toggleAttribute('inert', false));
+  }, [overlayOpen, entry]);
 
   if (!entered) return <HomeScreen onEnter={() => setEntered(true)} />;
 

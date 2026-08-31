@@ -28,8 +28,9 @@ Rules that hold across all 15 exemplar steps:
 - **`why` before `warn`** when a step has both (6 of 7 steps; topic 9 step 2
   inverts it, which looks incidental).
 - **`video` is always the last block** — last in the step, or last inside its
-  `track`. Always the single-line form, `{ t: 'video', title: '...' }`, with no
-  `src` until the video exists. Titles are short gerund phrases, sentence case,
+  `track`. `src` is required: `{ t: 'video', title: '...', src: '/demos/x.mp4' }`.
+  There is no placeholder state any more, so do not add the block until the clip
+  exists — omitting `src` is a build error rather than an empty slot. Titles are short gerund phrases, sentence case,
   no trailing period: "Watching the context fill in one session".
 - **A run of 3–4 `term`s defines the topic's vocabulary and sits immediately
   after the opening prose** (`:745-763`, `:825-847`, `:944-959`). A lone `term`

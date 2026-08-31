@@ -25,8 +25,9 @@ const SECTION_TITLE: Record<Tab, string | null> = {
     window to work with instead of losing --side-w of it to a column that
     only ever held three lines of text and one button. Learn/My Path/
     Resources, the world list, time learning and streak all still live in
-    NavDrawer, opened from the hamburger here exactly as it was from the
-    rail's own. */
+    NavDrawer, opened from the hamburger here. The home screen used to dock its
+    own hamburger into this one; it opens with a progress ring now, so this
+    button simply fades up with the rest of the bar. */
 export default function TopBar({
   open: drawerOpen,
   onOpenChange,

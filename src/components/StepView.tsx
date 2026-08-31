@@ -12,7 +12,9 @@ import StepBody from './StepBody';
 import CommandHints from './CommandHints';
 import { IconCircle, IconCircleCheck, IconClose, IconPause, IconPlay } from './Icons';
 
-const KIND_LABEL: Record<Step['kind'], string> = {
+/* Exported so the home screen's "next up" card names a step's kind with the
+   same words the step itself uses, rather than keeping a second copy. */
+export const KIND_LABEL: Record<Step['kind'], string> = {
   read: 'Read',
   exercise: 'Exercise',
   verify: 'Verify',
@@ -154,7 +156,7 @@ export default function StepView({
         <Timebox minutes={step.minutes} palette={palette} />
       </header>
 
-      <div className="step__scroll">
+      <div className="step__scroll step__scroll--foot">
         <div className={`step__inner${photo ? ' photopanel' : ''}`}>
           <div className="step__kind">
             <StepKindIcon kind={step.kind} size={22} />

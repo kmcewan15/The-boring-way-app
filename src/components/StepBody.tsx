@@ -3,7 +3,7 @@ import type { Block } from '../data/curriculum';
 import Rich from './Rich';
 import RequestBuilder from './RequestBuilder';
 import TokenCalc from './TokenCalc';
-import { IconChevronDown, IconPlay, IconTerminal, IconWarning } from './Icons';
+import { IconChevronDown, IconTerminal, IconWarning } from './Icons';
 
 type FullscreenVideo = HTMLVideoElement & {
   webkitRequestFullscreen?: () => void;
@@ -41,49 +41,37 @@ function exitFullscreen(video: FullscreenVideo) {
   }
 }
 
-/** A video that has not been recorded yet. Shows which video belongs here so the
-    slot reads as deliberate rather than broken. */
-function VideoSlot({ title, src }: { title: string; src?: string }) {
+/** A recorded demo. Plays inline, goes fullscreen on play and comes back out a
+    beat after it ends. `src` is required by the Block union, so there is no
+    unrecorded state to render. */
+function VideoSlot({ title, src }: { title: string; src: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const exitTimer = useRef<number>();
 
   useEffect(() => () => window.clearTimeout(exitTimer.current), []);
 
-  if (src) {
-    return (
-      <figure className="vid">
-        <video
-          ref={videoRef}
-          className="vid__player"
-          src={src}
-          controls
-          preload="metadata"
-          onPlay={() => {
-            if (videoRef.current) requestFullscreen(videoRef.current);
-          }}
-          onEnded={() => {
-            window.clearTimeout(exitTimer.current);
-            /* A beat after the clip ends, not instantly — an abrupt cut back to
-               the lesson reads as the video having broken. */
-            exitTimer.current = window.setTimeout(() => {
-              if (videoRef.current) exitFullscreen(videoRef.current);
-            }, 1500);
-          }}
-        />
-        <figcaption className="vid__cap">{title}</figcaption>
-      </figure>
-    );
-  }
   return (
-    <div className="vid vid--empty">
-      <span className="vid__badge" aria-hidden="true">
-        <IconPlay size={26} />
-      </span>
-      <div>
-        <p className="vid__soon">Video coming soon</p>
-        <p className="vid__cap">{title}</p>
-      </div>
-    </div>
+    <figure className="vid">
+      <video
+        ref={videoRef}
+        className="vid__player"
+        src={src}
+        controls
+        preload="metadata"
+        onPlay={() => {
+          if (videoRef.current) requestFullscreen(videoRef.current);
+        }}
+        onEnded={() => {
+          window.clearTimeout(exitTimer.current);
+          /* A beat after the clip ends, not instantly — an abrupt cut back to
+             the lesson reads as the video having broken. */
+          exitTimer.current = window.setTimeout(() => {
+            if (videoRef.current) exitFullscreen(videoRef.current);
+          }, 1500);
+        }}
+      />
+      <figcaption className="vid__cap">{title}</figcaption>
+    </figure>
   );
 }
 
